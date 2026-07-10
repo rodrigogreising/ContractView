@@ -1,0 +1,201 @@
+# Service Boundaries
+
+This document defines the service and package boundaries future implementation work must preserve. It complements the system map by making ownership and isolation rules explicit.
+
+## Boundary Principles
+
+- Services own behavior and data together.
+- Shared packages define contracts, not hidden service dependencies.
+- Provenance, configuration, validation, and workflow are separate concerns even when initially implemented in one deployable.
+- Product screens may differ by role, but all roles observe the same canonical invoice lifecycle.
+
+## Service Responsibility Matrix
+
+| Capability | Owning unit | Required evidence |
+| --- | --- | --- |
+| Organization and user roles | API/workflow service | Role assignment event, permission decision record for material actions |
+| Contract and budget setup | Configuration registry | Configuration bundle version and activation approval |
+| File upload intake | Ingestion service | Artifact hash, uploader, tenant, upload timestamp, scan result |
+| Ledger import | Ingestion service plus extraction pipeline | Source row references, parser/importer version, draft field lineage |
+| OCR and extraction | Extraction pipeline | Source location, confidence, model/parser version, correction history |
+| Draft invoice assembly | API/workflow service | Invoice version, line-item relations, mapping version |
+| Validation execution | Validation engine | Validation run with exact inputs, rule versions, reason codes |
+| Issue workflow | API/workflow service | Issue events linked to invoice version and validation results |
+| Package generation | Package generation service | Generated artifact hash, template version, package manifest |
+| Submission | API/workflow service | Attestation event, submitted invoice version, package reference |
+| Agency review | API/workflow service | Decision event, actor, role, reason, affected invoice version |
+| Audit reconstruction | Provenance/event service | Event stream, lineage records, artifact references, validation runs |
+| Dashboards and exports | Reporting layer | Read-model version, metric definition, source event/query reference |
+
+## MVP Capability Coverage
+
+| MVP capability | Owning unit |
+| --- | --- |
+| Multi-organization accounts for one agency and multiple nonprofits | API/workflow service |
+| Contract and budget configuration | Configuration registry |
+| Manual file upload with immutable artifact storage | Ingestion service |
+| CSV/XLSX ledger import | Ingestion service plus extraction pipeline |
+| PDF/image document storage and basic OCR | Ingestion service plus extraction pipeline |
+| Draft invoice assembly from structured ledger rows | API/workflow service |
+| Configurable deterministic validation rules | Validation engine plus configuration registry |
+| Versioned schemas, mappings, rule configuration, template configuration, and workflow state | Configuration registry plus API/workflow service |
+| Append-only event log and field-level lineage for claimed amounts | Provenance/event service |
+| Issue resolution workflow | API/workflow service |
+| Nonprofit final approval | API/workflow service |
+| Agency review queue | API/workflow service plus web app |
+| PDF/CSV export package with validation summary | Package generation service |
+| Complete audit and provenance trail | Provenance/event service |
+| Basic dashboards for invoice status, cycle time, and open issues | Reporting layer |
+
+## Boundary Details
+
+### Web App
+
+The web app renders role-specific workflows for nonprofit staff, agency reviewers, auditors, support users, and admins.
+
+It may:
+
+- Display canonical invoice state through role-specific views.
+- Submit commands to the API/workflow service.
+- Surface evidence, confidence, reason codes, and provenance summaries.
+
+It must not:
+
+- Implement compliance decisions only in client logic.
+- Mutate invoice state without a workflow command.
+- Create role-specific invoice copies.
+
+### API/Workflow Service
+
+The API/workflow service is the command boundary for material user actions.
+
+It may:
+
+- Own invoice lifecycle state.
+- Enforce permissions for transitions and decisions.
+- Coordinate ingestion, validation, package generation, and submission commands.
+- Emit material workflow events.
+
+It must not:
+
+- Execute opaque AI compliance decisions.
+- Modify submitted content without amendment, return, or resubmission semantics.
+- Treat reporting projections as canonical state.
+
+### Ingestion Service
+
+The ingestion service handles file and data intake.
+
+It may:
+
+- Register uploaded artifacts.
+- Coordinate malware scanning, deduplication, and checksum validation.
+- Create import jobs for structured files.
+
+It must not:
+
+- Decide whether a claim is reimbursable.
+- Approve, return, waive, or finalize invoices.
+
+### Extraction Pipeline
+
+The extraction pipeline turns artifacts into draft structured data with source references.
+
+It may:
+
+- Run OCR, parsers, importers, and AI-assisted extraction.
+- Produce draft fields with source locations, confidence, and model/parser versions.
+- Capture human corrections as lineage events.
+
+It must not:
+
+- Become the source of truth for compliance pass/fail.
+- Overwrite corrected data destructively.
+
+### Validation Engine
+
+The validation engine executes deterministic checks over explicit inputs.
+
+It may:
+
+- Evaluate rules against invoice, artifact, budget, schema, mapping, workflow, and template versions.
+- Produce pass/fail/warning/note results with reason codes.
+- Record stable validation runs for reproducibility.
+
+It must not:
+
+- Query non-versioned mutable state during validation.
+- Use AI output as an unreviewed blocking decision.
+- Create approval, waiver, attestation, or finalization events.
+
+### Package Generation Service
+
+The package generation service creates agency-ready output from approved templates.
+
+It may:
+
+- Generate PDFs, CSVs, ZIP archives, manifests, and validation summaries.
+- Record generated artifact hashes and template versions.
+
+It must not:
+
+- Fill missing compliance data with AI at generation time.
+- Mutate generated submitted packages.
+
+### Provenance/Event Service
+
+The provenance/event service records material actions and lineage.
+
+It may:
+
+- Store append-only events.
+- Link invoice fields to artifacts, source locations, validations, corrections, submissions, returns, approvals, and payment updates.
+- Support audit reconstruction.
+
+It must not:
+
+- Be reduced to application logs.
+- Allow event mutation without an explicit correction/amendment event.
+
+### Configuration Registry
+
+The configuration registry owns versioned reimbursement configuration.
+
+It may:
+
+- Store schemas, mappings, rules, workflows, views, templates, and configuration bundles.
+- Enforce lifecycle states: draft, tested, approved, active, superseded, retired.
+- Record activation approvals and test evidence.
+
+It must not:
+
+- Permit production use of unapproved AI-generated configuration.
+- Hide customer-specific code behind configuration names.
+
+### Reporting Layer
+
+The reporting layer provides read models and analytics.
+
+It may:
+
+- Produce dashboards, exports, and operational metrics.
+- Support portfolio, SLA, bottleneck, and error analytics.
+
+It must not:
+
+- Mutate canonical invoice state.
+- Be the only source for certification evidence.
+
+## New Unit Checklist
+
+Any new service or package must document:
+
+- Owner role.
+- Responsibilities.
+- Data owned.
+- Allowed dependencies.
+- Events emitted.
+- Configuration consumed.
+- Deterministic behavior required.
+- Human authority boundary.
+- Prohibited responsibilities.
