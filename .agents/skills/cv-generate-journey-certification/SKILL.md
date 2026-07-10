@@ -11,7 +11,7 @@ Create or update ContractView SDLC evidence for End-to-end journey certification
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `docs/journeys/`
 - `docs/sdlc/release-certification.md`
@@ -35,6 +35,6 @@ Return:
 
 - Updated repo artifact path or explicit missing-decision list.
 - Linear comment text with generated artifact path, blockers, and next review skill.
-- Follow-up Linear issues needed for unresolved gates.
+- Follow-up Linear project or features needed for unresolved gates.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

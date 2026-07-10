@@ -1,6 +1,6 @@
 interface:
   display_name: "Generate Requirements Traceability"
   short_description: "Create Requirements traceability evidence"
-  default_prompt: "Use $cv-generate-requirements-traceability to create ContractView Requirements traceability evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-generate-requirements-traceability to create ContractView Requirements traceability evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

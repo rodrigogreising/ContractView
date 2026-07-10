@@ -1,31 +1,31 @@
 # SDLC Linear Control Plane
 
-Linear controls SDLC state, ownership, sequencing, blockers, and review handoffs. The repo remains the source of truth for durable evidence used in audit, release certification, and historical reconstruction.
+Linear project statuses control feature and project state, sequencing, blockers, and review handoffs. The repo remains the source of truth for durable evidence used in audit, release certification, and historical reconstruction.
 
 ## Operating Model
 
 - Linear team: `Substrate`
 - Linear project: `ContractView`
-- Linear statuses: `Backlog`, `Todo`, `In Progress`, `In Review`, `Done`, `Duplicate`, `Canceled`
+- Linear project statuses: `Backlog`, `Discovery`, `Design Review`, `Build`, `Evidence Review`, `Rollout`, `Completed`, `Paused`, `Canceled`
 - Repo evidence: `solution_requirements.md`, `docs/adr/`, `docs/architecture/`, `docs/journeys/`, `docs/sdlc/`, and `docs/codex/`
 - Skill location: `.agents/skills/`
 
-Do not create custom Linear statuses for v1. Use labels, parent issues, child issues, links, and comments to represent SDLC gates.
+Use project statuses for the state of a feature or project. Use labels, milestones, linked docs, project status updates, and repo evidence links to represent SDLC gates.
 
 ## Lifecycle Stages
 
-| Stage | Parent issue | Generation skill | Review skill | Primary evidence |
+| Stage | Project status | Generation skill | Review skill | Primary evidence |
 | --- | --- | --- | --- | --- |
-| Product intake and discovery | SDLC 01 - Product intake and discovery | `cv-generate-product-intake` | `cv-review-product-intake` | Problem statement, stakeholders, scope, success metric |
-| Requirements traceability | SDLC 02 - Requirements traceability | `cv-generate-requirements-traceability` | `cv-review-requirements-traceability` | Requirement-to-ADR, journey, boundary, and release trace |
-| Architecture and ADR review | SDLC 03 - Architecture and ADR review | `cv-generate-adr-architecture` | `cv-review-adr-architecture` | ADR draft or amendment and architecture impact |
-| Service/package boundary review | SDLC 04 - Service/package boundary review | `cv-generate-boundary-review` | `cv-review-boundary-review` | Owner, dependency, data, event, config, and authority checklist |
-| Security, privacy, and data governance review | SDLC 05 - Security, privacy, and data governance review | `cv-generate-security-privacy` | `cv-review-security-privacy` | Threat model, data classification, mitigations, accepted risks |
-| AI evaluation and configuration governance review | SDLC 06 - AI evaluation and configuration governance review | `cv-generate-ai-governance` | `cv-review-ai-governance` | AI use, prohibited authority, versions, eval plan, human review |
-| Implementation and tests | SDLC 07 - Implementation and tests | `cv-generate-implementation-tests` | `cv-review-implementation-tests` | Implementation, tests, deterministic checks, affected docs |
-| End-to-end journey certification | SDLC 08 - End-to-end journey certification | `cv-generate-journey-certification` | `cv-review-journey-certification` | Journey execution evidence and certification criteria |
-| Release readiness and evidence signoff | SDLC 09 - Release readiness and evidence signoff | `cv-generate-release-readiness` | `cv-review-release-readiness` | Release certification record, exceptions, signoff |
-| Production operation, incident response, and postmortems | SDLC 10 - Production operation, incident response, and postmortems | `cv-generate-operations-postmortem` | `cv-review-operations-postmortem` | Runbook, incident record, root cause, corrective actions |
+| Product intake and discovery | `Discovery` | `cv-generate-product-intake` | `cv-review-product-intake` | Problem statement, stakeholders, scope, success metric |
+| Requirements traceability | `Design Review` | `cv-generate-requirements-traceability` | `cv-review-requirements-traceability` | Requirement-to-ADR, journey, boundary, and release trace |
+| Architecture and ADR review | `Design Review` | `cv-generate-adr-architecture` | `cv-review-adr-architecture` | ADR draft or amendment and architecture impact |
+| Service/package boundary review | `Design Review` | `cv-generate-boundary-review` | `cv-review-boundary-review` | Owner, dependency, data, event, config, and authority checklist |
+| Security, privacy, and data governance review | `Design Review` or `Evidence Review` | `cv-generate-security-privacy` | `cv-review-security-privacy` | Threat model, data classification, mitigations, accepted risks |
+| AI evaluation and configuration governance review | `Design Review` or `Evidence Review` | `cv-generate-ai-governance` | `cv-review-ai-governance` | AI use, prohibited authority, versions, eval plan, human review |
+| Implementation and tests | `Build` | `cv-generate-implementation-tests` | `cv-review-implementation-tests` | Implementation, tests, deterministic checks, affected docs |
+| End-to-end journey certification | `Evidence Review` | `cv-generate-journey-certification` | `cv-review-journey-certification` | Journey execution evidence and certification criteria |
+| Release readiness and evidence signoff | `Evidence Review` | `cv-generate-release-readiness` | `cv-review-release-readiness` | Release certification record, exceptions, signoff |
+| Production rollout and post-release operations | `Rollout` | `cv-generate-operations-postmortem` | `cv-review-operations-postmortem` | Runbook, incident record, root cause, corrective actions |
 
 ## Label Taxonomy
 
@@ -75,18 +75,21 @@ Rollout labels:
 - `rollout:canary`
 - `rollout:rollback-plan`
 
-## Issue State Rules
+## Project Status Rules
 
-- `Backlog`: captured but not triaged.
-- `Todo`: accepted and ready for SDLC work.
-- `In Progress`: generation skill or implementation work is active.
-- `In Review`: matching review skill is running or findings are being addressed.
-- `Done`: review passed and required repo evidence is linked.
-- `Canceled` or `Duplicate`: terminal exceptions.
+- `Backlog`: project or feature exists but is not committed.
+- `Discovery`: problem, stakeholders, pilot scope, and success metrics are being defined.
+- `Design Review`: requirements, ADRs, architecture, boundaries, security/privacy, AI governance, and configuration governance are being worked through.
+- `Build`: implementation and tests are active.
+- `Evidence Review`: journey certification, provenance, deterministic validation, configuration evidence, AI evaluation, security review, release evidence, and signoff are being assembled.
+- `Rollout`: feature flags, tenant targeting, canary, rollback, monitoring, and operational readiness are active.
+- `Completed`: review passed, required repo evidence is linked, and no further project action is required.
+- `Paused`: intentionally stopped but expected to resume.
+- `Canceled`: no longer planned.
 
-No issue should reach `Done` without linked repo evidence and a review decision comment.
+No project or feature should reach `Completed` without linked repo evidence and a review decision in a Linear project status update or linked repo artifact.
 
-## Child Issue Template
+## Project Status Update Template
 
 ```markdown
 ## SDLC Control
@@ -112,19 +115,19 @@ No issue should reach `Done` without linked repo evidence and a review decision 
 - Decision: Pending | Approved | Approved with required fixes | Blocked
 - Reviewer:
 - Findings:
-- Follow-up issues:
+- Follow-up work:
 ```
 
 ## Handoff Comments
 
-Codex should comment on the Linear issue at each transition:
+Codex should use Linear project status updates at each transition:
 
 - Generation started.
 - Artifact generated or updated, with repo path.
 - Review started.
 - Review result and findings.
 - Fixes applied.
-- Ready for next SDLC gate or blocked.
+- Ready for next project status or blocked.
 
 ## Release Blockers
 

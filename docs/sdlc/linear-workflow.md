@@ -1,13 +1,13 @@
 # Linear SDLC Workflow
 
-This document defines the recommended Linear workflow model for ContractView's regulated SDLC. The goal is to make architecture decisions, governance gates, feature flags, canaries, certification evidence, and release readiness visible without turning every checklist item into a brittle issue status.
+This document defines the recommended Linear workflow model for ContractView's regulated SDLC. The goal is to make architecture decisions, governance gates, feature flags, canaries, certification evidence, and release readiness visible without turning every checklist item into a brittle project status.
 
 ## Operating Principle
 
 Use a hybrid model:
 
-- Project states represent the lifecycle of the overall ContractView initiative.
-- Issue states represent real queues, handoffs, or decision points with an owner.
+- Project statuses represent the lifecycle state of each ContractView feature or project.
+- Granular implementation work stays subordinate to the owning project and must not replace project status.
 - Labels, templates, linked docs, and checklists track controls that can apply in parallel.
 - Long-form evidence remains in repo docs, ADRs, release certification records, test output, and linked Linear documents.
 
@@ -19,41 +19,23 @@ Use these states for the ContractView project lifecycle:
 | --- | --- | --- |
 | Backlog | Project exists but is not committed. | Product owner decides discovery should begin. |
 | Discovery | Problem, stakeholders, pilot scope, and success metrics are being defined. | Scope is clear enough to map to requirements and journeys. |
-| Requirements Mapping | Requirements are being mapped to ADR pillars, journeys, service boundaries, and release criteria. | Major requirements have traceability coverage. |
-| Architecture Review | Material system-shape decisions, ADRs, service boundaries, data flows, and ownership are under review. | Required ADRs and architecture docs are accepted or explicitly deferred. |
+| Design Review | Requirements, ADRs, architecture, boundaries, security/privacy, AI governance, and configuration governance are being worked through. | Required design and governance evidence is accepted or explicitly deferred. |
 | Build | Implementation work is active. | In-scope work is code-complete enough for verification and evidence gathering. |
-| Validation and Evidence | Tests, provenance evidence, journey certification, config approval, AI evaluation, and security/privacy review are being assembled. | Evidence is complete or exceptions are explicit. |
-| Flagged Rollout | Feature flags, tenant or pilot targeting, kill-switch behavior, and rollback paths are active. | Rollout controls are verified and release owner approves limited exposure. |
-| Canary | Limited production exposure is running with monitoring and explicit success/failure criteria. | Canary passes, fails, or is extended with an owner and reason. |
-| Release Readiness | Final certification, exceptions, known risks, and signoff are being reviewed. | Release decision is Certified, Certified with exceptions, or Blocked. |
-| Released | Certified, or certified with accepted exceptions. | No further release action required. |
+| Evidence Review | Tests, provenance evidence, journey certification, config approval, AI evaluation, security/privacy review, final certification, exceptions, known risks, and signoff are being assembled. | Evidence is complete, exceptions are explicit, and release decision impact is clear. |
+| Rollout | Feature flags, tenant or pilot targeting, kill-switch behavior, canary, monitoring, and rollback paths are active. | Rollout passes, fails, or is extended with an owner and reason. |
+| Completed | Certified, released, or otherwise completed with no further project action required. | Terminal successful state. |
 | Paused | Intentionally stopped but not canceled. | Project resumes or is canceled. |
 | Canceled | No longer planned. | Terminal state. |
 
-## Issue Workflow States
+If a feature needs a state, make it a Linear project and move the project through these statuses.
 
-Configure the Substrate team issue workflow as follows:
+## Feature Status Rules
 
-| State | Use when | Exit criteria |
-| --- | --- | --- |
-| Backlog | Work is captured but not triaged. | Triage owner accepts it for review. |
-| Triage | Validity, priority, ownership, and duplication are being assessed. | Issue is canceled, deduplicated, sent to discovery, or accepted. |
-| Discovery | Problem, users, scope, and acceptance criteria are being clarified. | Acceptance criteria and scope are clear. |
-| Requirements Mapped | Traceability is being established. | Issue links to requirement, ADR pillar, affected journey, service/package boundary, and release criterion where applicable. |
-| ADR / Architecture Review | The issue changes architecture, data ownership, service boundaries, AI authority, compliance boundaries, or rollout architecture. | Required ADR and architecture review are complete or explicitly not required. |
-| Risk Review | Security, privacy, data governance, AI governance, or configuration governance review is needed. | Risks are mitigated, accepted, or converted into blocking follow-up work. |
-| Ready for Build | Implementation-ready. | Engineer starts work. |
-| In Progress | Implementation is active. | Work is ready for code review. |
-| Code Review | Pull request or implementation review is active. | Review is approved or sent back to In Progress. |
-| Verification | Automated tests, manual checks, journey evidence, config tests, provenance checks, or AI eval evidence are being completed. | Verification passes or required fixes are opened. |
-| Release Certification | Release-facing evidence or signoff is required before Done. | Evidence is linked and release decision impact is clear. |
-| Rollout Ready | Flag, targeting, monitoring, rollback, canary criteria, and owner are defined. | Limited rollout starts or the issue returns for missing controls. |
-| Canary / Limited Rollout | Change is exposed to limited users, tenants, or traffic with active monitoring. | Canary passes, fails, or is extended with explicit owner and criteria. |
-| Done | Completed, verified, and no further SDLC action is required. | Terminal successful state. |
-| Duplicate | Issue duplicates another tracked item. | Terminal exception state. |
-| Canceled | Work is intentionally abandoned. | Terminal exception state. |
+Use one Linear project per tracked feature, release, or major workstream. Move that project through the project statuses above as the source of truth for state.
 
-`Blocked` should be a label, not a status, because a blocked issue can be blocked in any stage.
+Granular work items, when needed, are implementation details under the owning project and must not replace project status.
+
+`Blocked` should be a label or status update condition, not a project status, because a feature can be blocked in any stage.
 
 ## Labels
 
@@ -92,9 +74,9 @@ Risk labels:
 - `risk:ai-authority`
 - `risk:configuration-drift`
 
-## Required Issue Template Sections
+## Required Project Status Update Sections
 
-Issues that enter the detailed SDLC workflow should include the relevant sections below. Not every issue needs every section, but missing sections should be intentional.
+Projects or features that enter the detailed SDLC workflow should include the relevant sections below in project descriptions, project documents, or project status updates. Not every project needs every section, but missing sections should be intentional.
 
 ### Traceability
 
@@ -147,11 +129,11 @@ Issues that enter the detailed SDLC workflow should include the relevant section
 - Runbook link:
 - Certification impact:
 
-## Done Standard
+## Completion Standard
 
-An issue should only reach Done when:
+A project or feature should only reach `Completed` when:
 
-- Implementation is complete or the issue was non-implementation work.
+- Implementation is complete or the project was non-implementation work.
 - Required reviews are complete.
 - Required evidence is linked.
 - Feature flag and rollout controls are documented when applicable.
@@ -159,4 +141,4 @@ An issue should only reach Done when:
 - Release certification impact is clear.
 - Any exceptions have an owner, risk, compensating control, and target resolution.
 
-This workflow intentionally keeps detailed SDLC controls auditable in Linear while preserving the repo as the authoritative source for architecture, ADRs, journey specs, release certification records, and long-form evidence.
+This workflow intentionally keeps detailed SDLC controls auditable in Linear project state while preserving the repo as the authoritative source for architecture, ADRs, journey specs, release certification records, and long-form evidence.

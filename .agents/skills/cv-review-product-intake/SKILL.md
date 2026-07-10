@@ -1,6 +1,6 @@
 ---
 name: cv-review-product-intake
-description: Use when Codex needs to review ContractView SDLC evidence for Product intake and discovery, including Linear-controlled work before it leaves In Review or reaches Done.
+description: Use when Codex needs to review ContractView SDLC evidence for Product intake and discovery, including Linear-controlled work before it leaves Design Review or Evidence Review or reaches Completed.
 ---
 
 # Review Product Intake
@@ -11,7 +11,7 @@ Evaluate ContractView SDLC evidence for Product intake and discovery. Linear con
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `solution_requirements.md`
 - `docs/sdlc/processes.md`
@@ -35,6 +35,6 @@ Return:
 
 - Decision: Approved, Approved with required fixes, or Blocked.
 - Findings first, ordered by severity, with concrete repo path or Linear field references.
-- Required fixes, follow-up issues, and whether the issue may advance from In Review.
+- Required fixes, follow-up work, and whether the project may advance from its current review status.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

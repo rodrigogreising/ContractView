@@ -11,7 +11,7 @@ Create or update ContractView SDLC evidence for Product intake and discovery. Li
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `solution_requirements.md`
 - `docs/sdlc/processes.md`
@@ -28,7 +28,7 @@ Expected Linear labels: `stage:product-intake`.
 1. Define the problem, affected users, pilot or release context, success metric, in scope items, and out of scope items.
 2. Map the intake to at least one ContractView lifecycle stage and identify likely affected journeys or architecture areas.
 3. If the request is not clear enough to map to requirements and journeys, stop with the missing decisions instead of fabricating scope.
-4. Update the Linear issue with generated artifact paths and any blockers.
+4. Update the Linear project status update with generated artifact paths and any blockers.
 
 ## Output
 
@@ -36,6 +36,6 @@ Return:
 
 - Updated repo artifact path or explicit missing-decision list.
 - Linear comment text with generated artifact path, blockers, and next review skill.
-- Follow-up Linear issues needed for unresolved gates.
+- Follow-up Linear project or features needed for unresolved gates.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

@@ -1,6 +1,6 @@
 ---
 name: cv-review-boundary-review
-description: Use when Codex needs to review ContractView SDLC evidence for Service/package boundary review, including Linear-controlled work before it leaves In Review or reaches Done.
+description: Use when Codex needs to review ContractView SDLC evidence for Service/package boundary review, including Linear-controlled work before it leaves Design Review or Evidence Review or reaches Completed.
 ---
 
 # Review Boundary Review
@@ -11,7 +11,7 @@ Evaluate ContractView SDLC evidence for Service/package boundary review. Linear 
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `docs/architecture/service-boundaries.md`
 - `docs/architecture/system-map.md`
@@ -37,6 +37,6 @@ Return:
 
 - Decision: Approved, Approved with required fixes, or Blocked.
 - Findings first, ordered by severity, with concrete repo path or Linear field references.
-- Required fixes, follow-up issues, and whether the issue may advance from In Review.
+- Required fixes, follow-up work, and whether the project may advance from its current review status.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

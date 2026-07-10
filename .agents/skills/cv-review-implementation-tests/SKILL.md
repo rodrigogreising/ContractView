@@ -1,6 +1,6 @@
 ---
 name: cv-review-implementation-tests
-description: Use when Codex needs to review ContractView SDLC evidence for Implementation and tests, including Linear-controlled work before it leaves In Review or reaches Done.
+description: Use when Codex needs to review ContractView SDLC evidence for Implementation and tests, including Linear-controlled work before it leaves Design Review or Evidence Review or reaches Completed.
 ---
 
 # Review Implementation Tests
@@ -11,7 +11,7 @@ Evaluate ContractView SDLC evidence for Implementation and tests. Linear control
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `docs/sdlc/processes.md`
 - `docs/codex/playbooks.md`
@@ -26,9 +26,9 @@ Expected Linear labels: `stage:implementation-tests`, `evidence:deterministic-va
 
 ## Workflow
 
-1. Review code, tests, and docs against the controlling Linear issue and affected SDLC gates.
+1. Review code, tests, and docs against the controlling Linear project or feature and affected SDLC gates.
 2. Flag missing automated tests, missing journey evidence, unlinked repo docs, and behavior that bypasses boundaries or human authority.
-3. Confirm the Linear issue includes test result links or explicit test gaps.
+3. Confirm the Linear project or feature includes test result links or explicit test gaps.
 
 ## Output
 
@@ -36,6 +36,6 @@ Return:
 
 - Decision: Approved, Approved with required fixes, or Blocked.
 - Findings first, ordered by severity, with concrete repo path or Linear field references.
-- Required fixes, follow-up issues, and whether the issue may advance from In Review.
+- Required fixes, follow-up work, and whether the project may advance from its current review status.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

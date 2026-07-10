@@ -1,6 +1,6 @@
 interface:
   display_name: "Generate Boundary Review"
   short_description: "Create Service/package boundary review evidence"
-  default_prompt: "Use $cv-generate-boundary-review to create ContractView Service/package boundary review evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-generate-boundary-review to create ContractView Service/package boundary review evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

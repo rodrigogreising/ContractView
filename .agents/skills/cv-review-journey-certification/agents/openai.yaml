@@ -1,6 +1,6 @@
 interface:
   display_name: "Review Journey Certification"
   short_description: "Review End-to-end journey certification evidence"
-  default_prompt: "Use $cv-review-journey-certification to review ContractView End-to-end journey certification evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-review-journey-certification to review ContractView End-to-end journey certification evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

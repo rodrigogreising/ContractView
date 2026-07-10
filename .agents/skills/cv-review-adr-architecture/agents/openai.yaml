@@ -1,6 +1,6 @@
 interface:
   display_name: "Review ADR And Architecture"
   short_description: "Review Architecture and ADR review evidence"
-  default_prompt: "Use $cv-review-adr-architecture to review ContractView Architecture and ADR review evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-review-adr-architecture to review ContractView Architecture and ADR review evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

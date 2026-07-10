@@ -1,6 +1,6 @@
 interface:
   display_name: "Generate Journey Certification"
   short_description: "Create End-to-end journey certification evidence"
-  default_prompt: "Use $cv-generate-journey-certification to create ContractView End-to-end journey certification evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-generate-journey-certification to create ContractView End-to-end journey certification evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

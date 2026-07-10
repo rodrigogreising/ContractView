@@ -11,7 +11,7 @@ Create or update ContractView SDLC evidence for Production operation, incident r
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `docs/sdlc/processes.md`
 - `docs/sdlc/release-certification.md`
@@ -26,7 +26,7 @@ Expected Linear labels: `stage:operations-postmortem`, `evidence:runbook`.
 ## Workflow
 
 1. Create or update runbooks for in-scope jobs, queues, retries, dead letters, integrations, support access, audit export, incident response, backup, restore, retention, or deletion.
-2. For incidents, record timeline, impact, root cause, corrective actions, owners, and linked follow-up Linear issues.
+2. For incidents, record timeline, impact, root cause, corrective actions, owners, and linked follow-up Linear project or features.
 3. Update docs or tests when an incident reveals an SDLC or certification evidence gap.
 
 ## Output
@@ -35,6 +35,6 @@ Return:
 
 - Updated repo artifact path or explicit missing-decision list.
 - Linear comment text with generated artifact path, blockers, and next review skill.
-- Follow-up Linear issues needed for unresolved gates.
+- Follow-up Linear project or features needed for unresolved gates.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

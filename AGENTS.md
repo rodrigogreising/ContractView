@@ -1,6 +1,6 @@
 # ContractView Codex Guidance
 
-ContractView uses Linear as the SDLC control plane and this repository as the durable evidence store. Before material work, identify the controlling Linear issue, the SDLC stage, and the repo evidence that must be created or reviewed.
+ContractView uses Linear project statuses as the SDLC control plane and this repository as the durable evidence store. Before material work, identify the controlling Linear project or feature, its project status, the SDLC stage, and the repo evidence that must be created or reviewed.
 
 ## Default Read Order
 
@@ -16,16 +16,17 @@ Before architecture, implementation, testing, release, or governance changes, re
 
 ## Linear Control Plane
 
-- Use Linear for workflow state, ownership, priority, due date, blockers, labels, and handoff comments.
+- Use Linear project statuses for feature or project state.
+- Use Linear project fields, labels, milestones, linked docs, and status updates for ownership, priority, target dates, blockers, rollout controls, and handoffs.
 - Use the `Substrate` Linear team and `ContractView` Linear project unless the user explicitly chooses another target.
-- Do not rely on custom Linear statuses. Use `Backlog`, `Todo`, `In Progress`, `In Review`, `Done`, `Duplicate`, and `Canceled`.
-- Every material SDLC child issue must include the SDLC control, traceability, and review result sections defined in `docs/codex/sdlc-linear-control-plane.md`.
-- Comment on the Linear issue when generation starts, when artifacts are updated, when review starts, when findings are returned, when fixes are applied, and when the issue is ready for the next gate or blocked.
+- Use these project statuses for state: `Backlog`, `Discovery`, `Design Review`, `Build`, `Evidence Review`, `Rollout`, `Completed`, `Paused`, and `Canceled`.
+- Use Linear projects and project statuses to represent SDLC stage and feature state.
+- Update the Linear project status and status update when generation starts, artifacts are updated, review starts, findings are returned, fixes are applied, and the feature is ready for the next state or blocked.
 
 ## Skill Invocation
 
 - Use the matching `cv-generate-*` skill to create or update SDLC evidence.
-- Use the matching `cv-review-*` skill before moving a Linear issue out of `In Review` or considering it `Done`.
+- Use the matching `cv-review-*` skill before moving a Linear project or feature out of `Design Review`, `Evidence Review`, or into `Completed`.
 - Review skills must return one decision: `Approved`, `Approved with required fixes`, or `Blocked`.
 - If evidence is missing, name the missing artifact or decision directly rather than inventing it.
 

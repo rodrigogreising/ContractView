@@ -11,7 +11,7 @@ Create or update ContractView SDLC evidence for Requirements traceability. Linea
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `solution_requirements.md`
 - `docs/adr/0001-core-architectural-pillars.md`
@@ -28,8 +28,8 @@ Expected Linear labels: `stage:requirements-traceability`.
 ## Workflow
 
 1. Trace each material requirement to an ADR pillar, affected journey, owning service or package, and release certification criterion.
-2. Record gaps as explicit missing evidence or follow-up Linear issues rather than silent assumptions.
-3. Preserve the repo docs as the durable evidence location and link them from the controlling Linear issue.
+2. Record gaps as explicit missing evidence or follow-up Linear project or features rather than silent assumptions.
+3. Preserve the repo docs as the durable evidence location and link them from the controlling Linear project or feature status update.
 
 ## Output
 
@@ -37,6 +37,6 @@ Return:
 
 - Updated repo artifact path or explicit missing-decision list.
 - Linear comment text with generated artifact path, blockers, and next review skill.
-- Follow-up Linear issues needed for unresolved gates.
+- Follow-up Linear project or features needed for unresolved gates.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

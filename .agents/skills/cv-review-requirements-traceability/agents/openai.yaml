@@ -1,6 +1,6 @@
 interface:
   display_name: "Review Requirements Traceability"
   short_description: "Review Requirements traceability evidence"
-  default_prompt: "Use $cv-review-requirements-traceability to review ContractView Requirements traceability evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-review-requirements-traceability to review ContractView Requirements traceability evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

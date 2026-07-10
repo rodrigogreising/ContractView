@@ -11,7 +11,7 @@ Create or update ContractView SDLC evidence for Implementation and tests. Linear
 
 ## Required Context
 
-Before acting, identify the controlling Linear issue and read the relevant repo sources:
+Before acting, identify the controlling Linear project or feature and read the relevant repo sources:
 
 - `docs/sdlc/processes.md`
 - `docs/codex/playbooks.md`
@@ -26,7 +26,7 @@ Expected Linear labels: `stage:implementation-tests`, `evidence:deterministic-va
 
 ## Workflow
 
-1. Implement only after the controlling Linear issue has clear SDLC stage, required evidence, and owner context.
+1. Implement only after the controlling Linear project or feature has clear SDLC stage, required evidence, and owner context.
 2. Add or update tests for deterministic validation, permissions, provenance, configuration versions, journey paths, or UI behavior as applicable.
 3. Update repo evidence docs when implementation changes architecture, journeys, SDLC gates, or release certification impact.
 
@@ -36,6 +36,6 @@ Return:
 
 - Updated repo artifact path or explicit missing-decision list.
 - Linear comment text with generated artifact path, blockers, and next review skill.
-- Follow-up Linear issues needed for unresolved gates.
+- Follow-up Linear project or features needed for unresolved gates.
 
 When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

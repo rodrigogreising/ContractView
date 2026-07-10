@@ -1,6 +1,6 @@
 interface:
   display_name: "Generate Security Privacy"
   short_description: "Create Security, privacy, and data-governance review evidence"
-  default_prompt: "Use $cv-generate-security-privacy to create ContractView Security, privacy, and data-governance review evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-generate-security-privacy to create ContractView Security, privacy, and data-governance review evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

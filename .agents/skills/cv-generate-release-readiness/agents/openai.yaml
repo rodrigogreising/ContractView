@@ -1,6 +1,6 @@
 interface:
   display_name: "Generate Release Readiness"
   short_description: "Create Release readiness and evidence signoff evidence"
-  default_prompt: "Use $cv-generate-release-readiness to create ContractView Release readiness and evidence signoff evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-generate-release-readiness to create ContractView Release readiness and evidence signoff evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true

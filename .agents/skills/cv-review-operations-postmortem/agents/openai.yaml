@@ -1,6 +1,6 @@
 interface:
   display_name: "Review Operations Postmortem"
   short_description: "Review Production operation, incident response, and postmortems "
-  default_prompt: "Use $cv-review-operations-postmortem to review ContractView Production operation, incident response, and postmortems evidence for this Linear-controlled issue."
+  default_prompt: "Use $cv-review-operations-postmortem to review ContractView Production operation, incident response, and postmortems evidence for this Linear-controlled project or feature."
 policy:
   allow_implicit_invocation: true
