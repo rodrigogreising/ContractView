@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Boundary Review"
+  short_description: "Review Service/package boundary review evidence"
+  default_prompt: "Use $cv-review-boundary-review to review ContractView Service/package boundary review evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

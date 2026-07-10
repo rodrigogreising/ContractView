@@ -1,0 +1,40 @@
+---
+name: cv-review-journey-certification
+description: Use when Codex needs to review ContractView SDLC evidence for End-to-end journey certification, including Linear-controlled work before it leaves In Review or reaches Done.
+---
+
+# Review Journey Certification
+
+## Purpose
+
+Evaluate ContractView SDLC evidence for End-to-end journey certification. Linear controls status, ownership, blockers, labels, and handoffs; repo docs remain the durable evidence source.
+
+## Required Context
+
+Before acting, identify the controlling Linear issue and read the relevant repo sources:
+
+- `docs/journeys/`
+- `docs/sdlc/release-certification.md`
+- `docs/architecture/service-boundaries.md`
+- `docs/sdlc/README.md`
+- `docs/sdlc/processes.md`
+- `docs/sdlc/linear-workflow.md`
+- `docs/codex/sdlc-linear-control-plane.md`
+
+Expected Linear labels: `stage:journey-certification`, `evidence:journey`, `evidence:provenance`.
+
+## Workflow
+
+1. Verify the journey evidence proves both user-visible behavior and evidence quality.
+2. Flag missing actors, preconditions, workflow path, provenance, failure modes, certification criteria, or signoff.
+3. Block release-facing claims when certified journeys cannot be reconstructed.
+
+## Output
+
+Return:
+
+- Decision: Approved, Approved with required fixes, or Blocked.
+- Findings first, ordered by severity, with concrete repo path or Linear field references.
+- Required fixes, follow-up issues, and whether the issue may advance from In Review.
+
+When evidence is incomplete, name the missing artifact or decision directly instead of inventing facts.

@@ -37,6 +37,7 @@ Each releasable version must show:
 | Service/package map | `docs/architecture/` |
 | Journey specs | `docs/journeys/` |
 | SDLC process definitions | `docs/sdlc/processes.md` |
+| Linear workflow states and labels | `docs/sdlc/linear-workflow.md` |
 | Release certification criteria | `docs/sdlc/release-certification.md` |
 | Codex operating playbooks | `docs/codex/playbooks.md` |
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Product Intake"
+  short_description: "Review Product intake and discovery evidence"
+  default_prompt: "Use $cv-review-product-intake to review ContractView Product intake and discovery evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Implementation Tests"
+  short_description: "Review Implementation and tests evidence"
+  default_prompt: "Use $cv-review-implementation-tests to review ContractView Implementation and tests evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

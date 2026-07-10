@@ -1,0 +1,6 @@
+interface:
+  display_name: "Generate AI Governance"
+  short_description: "Create AI evaluation and configuration governance review evidenc"
+  default_prompt: "Use $cv-generate-ai-governance to create ContractView AI evaluation and configuration governance review evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

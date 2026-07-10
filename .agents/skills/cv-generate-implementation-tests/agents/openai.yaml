@@ -1,0 +1,6 @@
+interface:
+  display_name: "Generate Implementation Tests"
+  short_description: "Create Implementation and tests evidence"
+  default_prompt: "Use $cv-generate-implementation-tests to create ContractView Implementation and tests evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

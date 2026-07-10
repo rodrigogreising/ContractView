@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Release Readiness"
+  short_description: "Review Release readiness and evidence signoff evidence"
+  default_prompt: "Use $cv-review-release-readiness to review ContractView Release readiness and evidence signoff evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

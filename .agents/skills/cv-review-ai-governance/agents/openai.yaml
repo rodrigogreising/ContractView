@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review AI Governance"
+  short_description: "Review AI evaluation and configuration governance review evidenc"
+  default_prompt: "Use $cv-review-ai-governance to review ContractView AI evaluation and configuration governance review evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

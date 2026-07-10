@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Security Privacy"
+  short_description: "Review Security, privacy, and data-governance review evidence"
+  default_prompt: "Use $cv-review-security-privacy to review ContractView Security, privacy, and data-governance review evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true

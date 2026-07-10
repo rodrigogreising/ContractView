@@ -1,0 +1,6 @@
+interface:
+  display_name: "Generate ADR And Architecture"
+  short_description: "Create Architecture and ADR review evidence"
+  default_prompt: "Use $cv-generate-adr-architecture to create ContractView Architecture and ADR review evidence for this Linear-controlled issue."
+policy:
+  allow_implicit_invocation: true
