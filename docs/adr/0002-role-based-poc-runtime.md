@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted; amended by SUB-59 on 2026-07-11
 
 ## Date
 
@@ -24,6 +24,46 @@ Build the POC as a modular monolith with separately runnable web, API, worker, P
 - Shared packages define domain, configuration, event, and rule contracts without becoming hidden services.
 
 The POC keeps logical boundaries from ADR 0001 while avoiding deployable microservices. Modules may later split behind the same contracts.
+
+## SUB-59 Amendment: Enforceable Modular Monolith
+
+The modular monolith is normative, not an informal folder convention. The
+controlling readable design is
+`docs/architecture/modular-monolith.md`; the machine-readable contract is
+`docs/architecture/modular-monolith-policy.json`.
+
+The API and worker implement six inward-facing layers:
+
+1. Domain owns invariants and vocabulary and has no framework dependency.
+2. Application owns commands, queries, repository/capability ports, policy
+   orchestration, and unit-of-work interfaces.
+3. Persistence implements capability-owned repositories and migrations.
+4. Integration implements MinIO, OCR/LLM, renderer, clock/id, and external
+   adapters and owns the composition root.
+5. Worker translates versioned jobs into idempotent application commands.
+6. HTTP translates authenticated requests into application commands/queries.
+
+The dependency direction is toward domain/application. Domain and application
+do not import adapters. HTTP and worker do not contain domain decisions or SQL.
+
+Canonical data is owned exactly once by identity, configuration, artifacts,
+extraction, invoices, validation, packages, workflow, or provenance. A shared
+PostgreSQL deployment does not create shared ownership. Direct
+cross-capability SQL, command-path joins, table writes, shared mutable ORM
+models, and repository connection escape hatches are prohibited. Collaboration
+uses application command/query ports, immutable snapshots, versioned events,
+or declared read models.
+
+The ontology becomes executable shared contracts for artifacts, typed fields,
+entities, relations, rules, workflows, views, templates, events, validation
+runs, configuration bundles, invoice snapshots, package manifests, closed
+vocabulary, and exact version references. Configuration definitions and
+runtime evidence are distinct: activation is prospective and immutable runtime
+records reference exact versions.
+
+This amendment adds no network services or distributed transactions. REC-05
+implements shared contracts; REC-07 implements repository boundaries,
+forbidden-import rules, table ownership, and CI fitness tests.
 
 ## Authentication And Authority
 

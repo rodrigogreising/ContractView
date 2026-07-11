@@ -1,6 +1,6 @@
 # POC Requirements Traceability
 
-Status: Approved for Build
+Status: Design Review recovery; prior Build trace retained pending SUB-59 approval
 
 Last updated: 2026-07-11
 
@@ -35,6 +35,17 @@ Last updated: 2026-07-11
 | SUB-50 | Read-only audit timeline | 1 | 11 | Provenance/web | Both packages reconstructed |
 | SUB-53 | Reproducible commands | 2, 3 | 11 | Infrastructure | Documented clean run |
 | SUB-55 | Canonical E2E certification | 1-4 | 11 | Cross-cutting | Passing recorded Playwright run |
+| SUB-59 | Enforceable modular-monolith layers, ownership, ontology split, and persistence rules | 1-4 | 11 and 01-10 reference | Architecture | ADR 0002 amendment, `modular-monolith.md`, machine policy and tests |
+
+## Recovery Architecture Trace
+
+| Requirement | ADR decision | Boundary owner | Certification evidence |
+| --- | --- | --- | --- |
+| One POC deployable without hidden coupling | ADR 0002 SUB-59 amendment | Six-layer API/worker modular monolith | Machine policy validates allowed layer direction |
+| Configuration, invoice, artifact, extraction, validation, provenance, package, and workflow ownership | ADR 0002 plus ADR 0001 pillars 1-4 | Nine capability owners in `modular-monolith-policy.json` | Duplicate-owner and capability-cycle tests |
+| No arbitrary cross-capability SQL | ADR 0002 persistence amendment | Application ports plus owner persistence adapters | Cross-capability SQL and ownership negative tests; REC-07 physical enforcement |
+| Executable reimbursement ontology | ADR 0001 pillar 2 plus ADR 0002 amendment | Shared domain/config/rule/event contracts | Closed vocabulary and configuration/runtime split tests; REC-05 runtime contracts |
+| Future extraction seams without distributed POC complexity | ADR 0002 | Capability application ports and events | Policy rejects shared tables and network-service expansion |
 
 ## Deferred And Canceled For POC
 

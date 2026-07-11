@@ -1,6 +1,11 @@
 # Services
 
-This directory contains README-only placeholders for future runtime services. The folders declare ownership boundaries, evidence requirements, and certification expectations without selecting implementation technology.
+This directory contains the implemented FastAPI API/worker under
+`api-workflow` plus README boundary placeholders for capability ownership and
+future extraction seams. The POC remains one
+[modular-monolith](../docs/architecture/modular-monolith.md) API plus one
+worker; the other folders are not independently deployed services and do not
+authorize network calls or cross-capability imports.
 
 Reference docs:
 
@@ -16,6 +21,8 @@ Reference docs:
 - Cross-service behavior must use explicit APIs, commands, events, or versioned contracts.
 - Reporting projections must not become canonical workflow state.
 - AI-assisted services may draft, classify, summarize, or suggest, but must not approve, waive, attest, finalize, or block submission.
+- Capability modules collaborate through application ports, immutable snapshots, versioned events, or declared read models.
+- Direct cross-capability SQL, table writes, shared mutable ORM models, and repository connection escape hatches are forbidden.
 
 ## Certification Expectations
 

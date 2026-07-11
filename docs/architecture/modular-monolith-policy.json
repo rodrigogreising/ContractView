@@ -1,0 +1,266 @@
+{
+  "policyVersion": "1.0.0",
+  "deploymentModel": "modular-monolith",
+  "processes": [
+    "web",
+    "api",
+    "worker",
+    "postgresql",
+    "minio"
+  ],
+  "layers": {
+    "domain": {
+      "rank": 0,
+      "allowedDependencies": []
+    },
+    "application": {
+      "rank": 1,
+      "allowedDependencies": [
+        "domain"
+      ]
+    },
+    "persistence": {
+      "rank": 2,
+      "allowedDependencies": [
+        "application",
+        "domain"
+      ]
+    },
+    "integration": {
+      "rank": 2,
+      "allowedDependencies": [
+        "application",
+        "domain"
+      ]
+    },
+    "worker": {
+      "rank": 3,
+      "allowedDependencies": [
+        "application",
+        "domain"
+      ]
+    },
+    "http": {
+      "rank": 3,
+      "allowedDependencies": [
+        "application",
+        "domain"
+      ]
+    }
+  },
+  "compositionRootLayer": "integration",
+  "capabilities": {
+    "identity": {
+      "ownsData": [
+        "organizations",
+        "users",
+        "sessions",
+        "organization_assignments",
+        "contract_assignments",
+        "auditor_grants"
+      ],
+      "allowedApplicationDependencies": []
+    },
+    "configuration": {
+      "ownsData": [
+        "contracts",
+        "contract_budget_versions",
+        "configuration_definitions",
+        "configuration_lifecycle_evidence",
+        "configuration_bundle_versions",
+        "configuration_activation_records"
+      ],
+      "allowedApplicationDependencies": [
+        "identity"
+      ]
+    },
+    "artifacts": {
+      "ownsData": [
+        "artifact_metadata",
+        "artifact_object_references",
+        "artifact_hashes",
+        "artifact_predecessor_relations"
+      ],
+      "allowedApplicationDependencies": [
+        "identity"
+      ]
+    },
+    "extraction": {
+      "ownsData": [
+        "extraction_jobs",
+        "extraction_attempts",
+        "extraction_proposals",
+        "extraction_review_history"
+      ],
+      "allowedApplicationDependencies": [
+        "artifacts",
+        "provenance"
+      ]
+    },
+    "invoices": {
+      "ownsData": [
+        "invoice_drafts",
+        "invoice_lines",
+        "invoice_material_revisions",
+        "invoice_snapshots",
+        "invoice_revision_graph"
+      ],
+      "allowedApplicationDependencies": [
+        "artifacts",
+        "configuration",
+        "extraction",
+        "provenance"
+      ]
+    },
+    "validation": {
+      "ownsData": [
+        "validation_input_manifests",
+        "validation_runs",
+        "validation_rule_results",
+        "validation_findings",
+        "validation_resolution_evidence"
+      ],
+      "allowedApplicationDependencies": [
+        "configuration",
+        "invoices",
+        "provenance"
+      ]
+    },
+    "packages": {
+      "ownsData": [
+        "package_reproduction_manifests",
+        "package_indexes",
+        "package_file_hashes",
+        "template_execution_results"
+      ],
+      "allowedApplicationDependencies": [
+        "artifacts",
+        "configuration",
+        "invoices",
+        "provenance",
+        "validation"
+      ]
+    },
+    "workflow": {
+      "ownsData": [
+        "invoice_lifecycle_state",
+        "attestations",
+        "submissions",
+        "government_queue_entries",
+        "return_decisions",
+        "approval_decisions"
+      ],
+      "allowedApplicationDependencies": [
+        "configuration",
+        "identity",
+        "invoices",
+        "packages",
+        "provenance",
+        "validation"
+      ]
+    },
+    "provenance": {
+      "ownsData": [
+        "domain_events",
+        "typed_relations",
+        "field_lineage",
+        "actor_resource_references"
+      ],
+      "allowedApplicationDependencies": []
+    }
+  },
+  "persistenceRules": {
+    "repositoryPortsOwnedByLayer": "application",
+    "unitOfWorkOwnedByLayer": "application",
+    "sharedDatabaseMeansSharedOwnership": false,
+    "crossCapabilitySql": "forbidden",
+    "crossCapabilityWrites": "forbidden",
+    "crossCapabilityCommandJoins": "forbidden",
+    "crossCapabilityReads": [
+      "application-query-port",
+      "immutable-snapshot",
+      "declared-read-model"
+    ],
+    "sqlAllowedOnlyInLayer": "persistence"
+  },
+  "collaborationMechanisms": [
+    "application-command-port",
+    "application-query-port",
+    "versioned-domain-event",
+    "declared-read-model"
+  ],
+  "ontology": {
+    "primitives": [
+      "Artifact",
+      "Schema",
+      "Field",
+      "Entity",
+      "Relation",
+      "Rule",
+      "Workflow",
+      "View",
+      "Template",
+      "Event",
+      "ValidationRun",
+      "ConfigurationBundle",
+      "InvoiceSnapshot",
+      "PackageManifest"
+    ],
+    "configurationContracts": [
+      "Schema",
+      "Rule",
+      "Workflow",
+      "View",
+      "Template",
+      "ConfigurationBundle"
+    ],
+    "runtimeContracts": [
+      "Artifact",
+      "Field",
+      "Entity",
+      "Relation",
+      "Event",
+      "ValidationRun",
+      "InvoiceSnapshot",
+      "PackageManifest"
+    ],
+    "closedVocabularies": [
+      "lifecycle_states",
+      "actor_roles",
+      "resource_kinds",
+      "reason_codes",
+      "event_names",
+      "relation_kinds"
+    ],
+    "requiredVersionReferences": [
+      "artifact_version",
+      "invoice_snapshot",
+      "contract_version",
+      "budget_version",
+      "configuration_bundle_version",
+      "schema_version",
+      "mapping_version",
+      "rule_version",
+      "workflow_version",
+      "view_version",
+      "template_version",
+      "parser_model_version"
+    ],
+    "unknownVocabularyBehavior": "reject"
+  },
+  "configurationRuntimeRules": {
+    "activationIsProspective": true,
+    "activeConfigurationIsImmutable": true,
+    "runtimeReferencesExactVersions": true,
+    "historicalRuntimeMutation": "forbidden",
+    "revalidationCreatesNewRecord": true,
+    "regenerationCreatesNewRecord": true
+  },
+  "futureExtraction": {
+    "requiresApplicationPorts": true,
+    "requiresVersionedEvents": true,
+    "requiresIdempotency": true,
+    "permitsSharedTables": false,
+    "addsNetworkServicesToPoc": false
+  }
+}
