@@ -35,7 +35,8 @@ def main() -> int:
         "## Blocking Conditions",
         "immutable base/head diff",
         "Do not edit",
-        "fresh-context or explicit human review",
+        "Applicable AI review skills plus",
+        "Human code review is not a default gate.",
         "Move the issue to `Done` only after post-merge verification passes.",
     ):
         require(preflight, needle, "docs/codex/review-preflight.md", failures)
@@ -58,13 +59,24 @@ def main() -> int:
             "prerequisites",
             "riskAndGateLabels",
             "checks",
+            "certification",
             "review",
+            "humanApprovalRequirement",
         }
         missing = sorted(expected - required)
         if missing:
             failures.append(
                 "docs/sdlc/evidence-manifest.schema.json: missing required fields "
                 + ", ".join(missing)
+            )
+        certification_properties = (
+            schema.get("properties", {})
+            .get("certification", {})
+            .get("properties", {})
+        )
+        if "requiredReviewSkills" not in certification_properties:
+            failures.append(
+                "docs/sdlc/evidence-manifest.schema.json: missing requiredReviewSkills"
             )
 
     review_skills = sorted((ROOT / ".agents/skills").glob("cv-review-*/SKILL.md"))
@@ -78,6 +90,9 @@ def main() -> int:
             "## Immutable Review Preflight",
             "Return `Blocked`",
             "Do not edit during the review pass.",
+            "This skill is an AI code reviewer.",
+            "issue-proportionate executable certification",
+            "Human code review is not required;",
             "reviewed base and head SHAs",
         ):
             require(content, needle, relative, failures)
@@ -88,6 +103,7 @@ def main() -> int:
         "docs/sdlc/evidence-manifest.schema.json",
         "Do not implement directly on `master`.",
         "Do not combine multiple leaf issues in one PR",
+        "Treat every applicable `cv-review-*` skill as an AI code reviewer.",
         "Do not move issues to `Done` before merge and post-merge verification.",
     ):
         require(executor, needle, ".agents/skills/cv-execute-linear-backlog/SKILL.md", failures)
@@ -101,7 +117,7 @@ def main() -> int:
         "| `Done` |",
         "merged prerequisite",
     ):
-            require(workflow, needle, "docs/sdlc/linear-workflow.md", failures)
+        require(workflow, needle, "docs/sdlc/linear-workflow.md", failures)
 
     for relative in (
         "scripts/validate_delivery_evidence.py",

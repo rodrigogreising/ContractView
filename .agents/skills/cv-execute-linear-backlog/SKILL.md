@@ -41,7 +41,7 @@ Complete the ContractView recovery program and all remaining dependency-ready PO
 ## Review And Merge
 
 1. Complete `docs/codex/review-preflight.md`, then run every applicable `cv-review-*` skill against the immutable PR base/head diff. Do not edit files during the review pass.
-2. Require a fresh-context or human review for authorization, configuration activation, provenance, immutable submission, human authority, and release gates.
+2. Treat every applicable `cv-review-*` skill as an AI code reviewer. For authorization, configuration, provenance, immutable submission, human-authority, and release changes, require stronger issue-proportionate executable certification and explicit risk/gate evidence coverage. Human approval is required only when the issue acceptance criteria or a named governance decision explicitly calls for it.
 3. If the decision is `Approved with required fixes`, apply fixes as new commits, rerun checks, update evidence, and repeat review.
 4. Merge only after required CI passes and all required review decisions are `Approved` or explicitly non-blocking.
 5. Verify the merge SHA from a clean checkout and clean Docker Compose state as proportionate to the issue.
@@ -63,7 +63,7 @@ Complete the ContractView recovery program and all remaining dependency-ready PO
 - Do not stage unrelated files or generated `tmp/` artifacts.
 - Do not start dependents before prerequisite merge verification.
 - Do not accept prose-only test evidence.
-- Do not self-approve without an immutable diff.
+- Do not approve without an immutable diff, applicable AI review-skill decisions, and executable evidence sufficient for the changed behavior.
 - Do not move issues to `Done` before merge and post-merge verification.
 - Do not bypass required architecture, boundary, security, governance, journey, or release skills.
 - Do not reduce acceptance criteria to maintain momentum.

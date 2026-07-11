@@ -155,7 +155,12 @@ PR head SHA:
 Evidence manifest path:
 Exact checks and exit codes:
 Environment versions:
-Required risk/gate reviewers:
+Required AI review skills:
+Risk/gate evidence coverage:
+Certification rationale:
+Clean runtime/Compose/journey evidence required: Yes | No
+Human approval required: Yes | No
+Human-approval basis (only when required):
 Known risks:
 Dependency impact:
 ```
@@ -165,7 +170,10 @@ Dependency impact:
 ```text
 Decision: Approved | Approved with required fixes | Blocked
 Reviewer:
-Fresh-context or human review:
+Review method: AI
+Completed AI review skills:
+Evidence adequate for changed behavior: Yes | No
+Human approval evidence (only when required):
 Reviewed base SHA:
 Reviewed head SHA:
 Findings:
@@ -196,11 +204,15 @@ For every implementation leaf issue, Linear must record:
 
 Reviewers must follow `docs/codex/review-preflight.md`. Missing immutable PR evidence is a blocking finding, not a documentation follow-up.
 
-Any issue carrying `gate:security-privacy`, `gate:config-governance`,
-`gate:release-certification`, `risk:human-authority`, `risk:auditability`,
-`risk:ai-authority`, or `risk:configuration-drift` requires a fresh-context or
-explicit human review record. The review comment must name that reviewer and
-the immutable base/head diff they reviewed.
+Risk and gate labels select applicable `cv-review-*` AI skills and the
+executable evidence needed to certify the change. They do not impose human code
+review by themselves. The review comment must name the AI skills, immutable
+base/head diff, certification rationale, and evidence covering each label.
+
+Human approval is separate from code review. Require it only when the issue
+acceptance criteria or named governance process explicitly requires a human
+risk acceptance, activation, attestation, submission, return, approval,
+release signoff, or equivalent authority decision.
 
 ## Release Blockers
 

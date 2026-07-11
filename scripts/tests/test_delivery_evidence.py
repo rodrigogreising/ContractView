@@ -22,9 +22,9 @@ SHA_C = "c" * 40
 
 def manifest() -> dict[str, object]:
     return {
-        "issue": "SUB-58",
+        "issue": "SUB-69",
         "projectStatus": "Design Review",
-        "branch": "codex/sub-58-policy",
+        "branch": "codex/sub-69-policy",
         "baseSha": SHA_A,
         "headSha": SHA_B,
         "pullRequestUrl": "https://github.com/example/repo/pull/2",
@@ -35,21 +35,43 @@ def manifest() -> dict[str, object]:
         ],
         "riskAndGateLabels": [],
         "environment": {"python": "3.13"},
-        "checks": [{"command": "test", "exitCode": 0, "result": "passed"}],
+        "checks": [
+            {
+                "command": "python -m unittest",
+                "exitCode": 0,
+                "result": "passed",
+                "recordedAt": "2026-07-11T12:00:00Z",
+                "testCount": 8,
+            }
+        ],
+        "certification": {
+            "behaviorChanged": False,
+            "rationale": "Process-only change is certified by policy and validator tests.",
+            "requiredReviewSkills": ["cv-review-implementation-tests"],
+            "evidenceKinds": ["policy", "unit"],
+            "riskCoverage": {},
+            "cleanRuntimeRequired": False,
+        },
         "review": {
             "decision": "Pending",
-            "reviewer": "Codex",
+            "reviewer": "Codex AI",
+            "method": "ai",
+            "reviewSkills": ["cv-review-implementation-tests"],
             "reviewedBaseSha": SHA_A,
             "reviewedHeadSha": SHA_B,
+            "evidenceAdequate": False,
             "findings": [],
-            "freshContextOrHuman": False,
+        },
+        "humanApprovalRequirement": {
+            "required": False,
+            "basis": "No governance or real-world authority decision is in scope.",
         },
     }
 
 
 def state(**changes: object) -> object:
     values = {
-        "branch": "codex/sub-58-policy",
+        "branch": "codex/sub-69-policy",
         "head_sha": SHA_B,
         "tracked_worktree_clean": True,
         "changed_files": ("docs/policy.md", "scripts/check.py"),
@@ -106,15 +128,66 @@ class DeliveryEvidenceTests(unittest.TestCase):
         )
         self.assertEqual(2, sum("review-time mutation" in failure for failure in failures))
 
-    def test_high_risk_change_without_fresh_or_human_review_fails(self) -> None:
+    def test_risk_label_without_evidence_coverage_fails(self) -> None:
         evidence = manifest()
         evidence["riskAndGateLabels"] = ["gate:release-certification"]
         failures = self.validate(evidence)
-        self.assertTrue(any("high-risk gates" in failure for failure in failures))
+        self.assertTrue(any("lack executable evidence coverage" in failure for failure in failures))
+
+    def test_high_risk_ai_review_does_not_require_human_code_review(self) -> None:
+        evidence = manifest()
+        evidence["riskAndGateLabels"] = ["gate:release-certification"]
+        evidence["certification"]["riskCoverage"] = {  # type: ignore[index]
+            "gate:release-certification": ["Policy and negative validator tests"]
+        }
+        self.assertEqual([], self.validate(evidence))
+
+    def test_behavior_change_requires_behavioral_evidence(self) -> None:
+        evidence = manifest()
+        evidence["certification"]["behaviorChanged"] = True  # type: ignore[index]
+        failures = self.validate(evidence)
+        self.assertTrue(any("evidence beyond policy or unit" in failure for failure in failures))
+
+    def test_test_evidence_requires_exact_count(self) -> None:
+        evidence = manifest()
+        del evidence["checks"][0]["testCount"]  # type: ignore[index]
+        failures = self.validate(evidence)
+        self.assertTrue(any("exact testCount" in failure for failure in failures))
+
+    def test_artifact_evidence_requires_hashes(self) -> None:
+        evidence = manifest()
+        evidence["certification"]["evidenceKinds"] = ["policy", "artifact"]  # type: ignore[index]
+        failures = self.validate(evidence)
+        self.assertTrue(any("artifact hashes" in failure for failure in failures))
+
+    def test_explicit_human_authority_requirement_must_be_satisfied(self) -> None:
+        evidence = manifest()
+        evidence["humanApprovalRequirement"] = {
+            "required": True,
+            "basis": "Release owner signoff explicitly required",
+        }
+        failures = self.validate(evidence)
+        self.assertTrue(any("human authority approval" in failure for failure in failures))
+
+    def test_approved_ai_review_requires_adequate_evidence(self) -> None:
+        evidence = manifest()
+        evidence["review"]["decision"] = "Approved"  # type: ignore[index]
+        failures = self.validate(evidence)
+        self.assertTrue(any("adequate executable evidence" in failure for failure in failures))
+
+    def test_completed_review_must_cover_every_required_ai_skill(self) -> None:
+        evidence = manifest()
+        evidence["certification"]["requiredReviewSkills"] = [  # type: ignore[index]
+            "cv-review-implementation-tests",
+            "cv-review-release-readiness",
+        ]
+        failures = self.validate(evidence)
+        self.assertTrue(any("omits required AI reviews" in failure for failure in failures))
 
     def test_done_without_post_merge_verification_fails(self) -> None:
         evidence = copy.deepcopy(manifest())
         evidence["review"]["decision"] = "Approved"  # type: ignore[index]
+        evidence["review"]["evidenceAdequate"] = True  # type: ignore[index]
         failures = self.validate(evidence, phase="done")
         self.assertTrue(any("completion evidence" in failure for failure in failures))
 

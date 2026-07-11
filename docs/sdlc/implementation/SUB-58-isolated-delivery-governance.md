@@ -33,7 +33,7 @@ accumulate on one branch without independently reviewable PRs.
   verified on `origin/master`.
 - Done requires merge SHA plus clean post-merge verification.
 - Authorization, configuration, provenance, immutable-submission,
-  human-authority, and release work require fresh-context or human review.
+  human-authority, and release work require risk-proportionate review evidence.
 
 ## Verification
 
@@ -58,7 +58,14 @@ python3 scripts/validate_delivery_evidence.py --manifest <path> --phase done
 Its unit tests prove that default-branch work, mixed issue scope, missing
 manifest fields, stale prerequisite proof, review-time mutation, and missing
 post-merge verification are rejected. A separate negative case proves that
-high-risk gate labels cannot pass without fresh-context or human review.
+high-risk gate labels cannot pass without additional review evidence.
+
+## Supersession
+
+SUB-69 supersedes the blanket fresh-context-or-human code-review requirement.
+Applicable `cv-review-*` skills are the AI code-review authority, backed by
+executable certification. Human approval is reserved for explicitly named
+governance and real-world authority decisions.
 
 Exact commands, versions, exit codes, PR/base/head SHAs, and review decision are
 recorded in the issue evidence manifest and Linear handoff comment before
