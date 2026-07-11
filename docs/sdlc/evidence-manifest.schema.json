@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contractview.local/schemas/sdlc-evidence-manifest.json",
+  "title": "ContractView SDLC Evidence Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "issue",
+    "projectStatus",
+    "branch",
+    "baseSha",
+    "headSha",
+    "pullRequestUrl",
+    "declaredScope",
+    "recordedAt",
+    "prerequisites",
+    "riskAndGateLabels",
+    "environment",
+    "checks",
+    "review"
+  ],
+  "properties": {
+    "issue": { "type": "string", "pattern": "^SUB-[0-9]+$" },
+    "projectStatus": { "enum": ["Design Review", "Build", "Evidence Review", "Rollout", "Completed"] },
+    "branch": { "type": "string", "minLength": 1 },
+    "baseSha": { "$ref": "#/$defs/sha" },
+    "headSha": { "$ref": "#/$defs/sha" },
+    "pullRequestUrl": { "type": "string", "format": "uri" },
+    "declaredScope": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "riskAndGateLabels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(risk|gate):" }
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue", "mergeSha", "postMergeVerified"],
+        "properties": {
+          "issue": { "type": "string", "pattern": "^SUB-[0-9]+$" },
+          "mergeSha": { "$ref": "#/$defs/sha" },
+          "postMergeVerified": { "const": true }
+        }
+      }
+    },
+    "environment": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exitCode", "result"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "exitCode": { "type": "integer" },
+          "result": { "type": "string", "minLength": 1 },
+          "artifactHashes": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reviewer", "reviewedBaseSha", "reviewedHeadSha"],
+      "properties": {
+        "decision": { "enum": ["Pending", "Approved", "Approved with required fixes", "Blocked"] },
+        "reviewer": { "type": "string", "minLength": 1 },
+        "reviewedBaseSha": { "$ref": "#/$defs/sha" },
+        "reviewedHeadSha": { "$ref": "#/$defs/sha" },
+        "findings": { "type": "array", "items": { "type": "string" } },
+        "freshContextOrHuman": { "type": "boolean" }
+      }
+    },
+    "completion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mergeSha", "verifiedAt", "postMergeVerified", "postMergeChecks"],
+      "properties": {
+        "mergeSha": { "$ref": "#/$defs/sha" },
+        "verifiedAt": { "type": "string", "format": "date-time" },
+        "postMergeVerified": { "const": true },
+        "postMergeChecks": { "$ref": "#/properties/checks" }
+      }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+  }
+}

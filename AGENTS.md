@@ -30,6 +30,20 @@ Before architecture, implementation, testing, release, or governance changes, re
 - Review skills must return one decision: `Approved`, `Approved with required fixes`, or `Blocked`.
 - If evidence is missing, name the missing artifact or decision directly rather than inventing it.
 
+## Immutable Delivery Protocol
+
+- Use exactly one Linear leaf issue per branch and pull request. A documented recovery exception requires explicit human approval.
+- Start only when every blocking issue is `Done`, its PR is merged into `origin/master`, and its post-merge evidence is recorded.
+- Require a clean tracked worktree and an up-to-date `master` before creating the issue branch.
+- Record the branch, base SHA, applicable skills, declared file scope, dependencies, and expected evidence in Linear before implementation.
+- Use issue states in this order: `Backlog` -> `Todo` -> `In Progress` -> `In Review` -> `Done`.
+- Move to `In Review` only after pushing a complete draft PR and recording its URL and head SHA.
+- Run review skills against the immutable PR base/head diff. Do not edit during a review pass.
+- Apply required fixes as new commits, update the evidence manifest, and repeat review against the new head.
+- Merge only after required checks and reviews pass. Mark `Done` only after clean post-merge verification of the merge SHA.
+- Store machine-readable evidence conforming to `docs/sdlc/evidence-manifest.schema.json`.
+- Follow `docs/codex/review-preflight.md` for every `cv-review-*` invocation.
+
 ## Repo Evidence
 
 Treat these locations as authoritative evidence:

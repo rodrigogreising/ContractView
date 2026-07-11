@@ -37,6 +37,20 @@ Granular work items, when needed, are implementation details under the owning pr
 
 `Blocked` should be a label or status update condition, not a project status, because a feature can be blocked in any stage.
 
+### Issue Delivery States
+
+Leaf implementation issues use these states as source-integration gates:
+
+| State | Required evidence |
+| --- | --- |
+| `Backlog` | Issue exists but is not dependency-ready. |
+| `Todo` | All prerequisites are merged and post-merge verified. |
+| `In Progress` | Issue branch exists from current `origin/master`; Linear records base SHA, scope, skills, and plan. |
+| `In Review` | Draft PR is pushed; PR URL, base/head SHA, checks, and evidence manifest are recorded. |
+| `Done` | PR is merged; merge SHA and clean post-merge verification are recorded. |
+
+A dependent issue may not enter `In Progress` merely because a prerequisite is marked `Done`; every merged prerequisite and its post-merge evidence must also be verified.
+
 ## Labels
 
 Use labels for controls that may apply in parallel instead of turning each control into a state.
@@ -140,5 +154,6 @@ A project or feature should only reach `Completed` when:
 - Canary result is recorded when applicable.
 - Release certification impact is clear.
 - Any exceptions have an owner, risk, compensating control, and target resolution.
+- Every implementation issue has an issue-scoped merged PR, reviewed base/head SHA, machine-readable evidence manifest, merge SHA, and clean post-merge verification.
 
 This workflow intentionally keeps detailed SDLC controls auditable in Linear project state while preserving the repo as the authoritative source for architecture, ADRs, journey specs, release certification records, and long-form evidence.

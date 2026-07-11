@@ -123,6 +123,18 @@ Release decision must be one of:
 - Certified with exceptions.
 - Blocked.
 
+## Immutable Change Reviewer
+
+Use `docs/codex/review-preflight.md` before every ContractView review skill.
+
+Codex should:
+
+- verify the Linear issue, project stage, PR URL, base/head SHA, declared scope, and evidence manifest;
+- review the complete immutable diff without editing during the review pass;
+- block unscoped, dirty, default-branch, prose-only, or unmerged-prerequisite work;
+- require high-risk work to retain fresh-context or explicit human review evidence;
+- require merge SHA and clean post-merge verification before Linear `Done`.
+
 ## Documentation Update Rules
 
 - Keep docs ASCII unless existing content requires otherwise.
