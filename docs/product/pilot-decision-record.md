@@ -1,6 +1,6 @@
 # Pilot Implementation Decision Record
 
-Status: Baseline recorded; partner confirmation required
+Status: Superseded for POC scope
 
 Last updated: 2026-07-11
 
@@ -11,6 +11,8 @@ Linear project status: `Discovery`
 ## Purpose
 
 Record the product, workflow, governance, and implementation decisions needed to decompose ContractView into implementation-ready Linear projects and issues.
+
+POC scope note (2026-07-11): this pilot-oriented register is retained as background research only. The controlling product-intake artifact for implementation is `docs/product/poc-demo-charter.md`. The POC uses synthetic data and does not require customer validation, real pilot commitments, production operations, or business-outcome measurement.
 
 This is a vendor-neutral reference design for interview and discovery purposes. It does not claim knowledge of any organization's confidential customers, implementation, commitments, or production environment. Named public-sector policies may be used as workflow references, but all customers, providers, volumes, technology choices, and delivery dates below are assumptions until a pilot partner confirms them.
 
@@ -650,6 +652,8 @@ Linear consequence:
 ## Working Exercise Defaults for Unconfirmed Inputs
 
 The following defaults remove ambiguity for user-story creation. They are not customer commitments. Each affected epic must retain a discovery or validation story so a real partner answer can replace the default without being mistaken for scope change.
+
+DISC-01 exercise disposition (2026-07-11): E-01 through E-04 are explicitly accepted as the implementation-exercise baseline. This resolves ambiguity for backlog design but does not convert the defaults into verified customer facts. External confirmation remains tracked in `docs/product/discovery/disc-01-pilot-workflow-validation.md` and Linear issue `SUB-24`.
 
 ### E-01: Customer archetype
 

@@ -1,5 +1,7 @@
 # Web App
 
+The POC implementation uses React/TypeScript, built by Vite and served by Nginx. Nginx proxies `/api/*` to the FastAPI command boundary.
+
 ## Purpose
 
 The web app provides role-specific product workflows for nonprofit fiscal staff, nonprofit approvers, agency reviewers, auditors, support users, and customer admins over shared canonical invoice state.

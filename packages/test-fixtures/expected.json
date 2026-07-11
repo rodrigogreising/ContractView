@@ -1,0 +1,11 @@
+{
+  "ledgerRowCount": 5,
+  "ledgerTotal": "10130.00",
+  "categoryTotals": {"Personnel": "4200.00", "Facilities": "3700.00", "Program Supplies": "2230.00"},
+  "expectedBlockersBeforeCorrection": ["SERVICE_PERIOD:EXP-004"],
+  "expectedWarningsBeforeResolution": ["POSSIBLE_DUPLICATE:EXP-005:EXP-002"],
+  "expectedExtractionCorrection": "EXP-003:amount:1820.00->1280.00",
+  "expectedReturnCode": "SERVICE_DATE_CLARIFICATION",
+  "expectedFinalState": "government_approved",
+  "expectedSubmittedVersionCount": 2
+}

@@ -1,5 +1,14 @@
 # Test Fixtures
 
+The POC fixture pack is synthetic, deterministic, and non-branded.
+
+- `scenario.json` is the machine-readable source of truth for organizations, personas, contract, budget, draft configuration, expected validation, return feedback, and final state.
+- `expected.json` contains compact assertions for unit, integration, and Playwright tests.
+- `files/ledger-june-2026.csv` and the matching XLSX workbook contain the same five source expenses.
+- Supporting PDF/image artifacts are intentionally synthetic. EXP-003 contains a printed subtotal and an approved adjusted total so the demo preserves an AI proposal followed by human correction.
+
+Seed/reset loads initial actors and configuration only. It never seeds invoice processing, submission, return, resubmission, or approval state.
+
 ## Purpose
 
 This package will own certified fixture data for journey certification, deterministic validation tests, provenance reconstruction tests, configuration lifecycle tests, and release evidence.

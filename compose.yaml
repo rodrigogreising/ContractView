@@ -1,0 +1,79 @@
+name: contractview
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-contractview}
+      POSTGRES_USER: ${POSTGRES_USER:-contractview}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-contractview}
+    ports: ["5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-contractview} -d ${POSTGRES_DB:-contractview}"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-contractview}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-contractview-demo-secret}
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["minio-data:/data"]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  api:
+    build: {context: ., dockerfile: services/api-workflow/Dockerfile}
+    command: sh -c "python -m app.manage migrate && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment: &app-environment
+      DATABASE_URL: postgresql://${POSTGRES_USER:-contractview}:${POSTGRES_PASSWORD:-contractview}@postgres:5432/${POSTGRES_DB:-contractview}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-contractview}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-contractview-demo-secret}
+      MINIO_BUCKET: ${MINIO_BUCKET:-contractview-artifacts}
+      SESSION_SECRET: ${SESSION_SECRET:-local-synthetic-poc-only}
+      FIXTURE_ROOT: /app/fixtures
+      PYTHONPATH: /app
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      minio: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  worker:
+    build: {context: ., dockerfile: services/api-workflow/Dockerfile}
+    command: python -m app.worker
+    environment: *app-environment
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.worker_health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  web:
+    build: {context: ./apps/web-app}
+    ports: ["4173:80"]
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  web-test:
+    profiles: ["test"]
+    build:
+      context: ./apps/web-app
+      target: build
+    command: npm test
+volumes:
+  postgres-data:
+  minio-data:

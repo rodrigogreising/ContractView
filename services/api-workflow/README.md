@@ -1,5 +1,7 @@
 # API/Workflow Service
 
+The POC runs this logical boundary as a FastAPI modular monolith plus a separate Python worker process. It provides deterministic `migrate`, `seed`, and `reset` commands; initial seed data never injects final workflow state.
+
 ## Purpose
 
 The API/workflow service is the command boundary for user-facing workflow, permissions, invoice lifecycle, issue handling, submission, agency review, and human authority events.

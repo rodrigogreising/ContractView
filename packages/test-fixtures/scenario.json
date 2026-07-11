@@ -1,0 +1,79 @@
+{
+  "scenarioVersion": "poc-v1",
+  "syntheticOnly": true,
+  "organizations": [
+    {"id": "org-government", "name": "Metro Human Services Agency", "kind": "government"},
+    {"id": "org-ngo", "name": "Harbor Community Services", "kind": "ngo"},
+    {"id": "org-oversight", "name": "Metro Oversight Office", "kind": "oversight"},
+    {"id": "org-operations", "name": "ContractView Demo Operations", "kind": "platform"}
+  ],
+  "personas": [
+    {"id": "user-config-admin", "displayName": "Alex Morgan", "email": "config.admin@contractview.demo", "password": "Demo-Config-2026!", "organizationId": "org-operations", "role": "configuration_administrator"},
+    {"id": "user-ngo-preparer", "displayName": "Maya Chen", "email": "ngo.preparer@contractview.demo", "password": "Demo-Prepare-2026!", "organizationId": "org-ngo", "role": "ngo_preparer"},
+    {"id": "user-ngo-approver", "displayName": "Jordan Ellis", "email": "ngo.approver@contractview.demo", "password": "Demo-Approve-2026!", "organizationId": "org-ngo", "role": "ngo_approver"},
+    {"id": "user-government-reviewer", "displayName": "Samira Patel", "email": "government.reviewer@contractview.demo", "password": "Demo-Review-2026!", "organizationId": "org-government", "role": "government_reviewer"},
+    {"id": "user-auditor", "displayName": "Noah Williams", "email": "auditor@contractview.demo", "password": "Demo-Audit-2026!", "organizationId": "org-oversight", "role": "auditor"}
+  ],
+  "contract": {
+    "id": "contract-metro-harbor-2026",
+    "name": "Community Support Services 2026",
+    "agencyOrganizationId": "org-government",
+    "ngoOrganizationId": "org-ngo",
+    "contractStart": "2026-01-01",
+    "contractEnd": "2026-12-31",
+    "servicePeriodStart": "2026-06-01",
+    "servicePeriodEnd": "2026-06-30",
+    "currency": "USD"
+  },
+  "budgetCategories": [
+    {"id": "budget-personnel", "name": "Personnel", "limit": "60000.00"},
+    {"id": "budget-facilities", "name": "Facilities", "limit": "24000.00"},
+    {"id": "budget-program-supplies", "name": "Program Supplies", "limit": "12000.00"}
+  ],
+  "initialConfiguration": {
+    "id": "config-poc-draft",
+    "version": 1,
+    "status": "draft",
+    "servicePeriod": {
+      "start": "2026-01-01",
+      "end": "2026-01-31"
+    },
+    "categories": [
+      {"code": "personnel", "label": "Personnel", "limit": "60000.00"},
+      {"code": "facilities", "label": "Facilities", "limit": "24000.00"},
+      {"code": "program-supplies", "label": "Program Supplies", "limit": "12000.00"}
+    ],
+    "requiredEvidence": ["vendor_invoice", "payment_receipt"],
+    "rules": [
+      {"code": "SERVICE_PERIOD", "severity": "blocker", "enabled": true},
+      {"code": "REQUIRED_EVIDENCE", "severity": "blocker", "enabled": true},
+      {"code": "BUDGET_AVAILABLE", "severity": "blocker", "enabled": true},
+      {"code": "TOTAL_RECONCILIATION", "severity": "blocker", "enabled": true},
+      {"code": "POSSIBLE_DUPLICATE", "severity": "warning", "enabled": true, "amountTolerance": "0.00", "dayWindow": 1}
+    ],
+    "workflowLabels": {
+      "draft": "NGO preparation",
+      "submitted": "Government review",
+      "returned": "Changes requested",
+      "approved": "Final approval"
+    },
+    "package": {
+      "label": "Metro reimbursement review package",
+      "invoiceTitle": "Synthetic reimbursement invoice",
+      "includeValidationSummary": true,
+      "includeManifest": true
+    }
+  },
+  "expected": {
+    "version1LedgerTotal": "10130.00",
+    "version2LedgerTotal": "10130.00",
+    "extractionProposal": {"expenseId": "EXP-003", "field": "amount", "proposed": "1820.00", "corrected": "1280.00"},
+    "blocker": {"expenseId": "EXP-004", "rule": "SERVICE_PERIOD", "version1Value": "2026-07-03", "version2Value": "2026-06-30"},
+    "warning": {"expenseId": "EXP-005", "rule": "POSSIBLE_DUPLICATE", "similarTo": "EXP-002", "resolution": "Separate monthly facilities service documented by invoice INV-2026-0611"},
+    "governmentReturn": {"code": "SERVICE_DATE_CLARIFICATION", "comment": "Please correct the service date for the outreach equipment charge and resubmit."},
+    "finalState": "government_approved",
+    "submittedVersions": 2,
+    "packageHashesMustDiffer": true,
+    "version1MustRemainImmutable": true
+  }
+}

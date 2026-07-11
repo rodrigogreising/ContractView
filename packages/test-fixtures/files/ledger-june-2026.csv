@@ -1,0 +1,6 @@
+expense_id,expense_date,vendor,description,budget_category,amount,invoice_number,evidence_file
+EXP-001,2026-06-05,Harbor Community Services,June program payroll,Personnel,4200.00,PAYROLL-2026-06,payroll-june-2026.xlsx
+EXP-002,2026-06-10,Metro Property Services,June facility services,Facilities,1850.00,INV-2026-0610,vendor-invoice-exp-002.pdf
+EXP-003,2026-06-18,Northstar Learning Supply,Workshop materials,Program Supplies,1280.00,NS-4815,vendor-invoice-exp-003.pdf
+EXP-004,2026-07-03,Civic Equipment Rental,Outreach equipment rental,Program Supplies,950.00,CER-2097,vendor-invoice-exp-004.png
+EXP-005,2026-06-11,Metro Property Services,Additional facility services,Facilities,1850.00,INV-2026-0611,vendor-invoice-exp-005.pdf

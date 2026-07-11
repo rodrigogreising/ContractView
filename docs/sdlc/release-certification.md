@@ -42,6 +42,19 @@ For the first pilot release, certification should include:
 - AI-assisted extraction requiring human correction if AI extraction is enabled.
 - Config/rule version change applied prospectively.
 
+## Role-Based POC Certification
+
+The engineering POC is certified separately from a production or customer pilot. Its controlling evidence is Journey 11 and the passing recorded Playwright run. Production operations, customer data controls, payment, notifications, broad extraction evaluation, and business outcome metrics are explicitly deferred.
+
+POC certification still blocks on:
+
+- Runtime AI creating validation or authority decisions.
+- Client-only role enforcement.
+- Role switching through test backdoors.
+- Mutable submitted package versions.
+- Missing source-to-approval provenance.
+- Manual database edits required to complete the canonical journey.
+
 ## Evidence Quality Requirements
 
 Evidence must be:
