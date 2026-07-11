@@ -1,6 +1,12 @@
 # Apps
 
-This directory contains README-only placeholders for future user-facing applications. These folders declare intended responsibilities and certification expectations before any framework or runtime has been selected.
+This directory contains the implemented React web app and an admin-console
+boundary placeholder. The web app is the POC user interface; a separately
+deployed admin console is not part of the current runtime.
+
+Apps are HTTP clients of the [modular-monolith](../docs/architecture/modular-monolith.md)
+application boundary. They consume shared DTO contracts but never import
+capability, persistence, or integration implementations.
 
 Reference docs:
 
@@ -16,6 +22,7 @@ Reference docs:
 - Apps must submit material workflow changes through the API/workflow boundary.
 - Apps must render role-specific views over shared canonical invoice state.
 - Apps must not implement compliance-critical decisions only in client logic.
+- Apps cannot submit actor roles, job results, validation outcomes, or workflow state as trusted facts.
 
 ## Certification Expectations
 

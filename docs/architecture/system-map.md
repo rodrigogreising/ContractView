@@ -1,16 +1,31 @@
 # ContractView System Map
 
-This document defines the intended monorepo shape for ContractView before implementation begins. It is a declarative architecture map, not a commitment to a specific framework, cloud provider, or deployment topology.
+This document defines ContractView's target monorepo shape and recovery transition. It is a declarative ownership map; current conformance is measured separately and must not be inferred from module names.
 
-The system must follow [ADR 0001](../adr/0001-core-architectural-pillars.md): end-to-end provenance, configurable reimbursement ontology, deterministic execution with AI-assisted configuration, and human authority over cross-organizational workflow.
+The system must follow [ADR 0001](../adr/0001-core-architectural-pillars.md): end-to-end provenance, configurable reimbursement ontology, deterministic execution with AI-assisted configuration, and human authority over cross-organizational workflow. The POC runtime follows the [enforceable modular monolith](modular-monolith.md) and its [machine-readable policy](modular-monolith-policy.json).
 
 ## Architecture Intent
 
-ContractView should be organized as a modular monorepo with clear runtime units and shared packages. Each unit owns a small set of responsibilities and must expose explicit interfaces rather than reaching across boundaries.
+ContractView is organized as one modular monolith with clear capability owners and shared contract packages. The service-shaped folders are capability design evidence or future extraction seams; they are not permission to add network deployment or direct cross-capability implementation dependencies.
 
 The first implementation target is an MVP pilot: one agency division, one contract portfolio, and multiple nonprofit providers.
 
 ## Intended Monorepo Units
+
+### POC Runtime Layers
+
+| Layer | Dependency direction | Runtime responsibility |
+| --- | --- | --- |
+| Domain | None | Invariants, typed ontology, lifecycle and reason-code vocabulary |
+| Application | Domain | Commands, queries, ports, policy orchestration, unit of work |
+| Persistence | Application, Domain | Owner repositories, migrations, transaction adapters |
+| Integration | Application, Domain | MinIO/OCR/LLM/rendering adapters and composition root |
+| Worker | Application, Domain | Job lease/retry transport into idempotent commands |
+| HTTP | Application, Domain | Session transport and DTO mapping into commands/queries |
+
+The FastAPI process contains the HTTP, application, domain, persistence, and
+integration layers. The worker process reuses application/domain contracts and
+receives composed adapters. Neither entry point owns business rules.
 
 ### Applications
 
@@ -55,6 +70,8 @@ The first implementation target is an MVP pilot: one agency division, one contra
 - Domain services retain ownership of their canonical data; the persistence package defines storage mechanics but does not become a shared data owner.
 - The infrastructure package owns provisioning and deployment definitions, not application behavior or production approval authority.
 - Role-specific screens are projections over shared canonical state, not separate stakeholder copies.
+- Every canonical table, repository, migration, and transaction has one owner listed in `modular-monolith-policy.json`.
+- Application command handlers coordinate capabilities through ports; no capability obtains another owner's database connection, ORM model, or table object.
 
 ## Dependency Rules
 
@@ -66,6 +83,8 @@ The first implementation target is an MVP pilot: one agency division, one contra
 - The package generation service reads approved templates and invoice versions; it must not infer missing data with AI.
 - Reporting reads projections or replicas; it must not mutate canonical workflow state.
 - AI-assisted components may draft, classify, summarize, or suggest; they must not approve, waive, attest, finalize, or block submission.
+- Direct SQL is limited to persistence adapters and their owner table allowlist.
+- Cross-capability reads use query ports, immutable snapshots, events, or declared read models; cross-capability SQL writes and command-path joins are forbidden.
 
 ## Forbidden Coupling
 

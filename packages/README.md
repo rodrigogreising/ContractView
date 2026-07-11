@@ -2,6 +2,11 @@
 
 This directory contains README-only placeholders for future shared packages. Shared packages define contracts and fixtures; they must not hide service behavior or create implicit runtime coupling.
 
+The [modular-monolith architecture](../docs/architecture/modular-monolith.md)
+requires shared packages to remain inward, framework-free contracts. REC-05
+replaces ontology placeholders with executable contracts; shared packages do
+not become runtime capability owners.
+
 Reference docs:
 
 - [System map](../docs/architecture/system-map.md)
@@ -16,6 +21,8 @@ Reference docs:
 - Shared packages must not own runtime state.
 - Storage definitions do not transfer data ownership from a service to a shared package.
 - Shared packages must avoid framework-specific assumptions until a later ADR selects implementation technology.
+- Contract packages may be imported by domain/application code; adapter and transport types may not leak into them.
+- Persistence helpers define mechanics and ports only. They cannot grant arbitrary SQL or transfer table ownership.
 
 ## Certification Expectations
 

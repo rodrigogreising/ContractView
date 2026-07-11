@@ -1,6 +1,11 @@
 # POC Boundary Review
 
-Status: Approved for Build
+Status: Approved target for Build; recovery-baseline implementation is nonconforming until REC-05/REC-07
+
+SUB-59 design amendment: the runtime is governed by the
+[enforceable modular monolith](modular-monolith.md) and
+`modular-monolith-policy.json`. REC-12 must recertify this document after
+REC-05/REC-07 physical enforcement lands.
 
 ## Runtime Shape
 
@@ -28,6 +33,20 @@ The POC is one modular application deployed as web, API, worker, PostgreSQL, and
 - Audit queries read event/lineage records and immutable artifact references.
 
 No module imports another module's private implementation or writes another owner's tables directly.
+
+All modules use the domain -> application <- adapter direction. Repository and
+unit-of-work ports are application-owned. Direct SQL is confined to an owner
+persistence adapter; cross-capability SQL, shared mutable ORM models, and
+connection escape hatches are forbidden. HTTP and worker entry points invoke
+application commands and never own business rules.
+
+## Configuration And Runtime Split
+
+Configuration definitions become immutable versions through governance.
+Runtime invoice, validation, package, workflow, and provenance records refer to
+those exact versions. Draft editing never mutates an activated configuration;
+activation, re-validation, package generation, return, and resubmission create
+new versioned records prospectively.
 
 ## Deterministic And Human Boundaries
 

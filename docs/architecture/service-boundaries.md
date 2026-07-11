@@ -2,12 +2,34 @@
 
 This document defines the service and package boundaries future implementation work must preserve. It complements the system map by making ownership and isolation rules explicit.
 
+For the POC, "service" means a capability module inside the
+[enforceable modular monolith](modular-monolith.md), not a network deployment.
+The [machine-readable policy](modular-monolith-policy.json) is authoritative for
+layers, owners, and allowed dependencies.
+
 ## Boundary Principles
 
 - Services own behavior and data together.
 - Shared packages define contracts, not hidden service dependencies.
 - Provenance, configuration, validation, and workflow are separate concerns even when initially implemented in one deployable.
 - Product screens may differ by role, but all roles observe the same canonical invoice lifecycle.
+- Each canonical record, table, repository, and migration has exactly one capability owner.
+- Shared PostgreSQL is physical infrastructure; direct cross-capability SQL and shared mutable ORM models are forbidden.
+
+## Layer Boundary Matrix
+
+| Layer | May depend on | Owns ports/adapters |
+| --- | --- | --- |
+| Domain | Nothing | Domain contracts only |
+| Application | Domain | Repository, capability, authorization, unit-of-work ports |
+| Persistence | Application, Domain | Owner repository and transaction adapters |
+| Integration | Application, Domain | Provider adapters and composition root |
+| Worker | Application, Domain | Job transport only |
+| HTTP | Application, Domain | Session/DTO transport only |
+
+Dependencies point inward. HTTP and worker cannot import persistence adapters.
+Application cannot import provider SDKs. Persistence/integration implement
+application ports and contain no authority or validation decisions.
 
 ## Service Responsibility Matrix
 
@@ -26,6 +48,12 @@ This document defines the service and package boundaries future implementation w
 | Agency review | API/workflow service | Decision event, actor, role, reason, affected invoice version |
 | Audit reconstruction | Provenance/event service | Event stream, lineage records, artifact references, validation runs |
 | Dashboards and exports | Reporting layer | Read-model version, metric definition, source event/query reference |
+
+The detailed one-owner allocation for identity, configuration, artifacts,
+extraction, invoices, validation, packages, workflow, and provenance is in
+`modular-monolith-policy.json`. Package generation owns package manifests and
+indexes; the artifacts capability owns universal immutable object metadata and
+bytes references. That distinction prevents duplicate ownership.
 
 ## MVP Capability Coverage
 
@@ -219,6 +247,19 @@ It must not:
 - Hide destructive migrations, mutable submitted-package behavior, or provenance loss behind generic repository helpers.
 
 The persistence package may depend on domain types needed to define storage contracts. Infrastructure may consume persistence deployment requirements. Persistence must not depend on infrastructure, apps, or service internals.
+
+### Cross-Capability Persistence Rule
+
+- Repository ports and unit-of-work interfaces live in application modules.
+- Owner adapters may access only their declared table allowlist.
+- Repositories never expose raw connections, ORM sessions, generic query
+  builders, or table models to application code.
+- Material cross-owner behavior uses a command/query port, immutable snapshot,
+  versioned event, or declared read model.
+- Read models may join owner data only for read-only reporting/audit use and
+  cannot be used to mutate workflow state.
+- Stable foreign ids do not grant write authority and cannot cascade mutation
+  across capability owners.
 
 ## New Unit Checklist
 

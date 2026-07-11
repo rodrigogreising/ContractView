@@ -2,6 +2,27 @@
 
 This document describes the required end-to-end data flow for ContractView. Each flow must preserve provenance, deterministic validation, versioned configuration, and human authority.
 
+The flow executes through the [modular-monolith](modular-monolith.md) layer
+contract. HTTP and worker entry points invoke application commands; application
+handlers use owner repository/capability ports; persistence and integration
+adapters point inward. No flow step authorizes direct cross-capability SQL.
+
+## Layered Command Flow
+
+```mermaid
+flowchart LR
+  HTTP["HTTP transport"] --> App["Application command/query"]
+  Worker["Worker transport"] --> App
+  App --> Domain["Domain invariants"]
+  Persistence["Owner persistence adapter"] --> App
+  Integration["MinIO/OCR/LLM adapters"] --> App
+  App --> Event["Versioned event / provenance port"]
+  App --> Snapshot["Immutable capability snapshot"]
+```
+
+The composition root wires adapters to ports. Arrows from adapters point to
+the contracts they implement; domain/application code never imports outward.
+
 ## End-to-End Flow
 
 ```mermaid
@@ -82,6 +103,10 @@ Required records:
 - Exclusions, annotations, and correction events.
 - Draft totals and remaining budget calculations.
 
+Configuration is read as an immutable bundle snapshot. Draft assembly creates
+runtime invoice records that reference the exact configuration version; it
+does not copy mutable configuration into runtime state.
+
 ### 5. Deterministic Validation
 
 The validation engine evaluates invoice and package-level fields against contract budgets and agency rules.
@@ -161,6 +186,10 @@ Required evidence:
 - Workflow transition events.
 - Human authority events.
 - Return/amendment/resubmission chain.
+
+Audit reconstruction may use a declared read model spanning capability owners.
+It is read-only and cannot become canonical workflow state or an escape hatch
+for cross-capability command SQL.
 
 ## Failure Modes To Preserve
 

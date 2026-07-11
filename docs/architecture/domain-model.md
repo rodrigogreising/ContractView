@@ -2,6 +2,10 @@
 
 ContractView's domain model is a reimbursement provenance model. An invoice is not only a form or a list of line items; it is a graph of claims, evidence, configuration, validations, corrections, workflow decisions, generated packages, and stakeholder handoffs.
 
+The vocabulary is governed by the [modular-monolith policy](modular-monolith-policy.json).
+REC-05 implements it as executable, versioned shared contracts rather than
+free-form runtime dictionaries.
+
 ## Core Primitives
 
 | Primitive | Definition | Ownership notes |
@@ -18,6 +22,32 @@ ContractView's domain model is a reimbursement provenance model. An invoice is n
 | `Event` | Immutable record of a material action, decision, correction, handoff, configuration activation, or system result. | Append-only; corrections are represented as later events. |
 | `ValidationRun` | Deterministic evaluation record for an invoice version using exact artifact, budget, rule, schema, mapping, workflow, template, and parser/model versions. | Required for certification and reproducibility. |
 | `ConfigurationBundle` | Versioned set of schemas, mappings, rules, workflows, views, templates, and rule parameters active for a contract or pilot context. | Must follow lifecycle before production activation. |
+| `InvoiceSnapshot` | Immutable invoice content and material-revision identity used by validation, attestation, package, submission, return, and approval evidence. | Distinct from an editable draft aggregate. |
+| `PackageManifest` | Deterministic package inputs, paths, hashes, template/configuration versions, and reproduction metadata. | Immutable; owned by package generation. |
+
+## Executable Contract Rules
+
+- Core primitives, lifecycle states, actor roles, resource kinds, relation
+  kinds, event names, reason codes, and version references are closed typed
+  vocabulary.
+- Unknown vocabulary is rejected at the owning application boundary.
+- API, worker, persistence, and web DTOs must use compatible shared contract
+  versions.
+- Domain contracts contain no FastAPI, SQL, MinIO, queue, or provider SDK
+  types.
+
+## Configuration Versus Runtime
+
+Configuration contracts are `Schema`, `Rule`, `Workflow`, `View`, `Template`,
+and `ConfigurationBundle`. Runtime contracts are `Artifact`, `Field`, `Entity`,
+`Relation`, `Event`, `ValidationRun`, `InvoiceSnapshot`, and
+`PackageManifest`.
+
+Configuration activation is prospective. Active versions are immutable.
+Runtime records always carry exact configuration, artifact, invoice, contract,
+budget, schema, mapping, rule, workflow, view, template, and parser/model
+references as applicable. Re-validation and re-generation create new runtime
+records; they never overwrite historical evidence.
 
 ## Configuration Lifecycle
 
