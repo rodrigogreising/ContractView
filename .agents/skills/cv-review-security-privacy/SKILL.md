@@ -21,8 +21,13 @@ Before acting, identify the controlling Linear project or feature and read the r
 - `docs/sdlc/processes.md`
 - `docs/sdlc/linear-workflow.md`
 - `docs/codex/sdlc-linear-control-plane.md`
+- `docs/codex/review-preflight.md`
 
 Expected Linear labels: `stage:security-privacy`, `gate:security-privacy`, `risk:sensitive-data`.
+
+## Immutable Review Preflight
+
+Complete `docs/codex/review-preflight.md` before substantive review. Return `Blocked` when the issue-scoped PR, clean tracked worktree, immutable base/head diff, declared scope, merged-prerequisite proof, or conforming evidence manifest is missing. Do not edit during the review pass. Record the reviewed base and head SHAs in the decision.
 
 ## Workflow
 

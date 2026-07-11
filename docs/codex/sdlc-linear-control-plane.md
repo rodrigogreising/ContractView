@@ -129,6 +129,79 @@ Codex should use Linear project status updates at each transition:
 - Fixes applied.
 - Ready for next project status or blocked.
 
+Use these issue-comment templates verbatim enough that every field is
+machine-discoverable. Do not replace missing values with narrative assurances.
+
+### Implementation Start Comment
+
+```text
+Branch:
+Base SHA:
+Project status:
+Generation skills:
+Review skills:
+Declared file scope:
+Merged prerequisites and post-merge evidence:
+Implementation plan:
+Expected evidence manifest path:
+```
+
+### In Review Handoff Comment
+
+```text
+Draft PR URL:
+PR base SHA:
+PR head SHA:
+Evidence manifest path:
+Exact checks and exit codes:
+Environment versions:
+Required risk/gate reviewers:
+Known risks:
+Dependency impact:
+```
+
+### Review Decision Comment
+
+```text
+Decision: Approved | Approved with required fixes | Blocked
+Reviewer:
+Fresh-context or human review:
+Reviewed base SHA:
+Reviewed head SHA:
+Findings:
+Evidence paths:
+```
+
+### Completion Comment
+
+```text
+Merge SHA:
+Clean post-merge checkout:
+Post-merge commands and exit codes:
+Post-merge evidence manifest path:
+Remaining risks:
+Unblocked dependents:
+```
+
+## Git And Pull-Request Evidence
+
+For every implementation leaf issue, Linear must record:
+
+- implementation-start branch and base SHA;
+- declared file scope, dependencies, generation skills, and review skills;
+- draft PR URL and head SHA before entering `In Review`;
+- exact commands, exit codes, environment versions, and durable evidence-manifest path;
+- review decision with reviewed base/head SHA;
+- merge SHA and clean post-merge verification before `Done`.
+
+Reviewers must follow `docs/codex/review-preflight.md`. Missing immutable PR evidence is a blocking finding, not a documentation follow-up.
+
+Any issue carrying `gate:security-privacy`, `gate:config-governance`,
+`gate:release-certification`, `risk:human-authority`, `risk:auditability`,
+`risk:ai-authority`, or `risk:configuration-drift` requires a fresh-context or
+explicit human review record. The review comment must name that reviewer and
+the immutable base/head diff they reviewed.
+
 ## Release Blockers
 
 Treat the release as blocked when any in-scope journey depends on:

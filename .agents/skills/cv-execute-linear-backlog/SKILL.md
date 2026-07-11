@@ -11,7 +11,7 @@ Complete the ContractView recovery program and all remaining dependency-ready PO
 
 ## Start Or Resume
 
-1. Read `AGENTS.md`, `docs/codex/playbooks.md`, `docs/codex/sdlc-linear-control-plane.md`, and `docs/sdlc/linear-workflow.md` completely.
+1. Read `AGENTS.md`, `docs/codex/playbooks.md`, `docs/codex/sdlc-linear-control-plane.md`, `docs/sdlc/linear-workflow.md`, `docs/codex/review-preflight.md`, and `docs/sdlc/evidence-manifest.schema.json` completely.
 2. Read the ContractView Linear project, its current status update, and outstanding issues on team `Substrate`.
 3. Call `get_goal`. If no active goal exists, call `create_goal` with the objective above. Continue an existing matching goal instead of replacing it.
 4. Inspect `git status -sb`, current branch, `origin`, GitHub authentication, and remote default branch.
@@ -34,13 +34,13 @@ Complete the ContractView recovery program and all remaining dependency-ready PO
 5. Implement the complete issue acceptance criteria without unrelated changes.
 6. Add proportionate unit, integration, authorization, provenance, determinism, boundary, migration, and UI tests.
 7. Update durable ADR, architecture, journey, security/privacy, AI-governance, implementation, traceability, and release evidence when affected.
-8. Run focused and regression checks. Write a machine-readable evidence manifest containing base/head SHA, commands, exit codes, environment versions, timestamps, test counts, and artifact hashes.
+8. Run focused and regression checks. Write a machine-readable evidence manifest conforming to `docs/sdlc/evidence-manifest.schema.json`, including base/head SHA, commands, exit codes, environment versions, timestamps, test counts, and artifact hashes.
 9. Commit with the issue identifier, push the branch, and open a draft PR against `master`.
 10. Post the PR URL and head SHA to Linear, then move the issue to `In Review`.
 
 ## Review And Merge
 
-1. Run every applicable `cv-review-*` skill against the immutable PR base/head diff. Do not edit files during the review pass.
+1. Complete `docs/codex/review-preflight.md`, then run every applicable `cv-review-*` skill against the immutable PR base/head diff. Do not edit files during the review pass.
 2. Require a fresh-context or human review for authorization, configuration activation, provenance, immutable submission, human authority, and release gates.
 3. If the decision is `Approved with required fixes`, apply fixes as new commits, rerun checks, update evidence, and repeat review.
 4. Merge only after required CI passes and all required review decisions are `Approved` or explicitly non-blocking.
