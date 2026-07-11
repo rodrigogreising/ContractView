@@ -51,6 +51,12 @@ Leaf implementation issues use these states as source-integration gates:
 
 A dependent issue may not enter `In Progress` merely because a prerequisite is marked `Done`; every merged prerequisite and its post-merge evidence must also be verified.
 
+Applicable `cv-review-*` skills provide AI code review against the immutable PR
+diff. Advancement depends on sufficient executable certification for the
+actual change, not a blanket human code-review ceremony. Human approval is a
+separate gate only when explicitly required for a governance or real-world
+authority decision.
+
 ## Labels
 
 Use labels for controls that may apply in parallel instead of turning each control into a state.

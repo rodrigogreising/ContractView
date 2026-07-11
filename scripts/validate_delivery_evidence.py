@@ -55,7 +55,9 @@ def validate_manifest(
         "riskAndGateLabels",
         "environment",
         "checks",
+        "certification",
         "review",
+        "humanApprovalRequirement",
     }
     missing = sorted(required - manifest.keys())
     if missing:
@@ -106,8 +108,87 @@ def validate_manifest(
     checks = manifest["checks"]
     if not isinstance(checks, list) or not checks:
         failures.append("checks must contain machine-readable command results")
-    elif any(not isinstance(check, dict) or "exitCode" not in check for check in checks):
-        failures.append("every check must record its exitCode")
+    elif any(
+        not isinstance(check, dict)
+        or not {"command", "exitCode", "result", "recordedAt"}.issubset(check)
+        for check in checks
+    ):
+        failures.append("every check must record command, exitCode, result, and timestamp")
+    elif any(check.get("exitCode") != 0 for check in checks):
+        failures.append("certification checks must pass; non-zero exitCode recorded")
+
+    labels = set(str(label) for label in manifest["riskAndGateLabels"])
+    certification = manifest["certification"]
+    if not isinstance(certification, dict):
+        failures.append("certification must be an object")
+    else:
+        evidence_kinds = certification.get("evidenceKinds")
+        if not isinstance(evidence_kinds, list) or not evidence_kinds:
+            failures.append("certification must name at least one evidence kind")
+            evidence_kinds = []
+        test_evidence = {
+            "unit",
+            "integration",
+            "authorization",
+            "boundary",
+            "provenance",
+            "determinism",
+            "migration",
+            "frontend",
+            "compose",
+            "journey",
+        }
+        if test_evidence.intersection(str(kind) for kind in evidence_kinds) and not any(
+            isinstance(check, dict) and isinstance(check.get("testCount"), int)
+            for check in checks
+        ):
+            failures.append("test evidence must record an exact testCount")
+        if "artifact" in evidence_kinds and not any(
+            isinstance(check, dict) and bool(check.get("artifactHashes"))
+            for check in checks
+        ):
+            failures.append("artifact evidence must record artifact hashes")
+        risk_coverage = certification.get("riskCoverage")
+        if not isinstance(risk_coverage, dict):
+            failures.append("certification riskCoverage must be an object")
+        else:
+            missing_coverage = sorted(
+                label
+                for label in labels
+                if not isinstance(risk_coverage.get(label), list)
+                or not risk_coverage[label]
+            )
+            if missing_coverage:
+                failures.append(
+                    "risk/gate labels lack executable evidence coverage: "
+                    + ", ".join(missing_coverage)
+                )
+        if certification.get("behaviorChanged") is True:
+            behavioral_evidence = {
+                "integration",
+                "authorization",
+                "boundary",
+                "provenance",
+                "determinism",
+                "migration",
+                "frontend",
+                "compose",
+                "journey",
+                "artifact",
+            }
+            if not behavioral_evidence.intersection(str(kind) for kind in evidence_kinds):
+                failures.append(
+                    "behavior changes require evidence beyond policy or unit checks"
+                )
+        if certification.get("cleanRuntimeRequired") is True:
+            runtime_checks = certification.get("cleanRuntimeChecks")
+            if not isinstance(runtime_checks, list) or not runtime_checks:
+                failures.append("clean runtime certification is required but missing")
+            elif any(
+                not isinstance(check, dict) or check.get("exitCode") != 0
+                for check in runtime_checks
+            ):
+                failures.append("clean runtime certification contains a failing check")
 
     review = manifest["review"]
     if not isinstance(review, dict):
@@ -115,20 +196,28 @@ def validate_manifest(
     else:
         if review.get("reviewedBaseSha") != base_sha or review.get("reviewedHeadSha") != head_sha:
             failures.append("review does not identify the immutable manifest base/head diff")
-        high_risk_labels = {
-            "gate:security-privacy",
-            "gate:config-governance",
-            "gate:release-certification",
-            "risk:human-authority",
-            "risk:auditability",
-            "risk:ai-authority",
-            "risk:configuration-drift",
-        }
-        labels = set(str(label) for label in manifest["riskAndGateLabels"])
-        if labels & high_risk_labels and review.get("freshContextOrHuman") is not True:
-            failures.append("high-risk gates require fresh-context or human review evidence")
+        if review.get("method") != "ai":
+            failures.append("code review must be performed by applicable cv-review AI skills")
+        review_skills = review.get("reviewSkills")
+        if (
+            not isinstance(review_skills, list)
+            or not review_skills
+            or any(not str(skill).startswith("cv-review-") for skill in review_skills)
+        ):
+            failures.append("review must name applicable cv-review-* AI skills")
+        if review.get("decision") == "Approved" and review.get("evidenceAdequate") is not True:
+            failures.append("Approved AI review requires adequate executable evidence")
         if phase == "done" and review.get("decision") != "Approved":
             failures.append("Done requires an Approved review decision")
+
+    human_approval = manifest["humanApprovalRequirement"]
+    if not isinstance(human_approval, dict):
+        failures.append("humanApprovalRequirement must be an object")
+    elif human_approval.get("required") is True:
+        if human_approval.get("decision") != "Approved":
+            failures.append("explicitly required human authority approval is missing")
+        if not human_approval.get("approver") or not human_approval.get("evidenceUrl"):
+            failures.append("required human approval must name approver and evidence URL")
 
     if phase == "done":
         completion = manifest.get("completion")

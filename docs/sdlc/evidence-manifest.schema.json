@@ -17,7 +17,9 @@
     "riskAndGateLabels",
     "environment",
     "checks",
-    "review"
+    "certification",
+    "review",
+    "humanApprovalRequirement"
   ],
   "properties": {
     "issue": { "type": "string", "pattern": "^SUB-[0-9]+$" },
@@ -47,33 +49,99 @@
       }
     },
     "environment": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } },
-    "checks": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["command", "exitCode", "result"],
-        "properties": {
-          "command": { "type": "string", "minLength": 1 },
-          "exitCode": { "type": "integer" },
-          "result": { "type": "string", "minLength": 1 },
-          "artifactHashes": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+    "checks": { "$ref": "#/$defs/checks" },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["behaviorChanged", "rationale", "evidenceKinds", "riskCoverage", "cleanRuntimeRequired"],
+      "properties": {
+        "behaviorChanged": { "type": "boolean" },
+        "rationale": { "type": "string", "minLength": 1 },
+        "evidenceKinds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "policy",
+              "unit",
+              "integration",
+              "authorization",
+              "boundary",
+              "provenance",
+              "determinism",
+              "migration",
+              "frontend",
+              "compose",
+              "journey",
+              "artifact"
+            ]
+          }
+        },
+        "riskCoverage": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
+        "cleanRuntimeRequired": { "type": "boolean" },
+        "cleanRuntimeChecks": { "$ref": "#/$defs/checks" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "cleanRuntimeRequired": { "const": true } } },
+          "then": { "required": ["cleanRuntimeChecks"] }
         }
-      }
+      ]
     },
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["decision", "reviewer", "reviewedBaseSha", "reviewedHeadSha"],
+      "required": [
+        "decision",
+        "reviewer",
+        "method",
+        "reviewSkills",
+        "reviewedBaseSha",
+        "reviewedHeadSha",
+        "evidenceAdequate",
+        "findings"
+      ],
       "properties": {
         "decision": { "enum": ["Pending", "Approved", "Approved with required fixes", "Blocked"] },
         "reviewer": { "type": "string", "minLength": 1 },
+        "method": { "const": "ai" },
+        "reviewSkills": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^cv-review-" }
+        },
         "reviewedBaseSha": { "$ref": "#/$defs/sha" },
         "reviewedHeadSha": { "$ref": "#/$defs/sha" },
-        "findings": { "type": "array", "items": { "type": "string" } },
-        "freshContextOrHuman": { "type": "boolean" }
+        "evidenceAdequate": { "type": "boolean" },
+        "findings": { "type": "array", "items": { "type": "string" } }
       }
+    },
+    "humanApprovalRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "basis"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "basis": { "type": "string", "minLength": 1 },
+        "approver": { "type": "string", "minLength": 1 },
+        "decision": { "enum": ["Approved", "Rejected"] },
+        "evidenceUrl": { "type": "string", "format": "uri" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "required": { "const": true } } },
+          "then": { "required": ["approver", "decision", "evidenceUrl"] }
+        }
+      ]
     },
     "completion": {
       "type": "object",
@@ -83,11 +151,31 @@
         "mergeSha": { "$ref": "#/$defs/sha" },
         "verifiedAt": { "type": "string", "format": "date-time" },
         "postMergeVerified": { "const": true },
-        "postMergeChecks": { "$ref": "#/properties/checks" }
+        "postMergeChecks": { "$ref": "#/$defs/checks" }
       }
     }
   },
   "$defs": {
-    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exitCode", "result", "recordedAt"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "exitCode": { "type": "integer" },
+          "result": { "type": "string", "minLength": 1 },
+          "recordedAt": { "type": "string", "format": "date-time" },
+          "testCount": { "type": "integer", "minimum": 0 },
+          "artifactHashes": {
+            "type": "object",
+            "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        }
+      }
+    }
   }
 }

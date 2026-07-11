@@ -132,7 +132,9 @@ Codex should:
 - verify the Linear issue, project stage, PR URL, base/head SHA, declared scope, and evidence manifest;
 - review the complete immutable diff without editing during the review pass;
 - block unscoped, dirty, default-branch, prose-only, or unmerged-prerequisite work;
-- require high-risk work to retain fresh-context or explicit human review evidence;
+- treat applicable `cv-review-*` skills as the AI code-review authority and record their immutable-diff decisions;
+- require risk- and behavior-proportionate executable certification rather than reviewer ceremony;
+- require a human approval only when the issue explicitly names a governance decision or real-world authority action that software evidence cannot make;
 - require merge SHA and clean post-merge verification before Linear `Done`.
 
 ## Documentation Update Rules

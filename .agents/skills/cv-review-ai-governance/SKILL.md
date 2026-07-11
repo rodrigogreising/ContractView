@@ -27,7 +27,7 @@ Expected Linear labels: `stage:ai-governance`, `gate:ai-governance`, `gate:confi
 
 ## Immutable Review Preflight
 
-Complete `docs/codex/review-preflight.md` before substantive review. Return `Blocked` when the issue-scoped PR, clean tracked worktree, immutable base/head diff, declared scope, merged-prerequisite proof, or conforming evidence manifest is missing. Do not edit during the review pass. Record the reviewed base and head SHAs in the decision.
+Complete `docs/codex/review-preflight.md` before substantive review. This skill is an AI code reviewer. Return `Blocked` when the issue-scoped PR, clean tracked worktree, immutable base/head diff, declared scope, merged-prerequisite proof, conforming evidence manifest, or issue-proportionate executable certification is missing, stale, or irrelevant. Do not edit during the review pass. Human code review is not required; a separate human authority decision is required only when the controlling issue explicitly names one. Record the reviewed base and head SHAs in the decision.
 
 ## Workflow
 

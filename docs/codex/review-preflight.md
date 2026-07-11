@@ -11,7 +11,9 @@ Every `cv-review-*` skill must complete this preflight before returning a review
 - Actual immutable base/head diff.
 - Machine-readable evidence manifest conforming to `docs/sdlc/evidence-manifest.schema.json`.
 - Exact validation commands, exit codes, environment versions, and artifact hashes where applicable.
-- Required risk/gate reviewer derived from the Linear labels.
+- Applicable `cv-review-*` AI skills derived from the affected gates and behavior.
+- Certification rationale and evidence coverage for every risk/gate label.
+- Explicit human-approval requirement and basis, which defaults to not required for code review.
 
 ## Blocking Conditions
 
@@ -22,13 +24,18 @@ Return `Blocked` without reviewing implementation claims when:
 - there is no issue-scoped PR or immutable base/head diff;
 - the PR contains unrelated or undeclared scope;
 - a prerequisite is only marked Done but is not merged and post-merge verified;
-- required evidence is prose-only or does not identify the reviewed head SHA;
+- required evidence is prose-only, stale, irrelevant to the changed behavior, or does not identify the reviewed head SHA;
 - required architecture, boundary, security, AI/configuration, journey, or release gates are omitted;
-- high-risk work lacks a fresh-context or explicit human review record.
+- an applicable `cv-review-*` AI review is missing or did not inspect the immutable diff;
+- behavior changes lack proportionate unit, integration, authorization, provenance, determinism, migration, UI, Compose, or journey certification;
+- a risk/gate label has no explicit evidence coverage;
+- human approval is explicitly required by the issue but its decision evidence is missing.
 
-High-risk labels are `gate:security-privacy`, `gate:config-governance`,
-`gate:release-certification`, `risk:human-authority`, `risk:auditability`,
-`risk:ai-authority`, and `risk:configuration-drift`.
+Human code review is not a default gate. Applicable AI review skills plus
+executable evidence certify code changes. A human remains necessary only for a
+named governance acceptance, risk acceptance, production/configuration
+activation, attestation, submission, return, approval, release signoff, or
+other real-world authority decision explicitly in scope.
 
 REC-01/SUB-57 is the sole approved legacy-baseline exception. No later issue may cite it as precedent.
 
@@ -39,8 +46,9 @@ REC-01/SUB-57 is the sole approved legacy-baseline exception. No later issue may
 3. Do not edit files or change the reviewed branch during the review pass.
 4. Lead with severity-ordered findings grounded in paths, diff lines, Linear fields, or evidence identifiers.
 5. Return exactly one decision: `Approved`, `Approved with required fixes`, or `Blocked`.
-6. Treat required fixes as new commits. Require updated checks and evidence, then review the new immutable head.
-7. Record the decision, reviewer, reviewed base/head, findings, and evidence paths in Linear and the PR.
+6. Approve only when executable evidence is sufficient for the actual change; a passing but irrelevant test is a blocking evidence gap.
+7. Treat required fixes as new commits. Require updated checks and evidence, then review the new immutable head.
+8. Record the decision, AI review skills, reviewed base/head, findings, certification coverage, and evidence paths in Linear and the PR.
 
 ## Merge And Completion
 

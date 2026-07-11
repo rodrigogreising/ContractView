@@ -38,7 +38,9 @@ Before architecture, implementation, testing, release, or governance changes, re
 - Record the branch, base SHA, applicable skills, declared file scope, dependencies, and expected evidence in Linear before implementation.
 - Use issue states in this order: `Backlog` -> `Todo` -> `In Progress` -> `In Review` -> `Done`.
 - Move to `In Review` only after pushing a complete draft PR and recording its URL and head SHA.
-- Run review skills against the immutable PR base/head diff. Do not edit during a review pass.
+- Run every applicable `cv-review-*` skill as the AI code-review authority against the immutable PR base/head diff. Do not edit during a review pass.
+- Require issue-proportionate executable certification: exact checks, exit codes, environment versions, test counts, artifact hashes, and clean runtime, Compose, or journey evidence whenever behavior changes.
+- Human code review is not required by default. Require explicit human approval only when the controlling acceptance criteria, a named governance decision, or a real-world authority action says so.
 - Apply required fixes as new commits, update the evidence manifest, and repeat review against the new head.
 - Merge only after required checks and reviews pass. Mark `Done` only after clean post-merge verification of the merge SHA.
 - Store machine-readable evidence conforming to `docs/sdlc/evidence-manifest.schema.json`.
