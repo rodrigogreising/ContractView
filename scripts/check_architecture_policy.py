@@ -71,7 +71,7 @@ REQUIRED_DOCS = {
     "docs/architecture/domain-model.md": "modular-monolith",
     "docs/architecture/service-boundaries.md": "modular-monolith",
     "docs/architecture/poc-boundary-review.md": "modular-monolith",
-    "docs/sdlc/requirements-traceability.md": "SUB-59",
+    "docs/sdlc/requirements-traceability.md": "| Release criterion |",
     "packages/README.md": "modular-monolith",
     "services/README.md": "modular-monolith",
     "apps/README.md": "modular-monolith",

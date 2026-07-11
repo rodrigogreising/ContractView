@@ -72,3 +72,8 @@ services.
 Exact commands, versions, counts, hashes, immutable PR SHAs, AI review
 decisions, merge SHA, and clean post-merge results are recorded in the
 machine-readable issue manifest and Linear handoff comments.
+
+The traceability review required an explicit release-criterion column. The
+follow-up commit maps every recovery architecture requirement to named gates in
+`docs/sdlc/release-certification.md`, and the policy validator now requires the
+column.

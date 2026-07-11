@@ -39,13 +39,13 @@ Last updated: 2026-07-11
 
 ## Recovery Architecture Trace
 
-| Requirement | ADR decision | Boundary owner | Certification evidence |
-| --- | --- | --- | --- |
-| One POC deployable without hidden coupling | ADR 0002 SUB-59 amendment | Six-layer API/worker modular monolith | Machine policy validates allowed layer direction |
-| Configuration, invoice, artifact, extraction, validation, provenance, package, and workflow ownership | ADR 0002 plus ADR 0001 pillars 1-4 | Nine capability owners in `modular-monolith-policy.json` | Duplicate-owner and capability-cycle tests |
-| No arbitrary cross-capability SQL | ADR 0002 persistence amendment | Application ports plus owner persistence adapters | Cross-capability SQL and ownership negative tests; REC-07 physical enforcement |
-| Executable reimbursement ontology | ADR 0001 pillar 2 plus ADR 0002 amendment | Shared domain/config/rule/event contracts | Closed vocabulary and configuration/runtime split tests; REC-05 runtime contracts |
-| Future extraction seams without distributed POC complexity | ADR 0002 | Capability application ports and events | Policy rejects shared tables and network-service expansion |
+| Requirement | ADR decision | Boundary owner | Release criterion | Certification evidence |
+| --- | --- | --- | --- | --- |
+| One POC deployable without hidden coupling | ADR 0002 SUB-59 amendment | Six-layer API/worker modular monolith | Architecture coverage | Machine policy validates allowed layer direction |
+| Configuration, invoice, artifact, extraction, validation, provenance, package, and workflow ownership | ADR 0002 plus ADR 0001 pillars 1-4 | Nine capability owners in `modular-monolith-policy.json` | Architecture coverage | Duplicate-owner and capability-cycle tests |
+| No arbitrary cross-capability SQL | ADR 0002 persistence amendment | Application ports plus owner persistence adapters | Architecture coverage | Cross-capability SQL and ownership negative tests; REC-07 physical enforcement |
+| Executable reimbursement ontology | ADR 0001 pillar 2 plus ADR 0002 amendment | Shared domain/config/rule/event contracts | Requirements coverage; Configuration governance; Deterministic validation; Provenance | Closed vocabulary and configuration/runtime split tests; REC-05 runtime contracts |
+| Future extraction seams without distributed POC complexity | ADR 0002 | Capability application ports and events | Architecture coverage; Operational readiness when extraction occurs | Policy rejects shared tables and network-service expansion |
 
 ## Deferred And Canceled For POC
 
