@@ -90,7 +90,7 @@ def is_allowed(actor: Actor, action: Action, resource: ResourceScope) -> bool:
                 ResourceKind.GOVERNMENT_DECISION, ResourceKind.AUDIT,
             }
         return action in {Action.RETURN, Action.APPROVE} and resource.kind in {
-            ResourceKind.INVOICE, ResourceKind.PACKAGE,
+            ResourceKind.INVOICE, ResourceKind.PACKAGE, ResourceKind.GOVERNMENT_DECISION,
         }
 
     return False

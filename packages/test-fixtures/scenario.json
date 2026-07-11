@@ -35,8 +35,8 @@
     "version": 1,
     "status": "draft",
     "servicePeriod": {
-      "start": "2026-01-01",
-      "end": "2026-01-31"
+      "start": "2026-06-01",
+      "end": "2026-06-30"
     },
     "categories": [
       {"code": "personnel", "label": "Personnel", "limit": "60000.00"},
@@ -44,6 +44,7 @@
       {"code": "program-supplies", "label": "Program Supplies", "limit": "12000.00"}
     ],
     "requiredEvidence": ["vendor_invoice", "payment_receipt"],
+    "ledgerControlTotal": "10130.00",
     "rules": [
       {"code": "SERVICE_PERIOD", "severity": "blocker", "enabled": true},
       {"code": "REQUIRED_EVIDENCE", "severity": "blocker", "enabled": true},

@@ -108,12 +108,17 @@ def claim_next_job() -> IngestionJob | None:
     return _job_from_row(row) if row else None
 
 
-def process_job(job: IngestionJob) -> None:
+def process_job(job: IngestionJob, extraction_adapter=None) -> None:
     try:
         artifact = get_artifact(job.artifact_id)
         if not artifact:
             raise RuntimeError("Registered artifact is missing")
-        read_and_verify_artifact(artifact)
+        if job.job_type == "ledger_import":
+            from .ledger_import import import_ledger
+            import_ledger(job, artifact)
+        else:
+            from .extraction import extract_evidence
+            extract_evidence(job, artifact, extraction_adapter)
         with database() as connection:
             connection.execute(
                 "update ingestion_jobs set status='completed', completed_at=now(), error_code=null, error_message=null where id=%s and status='running'",

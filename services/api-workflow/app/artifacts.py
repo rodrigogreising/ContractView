@@ -3,7 +3,7 @@ from hashlib import sha256
 from io import BytesIO
 import uuid
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized, require_permission
+from .authorization import Action, Actor, ResourceKind, ResourceScope, Role, execute_authorized, require_permission
 from .runtime import database, object_store
 from .settings import get_settings
 from .provenance import append_event_tx
@@ -49,6 +49,7 @@ def store_artifact(
     *,
     artifact_kind: str = "original",
     predecessor_id: str | None = None,
+    relation_type: str | None = None,
 ) -> Artifact:
     artifact_id = f"artifact-{uuid.uuid4().hex}"
 
@@ -85,7 +86,7 @@ def store_artifact(
                      filename, media_type, len(content), digest, artifact_kind, actor.user_id),
                 )
                 if predecessor_id:
-                    relation = "regenerates" if artifact_kind == "generated" else "replaces"
+                    relation = relation_type or ("regenerates" if artifact_kind == "generated" else "replaces")
                     connection.execute(
                         "insert into artifact_relations(predecessor_artifact_id, successor_artifact_id, relation_type) values (%s,%s,%s)",
                         (predecessor_id, artifact_id, relation),
@@ -104,6 +105,12 @@ def store_artifact(
 
     provisional = Artifact(artifact_id, contract_id, actor.organization_id, "", "", filename, media_type,
                            len(content), sha256(content).hexdigest(), artifact_kind, actor.user_id, False)
+    if artifact_kind == "generated" and actor.role is Role.NGO_APPROVER:
+        package_scope = ResourceScope(
+            artifact_id, ResourceKind.PACKAGE, actor.organization_id,
+            ngo_organization_id=actor.organization_id,
+        )
+        return execute_authorized(actor, Action.SUBMIT, package_scope, command)
     return execute_authorized(actor, Action.CREATE, _scope(provisional), command)
 
 

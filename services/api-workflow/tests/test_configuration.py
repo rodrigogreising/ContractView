@@ -5,12 +5,14 @@ import psycopg
 import pytest
 
 from app.authorization import Actor, ForbiddenError, Role
-from app.configuration import InvalidConfiguration, activate_draft, update_draft
+from app.configuration import InvalidConfiguration, activate_draft, active_summary, get_draft, update_draft
 from app.runtime import database
 
 FIXTURE = Path("/app/fixtures/scenario.json")
 ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINISTRATOR)
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
+GOVERNMENT = Actor("user-government-reviewer","org-government",Role.GOVERNMENT_REVIEWER)
+AUDITOR = Actor("user-auditor","org-oversight",Role.AUDITOR)
 CONTRACT = "contract-metro-harbor-2026"
 
 
@@ -81,3 +83,18 @@ def test_invoice_and_validation_records_require_exact_configuration_version():
                 "insert into invoice_versions(id, contract_id, version, configuration_version_id) values ('invoice-bad', %s, 99, 'missing-config')",
                 (CONTRACT,),
             )
+
+
+def test_bounded_admin_draft_and_active_version_summary_for_later_personas():
+    payload=draft_payload()
+    payload["categories"][0]["limit"]="61000.00"
+    payload["rules"][-1]["dayWindow"]=2
+    payload["workflowLabels"]["submitted"]="Agency review queue"
+    payload["package"]["label"]="Configured demo package"
+    update_draft(ADMIN,CONTRACT,payload)
+    assert get_draft(ADMIN,CONTRACT)["categories"][0]["limit"]=="61000.00"
+    active=activate_draft(ADMIN,CONTRACT)
+    for actor in (PREPARER,GOVERNMENT,AUDITOR):
+        summary=active_summary(actor,CONTRACT)
+        assert summary["id"]==active["id"] and summary["version"]==active["version"] and summary["activatedAt"]
+    with pytest.raises(ForbiddenError): get_draft(PREPARER,CONTRACT)

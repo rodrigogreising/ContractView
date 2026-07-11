@@ -2,7 +2,7 @@ from copy import deepcopy
 import json
 import uuid
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized
+from .authorization import Action, Actor, ForbiddenError, ResourceKind, ResourceScope, Role, execute_authorized, require_permission
 from .runtime import database
 from .provenance import append_event_tx
 
@@ -86,3 +86,21 @@ def activate_draft(actor: Actor, contract_id: str) -> dict:
         return payload
 
     return execute_authorized(actor, Action.ACTIVATE, _scope(actor, contract_id), command)
+
+
+def get_draft(actor: Actor, contract_id: str) -> dict:
+    require_permission(actor,Action.READ,_scope(actor,contract_id))
+    with database() as connection:
+        row=connection.execute("select payload from configuration_drafts where contract_id=%s",(contract_id,)).fetchone()
+    if not row: raise InvalidConfiguration("No draft exists")
+    return row[0]
+
+
+def active_summary(actor: Actor, contract_id: str) -> dict | None:
+    with database() as connection:
+        contract=connection.execute("select agency_organization_id,ngo_organization_id from contracts where id=%s",(contract_id,)).fetchone()
+        if not contract: raise FileNotFoundError(contract_id)
+        if actor.role is not Role.AUDITOR and actor.role is not Role.CONFIGURATION_ADMINISTRATOR and actor.organization_id not in contract:
+            raise ForbiddenError("Actor cannot view this contract configuration")
+        row=connection.execute("select id,version,activated_at from configuration_versions where contract_id=%s order by version desc limit 1",(contract_id,)).fetchone()
+    return {"id":row[0],"version":row[1],"activatedAt":row[2].isoformat()} if row else None

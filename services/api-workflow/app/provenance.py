@@ -7,9 +7,10 @@ from .runtime import database
 
 EVENT_TYPES = {
     "login_succeeded", "login_failed", "logout", "config_activated", "artifact_uploaded",
-    "extraction_drafted", "extraction_failed", "field_corrected", "validation_completed",
+    "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed",
     "attested", "package_generated", "submitted", "returned", "revision_created",
     "resubmitted", "approved",
+    "invoice_line_corrected", "finding_resolved",
 }
 
 
@@ -56,16 +57,20 @@ def append_event(*args, **kwargs) -> int:
 
 
 def append_lineage(record: LineageInput) -> int:
+    with database() as connection:
+        lineage_id = append_lineage_tx(connection, record)
+        connection.commit()
+    return lineage_id
+
+
+def append_lineage_tx(connection, record: LineageInput) -> int:
     values = asdict(record)
     values["field_value"] = json.dumps(record.field_value)
     columns = list(values)
-    with database() as connection:
-        lineage_id = connection.execute(
-            f"insert into field_lineage ({','.join(columns)}) values ({','.join(['%s'] * len(columns))}) returning id",
-            tuple(values[column] for column in columns),
-        ).fetchone()[0]
-        connection.commit()
-    return lineage_id
+    return connection.execute(
+        f"insert into field_lineage ({','.join(columns)}) values ({','.join(['%s'] * len(columns))}) returning id",
+        tuple(values[column] for column in columns),
+    ).fetchone()[0]
 
 
 def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str, list[dict]]:
