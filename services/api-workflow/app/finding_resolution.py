@@ -2,20 +2,19 @@ from datetime import date
 import json
 import uuid
 
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized,require_permission
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,execute_authorized,require_permission
 from .provenance import LineageInput,append_event,append_event_tx,append_lineage_tx
 from .runtime import database
 from .validation import execute_validation,latest_validation
 
 class InvalidResolution(ValueError):pass
 
-def _scope(invoice_id,org):return ResourceScope(invoice_id,ResourceKind.INVOICE,org,ngo_organization_id=org)
-
 def current_findings(actor:Actor,invoice_id:str)->list[dict]:
     run=latest_validation(actor,invoice_id)
     if not run:return []
     with database() as connection:
-        org=connection.execute("select organization_id from invoice_versions where id=%s",(invoice_id,)).fetchone()[0];require_permission(actor,Action.READ,_scope(invoice_id,org))
+        require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         rows=connection.execute("""select f.id,f.expense_key,f.code,f.severity,f.message,f.status,r.normalized_input,l.evidence_artifact_id
                                    from validation_findings f join validation_results r on r.id=f.validation_result_id
                                    left join invoice_lines l on l.invoice_version_id=f.invoice_version_id and l.expense_key=f.expense_key
@@ -70,4 +69,4 @@ def resolve_finding(actor:Actor,finding_id:str,action:str,reason:str,correction_
             append_event_tx(connection,"finding_resolved","validation_finding",finding_id,actor_id=actor.user_id,organization_id=finding[5],contract_id=connection.execute("select contract_id from invoice_versions where id=%s",(finding[0],)).fetchone()[0],payload={"action":action,"reason":reason,"newValidationRunId":new_run["id"],"resolutionId":resolution_id})
             connection.commit()
         return {"id":resolution_id,"priorFindingId":finding_id,"action":action,"reason":reason,"newValidationRunId":new_run["id"],"findings":current_findings(actor,finding[0]),"hasOpenBlockers":has_open_blockers(finding[0])}
-    return execute_authorized(actor,Action.UPDATE,_scope(finding[0],finding[5]),command)
+    return execute_authorized(actor,Action.UPDATE,invoice_scope(actor,finding[0]),command)

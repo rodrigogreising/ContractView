@@ -2,7 +2,8 @@ from dataclasses import asdict, dataclass
 import json
 from typing import Any
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, require_permission
+from .access_scope import audit_scope
+from .authorization import Action, Actor, Role, require_permission
 from .runtime import database
 
 EVENT_TYPES = {
@@ -74,31 +75,81 @@ def append_lineage_tx(connection, record: LineageInput) -> int:
 
 
 def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str, list[dict]]:
+    # `submitted` remains in the additive API for compatibility but is never an
+    # authority input. Canonical invoice state controls auditor visibility.
+    del submitted
+    require_permission(actor, Action.READ, audit_scope(actor, contract_id))
     with database() as connection:
         contract = connection.execute(
             "select ngo_organization_id, agency_organization_id from contracts where id=%s", (contract_id,)
         ).fetchone()
         if not contract:
             raise FileNotFoundError(contract_id)
-        scope = ResourceScope(
-            f"audit:{contract_id}", ResourceKind.AUDIT, contract[0],
-            agency_organization_id=contract[1], ngo_organization_id=contract[0], submitted=submitted,
-        )
-        require_permission(actor, Action.READ, scope)
-        event_rows = connection.execute(
-            """select id, event_type, actor_id, organization_id, aggregate_type, aggregate_id, payload, occurred_at
-               from domain_events
-               where contract_id=%s or (contract_id is null and organization_id in (%s,%s)) order by id""",
-            (contract_id, contract[0], contract[1]),
-        ).fetchall()
-        lineage_rows = connection.execute(
-            """select id, field_name, field_value, source_artifact_id, source_location,
-                      importer_version, extractor_provider, extractor_model, prompt_version,
-                      parser_version, mapping_version, correction_actor_id, correction_reason,
-                      validation_run_id, invoice_version_id, package_artifact_id,
-                      predecessor_lineage_id, recorded_at
-               from field_lineage where contract_id=%s order by id""", (contract_id,)
-        ).fetchall()
+        if actor.role is Role.AUDITOR:
+            event_rows = connection.execute(
+                """select e.id,e.event_type,e.actor_id,e.organization_id,e.aggregate_type,
+                          e.aggregate_id,e.payload,e.occurred_at
+                   from domain_events e
+                   where e.contract_id=%s and (
+                     (e.aggregate_type='artifact' and exists(
+                       select 1 from artifacts a where a.id=e.aggregate_id and a.submitted=true))
+                     or (e.aggregate_type='configuration_version' and exists(
+                       select 1 from invoice_versions i
+                       where i.configuration_version_id=e.aggregate_id and i.state<>'draft'))
+                     or (e.aggregate_type='extraction_run' and exists(
+                       select 1 from extraction_runs x join artifacts a on a.id=x.source_artifact_id
+                       where x.id=e.aggregate_id and a.submitted=true))
+                     or (e.aggregate_type='extraction_field' and exists(
+                       select 1 from extraction_fields f join extraction_runs x on x.id=f.extraction_run_id
+                       join artifacts a on a.id=x.source_artifact_id
+                       where f.id=e.aggregate_id and a.submitted=true))
+                     or (e.aggregate_type='validation_run' and exists(
+                       select 1 from validation_runs v join invoice_versions i on i.id=v.invoice_version_id
+                       where v.id=e.aggregate_id and i.state<>'draft'))
+                     or (e.aggregate_type='invoice_line' and exists(
+                       select 1 from invoice_lines l join invoice_versions i on i.id=l.invoice_version_id
+                       where l.id=e.aggregate_id and i.state<>'draft'))
+                     or (e.aggregate_type='validation_finding' and exists(
+                       select 1 from validation_findings f join invoice_versions i on i.id=f.invoice_version_id
+                       where f.id=e.aggregate_id and i.state<>'draft'))
+                     or (e.aggregate_type='invoice_version' and exists(
+                       select 1 from invoice_versions i where i.id=e.aggregate_id and i.state<>'draft'))
+                     or (e.aggregate_type='package' and exists(
+                       select 1 from packages p join invoice_versions i on i.id=p.invoice_version_id
+                       where p.id=e.aggregate_id and i.state<>'draft'))
+                   ) order by e.id""",
+                (contract_id,),
+            ).fetchall()
+            lineage_rows = connection.execute(
+                """select l.id,l.field_name,l.field_value,l.source_artifact_id,l.source_location,
+                          l.importer_version,l.extractor_provider,l.extractor_model,l.prompt_version,
+                          l.parser_version,l.mapping_version,l.correction_actor_id,l.correction_reason,
+                          l.validation_run_id,l.invoice_version_id,l.package_artifact_id,
+                          l.predecessor_lineage_id,l.recorded_at
+                   from field_lineage l where l.contract_id=%s and (
+                     (l.invoice_version_id is not null and exists(
+                       select 1 from invoice_versions i
+                       where i.id=l.invoice_version_id and i.state<>'draft'))
+                     or (l.invoice_version_id is null and l.source_artifact_id is not null and exists(
+                       select 1 from artifacts a where a.id=l.source_artifact_id and a.submitted=true))
+                   ) order by l.id""",
+                (contract_id,),
+            ).fetchall()
+        else:
+            event_rows = connection.execute(
+                """select id, event_type, actor_id, organization_id, aggregate_type, aggregate_id, payload, occurred_at
+                   from domain_events
+                   where contract_id=%s or (contract_id is null and organization_id in (%s,%s)) order by id""",
+                (contract_id, contract[0], contract[1]),
+            ).fetchall()
+            lineage_rows = connection.execute(
+                """select id, field_name, field_value, source_artifact_id, source_location,
+                          importer_version, extractor_provider, extractor_model, prompt_version,
+                          parser_version, mapping_version, correction_actor_id, correction_reason,
+                          validation_run_id, invoice_version_id, package_artifact_id,
+                          predecessor_lineage_id, recorded_at
+                   from field_lineage where contract_id=%s order by id""", (contract_id,)
+            ).fetchall()
     event_keys = ["id","eventType","actorId","organizationId","aggregateType","aggregateId","payload","occurredAt"]
     lineage_keys = ["id","fieldName","fieldValue","sourceArtifactId","sourceLocation","importerVersion",
                     "extractorProvider","extractorModel","promptVersion","parserVersion","mappingVersion",

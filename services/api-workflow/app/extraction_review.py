@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import uuid
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized, require_permission
+from .access_scope import contract_scope, extraction_scope
+from .authorization import Action, Actor, ResourceKind, execute_authorized, require_permission
 from .provenance import LineageInput, append_event_tx, append_lineage_tx
 from .runtime import database
 
@@ -10,11 +11,12 @@ class InvalidReview(ValueError): pass
 class UnreviewedField(ValueError): pass
 
 
-def _scope(resource_id: str, organization_id: str) -> ResourceScope:
-    return ResourceScope(resource_id, ResourceKind.JOB, organization_id, ngo_organization_id=organization_id)
-
-
 def list_extractions(actor: Actor, contract_id: str) -> list[dict]:
+    require_permission(
+        actor,
+        Action.READ,
+        contract_scope(actor, contract_id, f"extractions:{contract_id}", ResourceKind.JOB),
+    )
     with database() as connection:
         rows = connection.execute(
             """select r.id,r.source_artifact_id,a.filename,r.provider,r.model,r.status,r.routing_reason,
@@ -25,15 +27,10 @@ def list_extractions(actor: Actor, contract_id: str) -> list[dict]:
         ).fetchall()
     grouped: dict[str, dict] = {}
     for row in rows:
-        require_permission(actor, Action.READ, _scope(row[0], actor.organization_id if actor.role.value == "auditor" else _organization_for_run(row[0])))
+        require_permission(actor, Action.READ, extraction_scope(actor, row[0]))
         item = grouped.setdefault(row[0], {"id":row[0],"sourceArtifactId":row[1],"filename":row[2],"provider":row[3],"model":row[4],"status":row[5],"routingReason":row[6],"fields":[]})
         item["fields"].append({"id":row[7],"name":row[8],"proposedValue":row[9],"reviewedValue":row[10],"confidence":str(row[11]),"sourceLocation":row[12],"reviewStatus":row[13]})
     return list(grouped.values())
-
-
-def _organization_for_run(run_id: str) -> str:
-    with database() as connection:
-        return connection.execute("select organization_id from extraction_runs where id=%s", (run_id,)).fetchone()[0]
 
 
 def review_field(actor: Actor, field_id: str, decision: str, value: str | None = None, reason: str | None = None) -> dict:
@@ -77,9 +74,9 @@ def review_field(actor: Actor, field_id: str, decision: str, value: str | None =
         return {"id":field_id,"decision":decision,"proposedValue":row[0],"reviewedValue":reviewed,"reviewId":review_id}
 
     with database() as connection:
-        org = connection.execute("select r.organization_id from extraction_fields f join extraction_runs r on r.id=f.extraction_run_id where f.id=%s", (field_id,)).fetchone()
-    if not org: raise FileNotFoundError(field_id)
-    return execute_authorized(actor, Action.UPDATE, _scope(field_id, org[0]), command)
+        run = connection.execute("select r.id from extraction_fields f join extraction_runs r on r.id=f.extraction_run_id where f.id=%s", (field_id,)).fetchone()
+    if not run: raise FileNotFoundError(field_id)
+    return execute_authorized(actor, Action.UPDATE, extraction_scope(actor, run[0]), command)
 
 
 def reviewed_value(field_id: str) -> str:

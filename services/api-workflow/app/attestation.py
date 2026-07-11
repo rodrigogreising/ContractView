@@ -2,7 +2,8 @@ from hashlib import sha256
 import json
 import uuid
 
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized,require_permission
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,execute_authorized,require_permission
 from .finding_resolution import current_findings,has_open_blockers
 from .invoice_draft import get_draft
 from .provenance import append_event_tx
@@ -13,7 +14,6 @@ ATTESTATION_TEXT="I attest that I reviewed this exact invoice version, its evide
 
 class AttestationError(ValueError):pass
 
-def _scope(invoice_id,org):return ResourceScope(invoice_id,ResourceKind.INVOICE,org,ngo_organization_id=org)
 def _canonical(value):return json.dumps(value,sort_keys=True,separators=(",",":"),default=str)
 
 def invoice_fingerprint(invoice_id:str,validation_run_id:str)->str:
@@ -30,7 +30,7 @@ def approval_preview(actor:Actor,invoice_id:str)->dict:
     with database() as connection:
         invoice=connection.execute("select organization_id,material_revision,configuration_version_id from invoice_versions where id=%s",(invoice_id,)).fetchone()
         if not invoice:raise FileNotFoundError(invoice_id)
-        require_permission(actor,Action.READ,_scope(invoice_id,invoice[0]))
+        require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         run=connection.execute("""select id,output_hash,material_revision,created_at from validation_runs
                                   where invoice_version_id=%s and engine_version is not null order by created_at desc,id desc limit 1""",(invoice_id,)).fetchone()
         evidence_count=connection.execute("select count(distinct evidence_artifact_id) from invoice_lines where invoice_version_id=%s and evidence_artifact_id is not null",(invoice_id,)).fetchone()[0]
@@ -56,13 +56,13 @@ def attest(actor:Actor,invoice_id:str,text:str)->dict:
             append_event_tx(connection,"attested","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=contract,payload={"attestationId":attestation_id,"validationRunId":preview["validationRunId"],"materialRevision":preview["materialRevision"],"fingerprint":fingerprint,"attestationVersion":ATTESTATION_VERSION})
             connection.commit()
         return current_attestation(actor,invoice_id)
-    return execute_authorized(actor,Action.ATTEST,_scope(invoice_id,invoice[0]),command)
+    return execute_authorized(actor,Action.ATTEST,invoice_scope(actor,invoice_id),command)
 
 def current_attestation(actor:Actor,invoice_id:str)->dict|None:
     with database() as connection:
         invoice=connection.execute("select organization_id,material_revision from invoice_versions where id=%s",(invoice_id,)).fetchone()
         if not invoice:raise FileNotFoundError(invoice_id)
-        require_permission(actor,Action.READ,_scope(invoice_id,invoice[0]))
+        require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         row=connection.execute("""select id,validation_run_id,material_revision,invoice_fingerprint,actor_id,actor_role,attestation_version,attestation_text,created_at
                                   from attestations where invoice_version_id=%s order by created_at desc,id desc limit 1""",(invoice_id,)).fetchone()
     if not row:return None

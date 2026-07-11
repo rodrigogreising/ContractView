@@ -3,7 +3,8 @@ from hashlib import sha256
 from io import BytesIO
 import uuid
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, Role, execute_authorized, require_permission
+from .access_scope import artifact_scope, contract_scope
+from .authorization import Action, Actor, ResourceKind, Role, execute_authorized, require_permission
 from .runtime import database, object_store
 from .settings import get_settings
 from .provenance import append_event_tx
@@ -27,17 +28,6 @@ class Artifact:
     artifact_kind: str
     created_by: str
     submitted: bool
-
-
-def _scope(artifact: Artifact) -> ResourceScope:
-    return ResourceScope(
-        artifact.id,
-        ResourceKind.ARTIFACT,
-        artifact.organization_id,
-        agency_organization_id=artifact.agency_organization_id,
-        ngo_organization_id=artifact.organization_id,
-        submitted=artifact.submitted,
-    )
 
 
 def store_artifact(
@@ -103,15 +93,11 @@ def store_artifact(
         return Artifact(artifact_id, contract_id, actor.organization_id, contract[0], object_key,
                         filename, media_type, len(content), digest, artifact_kind, actor.user_id, False)
 
-    provisional = Artifact(artifact_id, contract_id, actor.organization_id, "", "", filename, media_type,
-                           len(content), sha256(content).hexdigest(), artifact_kind, actor.user_id, False)
     if artifact_kind == "generated" and actor.role is Role.NGO_APPROVER:
-        package_scope = ResourceScope(
-            artifact_id, ResourceKind.PACKAGE, actor.organization_id,
-            ngo_organization_id=actor.organization_id,
-        )
+        package_scope = contract_scope(actor, contract_id, artifact_id, ResourceKind.PACKAGE)
         return execute_authorized(actor, Action.SUBMIT, package_scope, command)
-    return execute_authorized(actor, Action.CREATE, _scope(provisional), command)
+    scope = contract_scope(actor, contract_id, artifact_id, ResourceKind.ARTIFACT)
+    return execute_authorized(actor, Action.CREATE, scope, command)
 
 
 def get_artifact(artifact_id: str) -> Artifact | None:
@@ -128,7 +114,7 @@ def download_artifact(actor: Actor, artifact_id: str) -> bytes:
     artifact = get_artifact(artifact_id)
     if not artifact:
         raise FileNotFoundError(artifact_id)
-    require_permission(actor, Action.READ, _scope(artifact))
+    require_permission(actor, Action.READ, artifact_scope(actor, artifact_id))
     return read_and_verify_artifact(artifact)
 
 

@@ -63,7 +63,32 @@ Boundary tests must cover dependency rules, forbidden direct writes, server auth
 
 ## Implemented Authorization Contract
 
-`services/api-workflow/app/authorization.py` is the reusable server-side policy boundary. It evaluates actor, organization, persona role, resource kind, agency/NGO scope, submission visibility, publication visibility, and requested action before a command can mutate state. Session transport is deliberately separate and is introduced by SUB-28; test-only identity injection is prohibited.
+`services/api-workflow/app/authorization.py` is the reusable server-side policy boundary. It evaluates actor, organization, persona role, resource kind, agency/NGO scope, submission visibility, publication visibility, explicit privileged assignment, canonical-scope evidence, and requested action before a command can mutate state. Session transport is deliberately separate; test-only identity injection is prohibited.
+
+SUB-60 adds `services/api-workflow/app/access_scope.py` as the only application
+scope-construction boundary. It resolves contract ownership, invoice state,
+artifact publication, extraction/job linkage, government queue linkage, and
+administrator/auditor assignments from PostgreSQL. Hand-built or caller-derived
+scopes fail closed. Configuration administrators are contract/agency assigned;
+auditors are contract assigned, read-only, and limited to submitted evidence.
+
+| Boundary property | SUB-60 declaration |
+| --- | --- |
+| Owner role | Identity/RBAC capability; security owner reviews policy evidence |
+| Responsibilities | Canonical scope resolution, explicit privileged assignment, role/resource/action decision, pre-mutation denial |
+| Data owned | `users`, sessions, and `contract_role_assignments`; contracts and resource lifecycle are read through declared authorization queries and remain owned by their capabilities |
+| Allowed dependencies | Authorization domain vocabulary, application query boundary, owner persistence adapter during REC-07 transition |
+| Events emitted | No new runtime event; retained machine-readable test/PR evidence proves denials and assignment behavior |
+| Configuration consumed | Seeded synthetic contract-role assignments only; no runtime AI or generic policy editor |
+| Deterministic requirements | Same canonical actor, assignment, resource state, kind, and action always return the same decision |
+| Human authority boundary | Assignments do not grant attestation, submission, return, approval, waiver, or activation beyond the existing named roles |
+| Prohibited responsibilities | Trusting request ownership, global auditor reads, client-only authorization, mutating canonical resources, deciding validation outcomes |
+
+The current flat API still executes the resolver's SQL directly. That is an
+explicit recovery transition, not target conformance: REC-07 must move these
+queries behind identity-owned application ports and persistence adapters while
+preserving the SUB-60 contract and tests. No new service, network boundary, or
+cross-capability write was introduced.
 
 ## Implemented Configuration Contract
 

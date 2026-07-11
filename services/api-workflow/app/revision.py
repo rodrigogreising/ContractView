@@ -1,5 +1,6 @@
 import uuid
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,execute_authorized
 from .provenance import append_event_tx
 from .runtime import database
 
@@ -23,7 +24,7 @@ def revision_feedback(actor:Actor,contract_id:str)->dict|None:
           from invoice_version_links l join government_decisions d on d.id=l.government_decision_id join invoice_versions i on i.id=l.successor_invoice_version_id where i.contract_id=%s and i.state='draft' order by i.version desc limit 1""",(contract_id,)).fetchone()
         if not row:return None
         org=connection.execute("select organization_id from invoice_versions where id=%s",(row[0],)).fetchone()[0]
-    scope=ResourceScope(row[0],ResourceKind.INVOICE,org,ngo_organization_id=org)
+    scope=invoice_scope(actor,row[0])
     def command():return {"invoiceVersionId":row[0],"predecessorInvoiceVersionId":row[1],"decisionId":row[2],"reasonCode":row[3],"note":row[4],"lineKeys":row[5]}
     return execute_authorized(actor,Action.READ,scope,command)
 
@@ -31,7 +32,7 @@ def correct_revision(actor:Actor,invoice_id:str,expense_key:str,description:str,
     with database() as connection:
         invoice=connection.execute("select organization_id,contract_id,state from invoice_versions where id=%s",(invoice_id,)).fetchone()
     if not invoice:raise FileNotFoundError(invoice_id)
-    scope=ResourceScope(invoice_id,ResourceKind.INVOICE,invoice[0],ngo_organization_id=invoice[0])
+    scope=invoice_scope(actor,invoice_id)
     def command():
         if invoice[2]!="draft" or not description.strip() or not reason.strip():raise RevisionError("An editable revision, corrected description, and reason are required")
         with database() as connection:

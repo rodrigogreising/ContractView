@@ -1,8 +1,10 @@
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from app.artifacts import download_artifact
-from app.authorization import Actor, Role
+from app.authorization import Actor, ForbiddenError, Role
 from app.extraction import OcrResponse
 from app.ingestion import claim_next_job, create_upload_job, list_jobs, process_job
 from app.runtime import database
@@ -54,7 +56,9 @@ def test_real_tesseract_worker_adapter_extracts_golden_draft_and_full_trace():
     assert run[7] == "page=1" and run[8] > Decimal("0.8500")
     assert run[9:] == ("needs_review", "HUMAN_REVIEW_REQUIRED")
     assert event == ("extraction_drafted", run[1])
-    assert b"Workshop materials" in download_artifact(AUDITOR, run[1])
+    assert b"Workshop materials" in download_artifact(PREPARER, run[1])
+    with pytest.raises(ForbiddenError):
+        download_artifact(AUDITOR, run[1])
 
 
 def test_low_confidence_routes_to_review_without_creating_truth():

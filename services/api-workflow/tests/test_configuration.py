@@ -94,7 +94,8 @@ def test_bounded_admin_draft_and_active_version_summary_for_later_personas():
     update_draft(ADMIN,CONTRACT,payload)
     assert get_draft(ADMIN,CONTRACT)["categories"][0]["limit"]=="61000.00"
     active=activate_draft(ADMIN,CONTRACT)
-    for actor in (PREPARER,GOVERNMENT,AUDITOR):
+    for actor in (PREPARER,GOVERNMENT):
         summary=active_summary(actor,CONTRACT)
         assert summary["id"]==active["id"] and summary["version"]==active["version"] and summary["activatedAt"]
     with pytest.raises(ForbiddenError): get_draft(PREPARER,CONTRACT)
+    with pytest.raises(ForbiddenError): active_summary(AUDITOR,CONTRACT)

@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 from app.artifacts import store_artifact
-from app.authorization import Actor,ForbiddenError,Role
+from app.authorization import Action,Actor,ForbiddenError,Role,is_allowed
+from app.access_scope import government_decision_scope
 from app.configuration import activate_draft,update_draft
 from app.extraction import OcrResponse
 from app.extraction_review import list_extractions,review_field
@@ -22,12 +23,14 @@ from app.submission import submit
 from app.government_review import list_queue,review_context
 from app.government_decision import DecisionError,decide
 from app.revision import correct_revision,revision_feedback
+from app.provenance import audit_query
 from app.artifacts import download_artifact
 from io import BytesIO
 import zipfile
 
 CONTRACT="contract-metro-harbor-2026";FILES=Path("/app/fixtures/files")
 PREPARER=Actor("user-ngo-preparer","org-ngo",Role.NGO_PREPARER);APPROVER=Actor("user-ngo-approver","org-ngo",Role.NGO_APPROVER);ADMIN=Actor("user-config-admin","org-operations",Role.CONFIGURATION_ADMINISTRATOR)
+AUDITOR=Actor("user-auditor","org-oversight",Role.AUDITOR)
 
 class Adapter:
     provider="validation-fixture-provider";model="validation-fixture-v1"
@@ -173,8 +176,19 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     with database() as connection:
         row=connection.execute("select i.state,q.status,s.actor_id,s.actor_role,s.submitted_at is not null from submissions s join invoice_versions i on i.id=s.invoice_version_id join government_queue_items q on q.submission_id=s.id where s.id=%s",(submission["id"],)).fetchone()
         published=connection.execute("select bool_and(a.submitted) from package_artifacts p join artifacts a on a.id=p.artifact_id where p.package_id=%s",(submission["packageId"],)).fetchone()[0]
+        submitted_sources=connection.execute("""select distinct a.id,a.submitted from artifacts a where a.id in (
+          select ledger_artifact_id from invoice_lines where invoice_version_id=%s
+          union select evidence_artifact_id from invoice_lines where invoice_version_id=%s and evidence_artifact_id is not null
+          union select x.source_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s
+          union select x.raw_response_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s and x.raw_response_artifact_id is not null
+        ) order by a.id""",(invoice["id"],invoice["id"],invoice["id"],invoice["id"])).fetchall()
         event=connection.execute("select payload->>'submissionId',payload->>'packageId' from domain_events where event_type='submitted' and aggregate_id=%s",(invoice["id"],)).fetchone()
     assert row==("submitted","submitted",APPROVER.user_id,Role.NGO_APPROVER.value,True) and published
+    assert submitted_sources and all(item[1] for item in submitted_sources)
+    assert all(download_artifact(AUDITOR,item[0]) for item in submitted_sources)
+    auditor_evidence=audit_query(AUDITOR,CONTRACT,submitted=True)
+    assert {"extraction_drafted","field_reviewed","validation_completed","attested","package_generated","submitted"} <= {item["eventType"] for item in auditor_evidence["events"]}
+    assert any(item["invoiceVersionId"]==invoice["id"] for item in auditor_evidence["lineage"])
     assert event==(submission["id"],submission["packageId"])
     with pytest.raises(Exception,match="submitted invoice content is immutable"):
         with database() as connection:connection.execute("update invoice_lines set claimed_amount=1 where invoice_version_id=%s",(invoice["id"],))
@@ -182,6 +196,8 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     government=Actor("user-government-reviewer","org-government",Role.GOVERNMENT_REVIEWER)
     with pytest.raises(ForbiddenError):list_queue(PREPARER)
     queue=list_queue(government);item=next(x for x in queue if x["id"]==submission["queueItemId"])
+    unpublished=government_decision_scope(PREPARER,item["id"])
+    assert not unpublished.published_to_ngo and not is_allowed(PREPARER,Action.READ,unpublished)
     assert item["status"]=="submitted" and item["ngo"]=="Harbor Community Services" and item["invoiceVersion"]==invoice["version"]
     assert item["amount"]==invoice["total"] and item["servicePeriod"]=={"start":"2026-06-01","end":"2026-06-30"} and item["submittedAt"]
     context=review_context(government,item["id"])
@@ -192,6 +208,8 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert list_queue(Actor("outside-reviewer","org-other",Role.GOVERNMENT_REVIEWER))==[]
     with pytest.raises(ForbiddenError):decide(PREPARER,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence",["EXP-004"])
     returned=decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"])
+    published_decision=government_decision_scope(PREPARER,item["id"])
+    assert published_decision.published_to_ngo and is_allowed(PREPARER,Action.READ,published_decision)
     assert returned["decision"]=="returned" and returned["invoiceVersion"]==invoice["version"] and returned["actorRole"]==Role.GOVERNMENT_REVIEWER.value
     with pytest.raises(DecisionError,match="stale or out of order"):decide(government,item["id"],"approved","APPROVED_AS_CORRECTED","approve",[])
     with pytest.raises(DecisionError,match="provisioned human"):decide(Actor("system-ai","org-government",Role.GOVERNMENT_REVIEWER),item["id"],"returned","CLARIFICATION","system attempt",[])

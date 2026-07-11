@@ -14,6 +14,10 @@
     {"id": "user-government-reviewer", "displayName": "Samira Patel", "email": "government.reviewer@contractview.demo", "password": "Demo-Review-2026!", "organizationId": "org-government", "role": "government_reviewer"},
     {"id": "user-auditor", "displayName": "Noah Williams", "email": "auditor@contractview.demo", "password": "Demo-Audit-2026!", "organizationId": "org-oversight", "role": "auditor"}
   ],
+  "accessAssignments": [
+    {"contractId": "contract-metro-harbor-2026", "userId": "user-config-admin", "role": "configuration_administrator", "agencyOrganizationId": "org-government"},
+    {"contractId": "contract-metro-harbor-2026", "userId": "user-auditor", "role": "auditor", "agencyOrganizationId": "org-government"}
+  ],
   "contract": {
     "id": "contract-metro-harbor-2026",
     "name": "Community Support Services 2026",
