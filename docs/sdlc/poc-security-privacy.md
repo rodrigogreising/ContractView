@@ -1,5 +1,8 @@
 # POC Security And Privacy Review
 
+## Human Decision Enforcement
+
+Government return and approval require both the Government Reviewer policy and a database-backed seeded user whose role and organization match the server actor. Fabricated system or AI identities cannot make decisions. Stale or out-of-order queue actions fail before mutation, and decision records are append-only.
 Status: Approved for synthetic-data POC
 
 ## Data Decision

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Execute ContractView Backlog"
+  short_description: "Run isolated ContractView issue delivery"
+  default_prompt: "$cv-execute-linear-backlog Execute all outstanding ContractView issues in dependency order until SUB-55 is certified."
