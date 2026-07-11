@@ -42,7 +42,13 @@ def _mutation_fingerprint() -> tuple:
     )
     with database() as connection:
         return tuple(
-            (table, connection.execute(f"select count(*) from {table}").fetchone()[0])
+            (
+                table,
+                *connection.execute(
+                    f"""select count(*),md5(coalesce(string_agg(to_jsonb(t)::text,'|'
+                         order by to_jsonb(t)::text),'')) from {table} t"""
+                ).fetchone(),
+            )
             for table in tables
         )
 
@@ -98,6 +104,16 @@ def test_cross_tenant_contract_denial_has_zero_database_mutation() -> None:
     before = _mutation_fingerprint()
     with pytest.raises(ForbiddenError):
         update_draft(ADMIN, other_contract, _draft_payload())
+    assert _mutation_fingerprint() == before
+
+
+def test_unassigned_admin_denial_preserves_existing_row_content() -> None:
+    unassigned = Actor("user-ngo-preparer", "org-ngo", Role.CONFIGURATION_ADMINISTRATOR)
+    payload = _draft_payload()
+    payload["package"]["label"] = "unauthorized same-row update"
+    before = _mutation_fingerprint()
+    with pytest.raises(ForbiddenError):
+        update_draft(unassigned, CONTRACT, payload)
     assert _mutation_fingerprint() == before
 
 

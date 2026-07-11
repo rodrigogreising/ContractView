@@ -25,7 +25,16 @@ def submit(actor:Actor,invoice_id:str)->dict:
             connection.execute("insert into submissions(id,invoice_version_id,package_id,actor_id,actor_role,configuration_version_id,invoice_version,package_hashes) values (%s,%s,%s,%s,%s,%s,%s,%s)",(submission_id,invoice_id,package[0],actor.user_id,actor.role.value,invoice[2],invoice[3],json.dumps(dict(hashes))))
             connection.execute("insert into government_queue_items(id,submission_id,agency_organization_id,ngo_organization_id) values (%s,%s,%s,%s)",(queue_id,submission_id,contract[0],contract[1]))
             connection.execute("update invoice_versions set state='submitted' where id=%s",(invoice_id,))
-            connection.execute("update artifacts set submitted=true where id in (select artifact_id from package_artifacts where package_id=%s)",(package[0],))
+            connection.execute("""update artifacts a set submitted=true
+              where a.submitted=false and a.id in (
+                select artifact_id from package_artifacts where package_id=%s
+                union select ledger_artifact_id from invoice_lines where invoice_version_id=%s
+                union select evidence_artifact_id from invoice_lines where invoice_version_id=%s and evidence_artifact_id is not null
+                union select x.source_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id
+                  join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s
+                union select x.raw_response_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id
+                  join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s and x.raw_response_artifact_id is not null
+              )""",(package[0],invoice_id,invoice_id,invoice_id,invoice_id))
             append_event_tx(connection,"submitted","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=invoice[1],payload={"submissionId":submission_id,"queueItemId":queue_id,"packageId":package[0],"invoiceVersion":invoice[3],"configurationVersionId":invoice[2],"packageHashes":dict(hashes)});connection.commit()
         return {"id":submission_id,"invoiceVersionId":invoice_id,"packageId":package[0],"queueItemId":queue_id,"invoiceVersion":invoice[3],"configurationVersionId":invoice[2],"packageHashes":dict(hashes),"state":"submitted"}
     return execute_authorized(actor,Action.SUBMIT,scope,command)

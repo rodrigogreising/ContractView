@@ -27,8 +27,13 @@ Status: Build / ready for immutable PR handoff after checks
 - Restricted configuration administration to explicit contract assignment.
 - Restricted auditors to assigned, submitted, read-only invoice, artifact,
   package, government-decision, and audit resources.
+- Atomically published original ledger/evidence and linked extraction
+  source/raw-response artifacts with the submitted invoice, including a
+  numbered backfill migration for existing synthetic POC state.
 - Filtered auditor event/lineage reconstruction so a submitted contract cannot
   disclose draft-only work.
+- Derived government-decision publication from persisted returned/approved
+  queue state instead of a caller or hard-coded flag.
 - Routed every application authorization call through the canonical resolver;
   UI visibility remains non-authoritative.
 
@@ -39,7 +44,7 @@ Status: Build / ready for immutable PR handoff after checks
 | Canonical ownership, never caller ownership | `access_scope.py`; noncanonical all-role/action fail-closed test |
 | Agency/contract-scoped configuration administrator | Assignment migration/seed; assigned and unassigned resolver tests |
 | Explicit auditor assignment and submitted visibility | Auditor matrix, artifact lifecycle test, submitted-only audit filter test |
-| Direct and indirect denial without mutation | Foreign contract update and foreign artifact-reference tests with identical material-table count fingerprints |
+| Direct and indirect denial without mutation | Foreign contract, unassigned same-row update, and foreign artifact-reference tests with identical material-table content hashes and counts |
 | Exhaustive role/org/resource coverage | Parameterized role, resource, submission, action, and tenant policy tests plus database integration tests |
 | Security and boundary evidence | `docs/sdlc/poc-security-privacy.md` and `docs/architecture/poc-boundary-review.md` |
 | AI review and merge verification | Pending immutable PR base/head review and clean post-merge verification |
@@ -65,10 +70,10 @@ Clean synthetic database run on the rebuilt Python 3.12 API image:
 docker compose build api
 docker compose run --rm api python -m app.manage reset
 docker compose run --rm api pytest -q
-149 passed in 8.50s
+150 passed in 8.49s
 ```
 
-The focused authorization/security run passed 90 tests from a clean reset and
+The focused authorization/security and submitted-workflow run passed 101 tests from a clean reset and
 includes a 4,480-decision role/tenant/resource/action matrix. The complete
 full API run supersedes it and includes all focused tests plus the full API
 workflow regression.

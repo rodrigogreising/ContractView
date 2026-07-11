@@ -52,6 +52,10 @@ Controlling issue: `SUB-60` / REC-04. Project stage: Build.
   artifact, validation, extraction, configuration, package, and decision
   references. A submitted contract does not make later draft-only events
   visible to the auditor.
+- Submission atomically publishes the original ledger/evidence artifacts and
+  linked extraction source/raw-response artifacts as well as generated package
+  artifacts. The auditor can therefore traverse submitted source evidence
+  without gaining access to unrelated drafts.
 
 ### Threat model and mitigations
 
@@ -61,6 +65,7 @@ Controlling issue: `SUB-60` / REC-04. Project stage: Build.
 | Administrator guesses another contract | `configuration_scope` joins the active user, role, assignment, canonical agency, and contract; the rejected command has an identical database mutation fingerprint. |
 | User follows an indirect foreign artifact id | `artifact_scope` resolves the artifact's persisted contract and publication state before object-store access; cross-tenant denial leaves all material table counts unchanged. |
 | Auditor reads draft work | Auditor policy requires assignment, submitted state, read action, and an allowlisted immutable/read-model resource kind. Draft artifacts, jobs, extraction review, configuration drafts, and draft-only audit events are denied. |
+| Auditor loses submitted source lineage | Submission publishes every source/raw-response artifact referenced by the exact invoice version; integration tests download those artifacts as the assigned auditor and reconstruct extraction, review, validation, attestation, package, and submission events. |
 | Assignment is internally inconsistent | Migration `019_contract_role_assignments.sql` rejects assignments whose agency, active user, or provisioned role does not match canonical data. |
 | Denied action partially mutates state | Authorization runs before command callbacks; database-backed direct and indirect denial tests compare counts across configuration, artifacts, jobs, reviews, invoices, validation, workflow, events, and lineage. |
 | AI or system receives human authority | The policy adds no authority role. NGO Approver and Government Reviewer controls remain distinct; administrator and auditor assignments cannot attest, submit, return, or approve. |
@@ -86,6 +91,10 @@ before real or hosted data is permitted.
 - Accepted POC risk: authorization denials are proven by retained test evidence
   but are not yet stored as a complete permission-decision event stream.
   REC-08/REC-11 must reconcile versioned evidence and durable CI retention.
+- Accepted POC risk: scope lookup and command mutation use separate short-lived
+  transactions. There is no assignment-management path in the synthetic POC;
+  REC-07 must place assignment checks and commands under capability-owned unit
+  of work semantics before real or hosted use.
 
 ## Accepted POC Risks
 

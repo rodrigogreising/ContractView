@@ -135,7 +135,7 @@ def extraction_scope(actor: Actor, extraction_run_id: str) -> ResourceScope:
 def government_decision_scope(actor: Actor, queue_id: str) -> ResourceScope:
     with database() as connection:
         row = connection.execute(
-            """select iv.contract_id
+            """select iv.contract_id, q.status
                from government_queue_items q
                join submissions s on s.id=q.submission_id
                join invoice_versions iv on iv.id=s.invoice_version_id
@@ -151,7 +151,7 @@ def government_decision_scope(actor: Actor, queue_id: str) -> ResourceScope:
             queue_id,
             ResourceKind.GOVERNMENT_DECISION,
             submitted=True,
-            published_to_ngo=True,
+            published_to_ngo=row[1] in {"returned", "approved"},
         )
 
 
