@@ -103,3 +103,7 @@ The React administrator surface is a fixed projection over this contract: catego
 ## Implemented Government Queue Contract
 
 `services/api-workflow/app/government_review.py` owns agency-scoped submitted-package read models. It exposes the exact package/evidence hashes, deterministic validation and findings, configuration reference, and provenance summary only to the Government Reviewer organization. It does not edit NGO evidence or make decisions; return/approval commands are a separate authority boundary.
+
+## Implemented Decision And Revision Contracts
+
+`services/api-workflow/app/government_decision.py` owns provisioned-human Government Reviewer return/approval commands and their strict state machine. Decisions are append-only and version/package bound. A return creates a successor through `revision.py`; the NGO Preparer can edit only that draft successor. V2 then traverses the same deterministic validation, separate attestation, package, and submission boundaries before approval. The predecessor remains immutable.
