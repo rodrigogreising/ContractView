@@ -1,6 +1,6 @@
 # SUB-57 Recovery Baseline Evidence
 
-Status: In Progress
+Status: In Review
 
 ## Purpose
 
@@ -14,6 +14,8 @@ branch, PR, review, merge, and post-merge evidence gates.
 - Base SHA: `2d7bc4a`
 - Recovery branch: `codex/recovery-baseline`
 - Remote baseline: `origin/master` at `2d7bc4a`
+- Draft PR: `https://github.com/rodrigogreising/ContractView/pull/1`
+- Initial reviewed head SHA: `d92d93b`
 - Generated `tmp/` PDF render artifacts are explicitly excluded.
 
 The preserved working tree contains the unfinished SUB-46/SUB-49 UI and SDLC
@@ -42,10 +44,10 @@ and 10 setup errors before the worker was stopped, the fixture state reset, and
 the suite rerun successfully. REC-11 owns isolated test orchestration so the
 documented test command cannot race runtime services.
 
-Git push may succeed through the configured Git credential path, but GitHub CLI
-authentication is invalid at the time of this evidence. PR creation and review
-remain blocked until GitHub access is restored or the connected GitHub app can
-access the repository.
+The configured remote was verified as the private repository
+`rodrigogreising/ContractView`. GitHub device authentication was restored, the
+branch was pushed, and draft PR #1 was opened through the authenticated CLI
+fallback because the connected GitHub app cannot access the private repository.
 
 ## Review Constraint
 
