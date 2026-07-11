@@ -1,16 +1,13 @@
 from decimal import Decimal
 import uuid
 
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized, require_permission
+from .access_scope import contract_scope, invoice_scope
+from .authorization import Action, Actor, ResourceKind, execute_authorized, require_permission
 from .provenance import LineageInput, append_lineage_tx
 from .runtime import database
 
 
 class DraftAssemblyError(ValueError): pass
-
-
-def _scope(resource_id: str, organization_id: str) -> ResourceScope:
-    return ResourceScope(resource_id,ResourceKind.INVOICE,organization_id,ngo_organization_id=organization_id)
 
 
 def assemble_draft(actor: Actor, contract_id: str) -> dict:
@@ -87,7 +84,8 @@ def assemble_draft(actor: Actor, contract_id: str) -> dict:
                 ))
             connection.commit()
         return get_draft(actor,invoice_id)
-    return execute_authorized(actor,Action.CREATE,_scope(f"draft:{contract_id}",actor.organization_id),command)
+    scope = contract_scope(actor, contract_id, f"draft:{contract_id}", ResourceKind.INVOICE)
+    return execute_authorized(actor,Action.CREATE,scope,command)
 
 
 def _finding(connection,invoice_id,expense_key,code,message):
@@ -100,7 +98,7 @@ def get_draft(actor: Actor, invoice_id: str) -> dict:
             "select id,contract_id,version,configuration_version_id,state,organization_id,total from invoice_versions where id=%s",(invoice_id,)
         ).fetchone()
         if not invoice: raise FileNotFoundError(invoice_id)
-        require_permission(actor,Action.READ,_scope(invoice_id,invoice[5]))
+        require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         lines=connection.execute(
             """select expense_key,expense_date,vendor,description,budget_category,claimed_amount,ledger_artifact_id,
                       ledger_source_location,evidence_artifact_id,extraction_status from invoice_lines where invoice_version_id=%s order by expense_key""",(invoice_id,)
@@ -117,6 +115,11 @@ def get_draft(actor: Actor, invoice_id: str) -> dict:
 
 
 def latest_draft(actor: Actor, contract_id: str) -> dict | None:
+    require_permission(
+        actor,
+        Action.READ,
+        contract_scope(actor, contract_id, f"draft:{contract_id}", ResourceKind.INVOICE),
+    )
     with database() as connection:
         row=connection.execute("select id from invoice_versions where contract_id=%s and state='draft' order by version desc limit 1",(contract_id,)).fetchone()
     return get_draft(actor,row[0]) if row else None

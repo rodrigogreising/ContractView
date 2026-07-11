@@ -43,6 +43,20 @@ def seed() -> None:
             "insert into contracts(id, name, agency_organization_id, ngo_organization_id, contract_start, contract_end, service_period_start, service_period_end, currency) values (%s,%s,%s,%s,%s,%s,%s,%s,%s) on conflict (id) do update set name=excluded.name, service_period_start=excluded.service_period_start, service_period_end=excluded.service_period_end",
             (contract["id"], contract["name"], contract["agencyOrganizationId"], contract["ngoOrganizationId"], contract["contractStart"], contract["contractEnd"], contract["servicePeriodStart"], contract["servicePeriodEnd"], contract["currency"]),
         )
+        for assignment in scenario["accessAssignments"]:
+            connection.execute(
+                """insert into contract_role_assignments
+                   (contract_id, user_id, role, agency_organization_id)
+                   values (%s,%s,%s,%s)
+                   on conflict (contract_id,user_id,role) do update
+                   set agency_organization_id=excluded.agency_organization_id""",
+                (
+                    assignment["contractId"],
+                    assignment["userId"],
+                    assignment["role"],
+                    assignment["agencyOrganizationId"],
+                ),
+            )
         for category in scenario["budgetCategories"]:
             connection.execute(
                 "insert into budget_categories(id, contract_id, name, budget_limit) values (%s,%s,%s,%s) on conflict (id) do update set name=excluded.name, budget_limit=excluded.budget_limit",

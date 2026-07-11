@@ -4,7 +4,8 @@ from pathlib import Path
 import uuid
 
 from .artifacts import get_artifact, read_and_verify_artifact, store_artifact
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized, require_permission
+from .access_scope import contract_scope, job_scope
+from .authorization import Action, Actor, ResourceKind, execute_authorized, require_permission
 from .runtime import database
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
@@ -39,10 +40,6 @@ def _job_from_row(row) -> IngestionJob:
     return IngestionJob(*row)
 
 
-def _scope(job: IngestionJob) -> ResourceScope:
-    return ResourceScope(job.id, ResourceKind.JOB, job.organization_id, ngo_organization_id=job.organization_id)
-
-
 def create_upload_job(actor: Actor, contract_id: str, filename: str, media_type: str, content: bytes) -> IngestionJob:
     suffix = Path(filename).suffix.lower()
     if suffix not in ALLOWED:
@@ -55,7 +52,6 @@ def create_upload_job(actor: Actor, contract_id: str, filename: str, media_type:
     if len(content) > MAX_UPLOAD_BYTES:
         raise InvalidUpload("File exceeds the 10 MB POC limit")
 
-    provisional = IngestionJob("pending", "pending", contract_id, actor.organization_id, job_type, "queued", 0, None, None)
     def command() -> IngestionJob:
         digest = sha256(content).hexdigest()
         with database() as connection:
@@ -79,10 +75,16 @@ def create_upload_job(actor: Actor, contract_id: str, filename: str, media_type:
             ).fetchone()
             connection.commit()
         return _job_from_row(row)
-    return execute_authorized(actor, Action.CREATE, _scope(provisional), command)
+    scope = contract_scope(actor, contract_id, f"job:{contract_id}", ResourceKind.JOB)
+    return execute_authorized(actor, Action.CREATE, scope, command)
 
 
 def list_jobs(actor: Actor, contract_id: str) -> list[IngestionJob]:
+    require_permission(
+        actor,
+        Action.READ,
+        contract_scope(actor, contract_id, f"jobs:{contract_id}", ResourceKind.JOB),
+    )
     with database() as connection:
         rows = connection.execute(
             """select id,artifact_id,contract_id,organization_id,job_type,status,attempt_count,error_code,error_message
@@ -90,7 +92,7 @@ def list_jobs(actor: Actor, contract_id: str) -> list[IngestionJob]:
         ).fetchall()
     jobs = [_job_from_row(row) for row in rows]
     for job in jobs:
-        require_permission(actor, Action.READ, _scope(job))
+        require_permission(actor, Action.READ, job_scope(actor, job.id))
     return jobs
 
 

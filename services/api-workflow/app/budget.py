@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from .authorization import Action,Actor,ResourceKind,ResourceScope,require_permission
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,require_permission
 from .runtime import database
 
 def calculate_budget(category_amounts:dict[str,Decimal],categories:list[dict])->dict:
@@ -16,7 +17,7 @@ def budget_snapshot(actor:Actor,invoice_id:str)->dict:
         invoice=connection.execute("""select i.configuration_version_id,i.organization_id,i.state,c.agency_organization_id,c.ngo_organization_id
                                       from invoice_versions i join contracts c on c.id=i.contract_id where i.id=%s""",(invoice_id,)).fetchone()
         if not invoice:raise FileNotFoundError(invoice_id)
-        require_permission(actor,Action.READ,ResourceScope(invoice_id,ResourceKind.INVOICE,invoice[1],agency_organization_id=invoice[3],ngo_organization_id=invoice[4],submitted=invoice[2] != "draft"))
+        require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         config=connection.execute("select version,payload from configuration_versions where id=%s",(invoice[0],)).fetchone()
         amounts=dict(connection.execute("select budget_category,sum(claimed_amount) from invoice_lines where invoice_version_id=%s group by budget_category",(invoice_id,)).fetchall())
     calculated=calculate_budget(amounts,config[1]["categories"])

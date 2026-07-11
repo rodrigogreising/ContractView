@@ -4,7 +4,8 @@ from hashlib import sha256
 import json
 import uuid
 
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized,require_permission
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,execute_authorized,require_permission
 from .provenance import append_event_tx
 from .runtime import database
 from .budget import calculate_budget
@@ -18,8 +19,6 @@ RULE_VERSIONS={
 
 def _canonical(value)->str:return json.dumps(value,sort_keys=True,separators=(",",":"))
 def _hash(value)->str:return sha256(_canonical(value).encode()).hexdigest()
-def _scope(invoice_id,org):return ResourceScope(invoice_id,ResourceKind.INVOICE,org,ngo_organization_id=org)
-
 def _result(rule,severity,reason,outcome,message,normalized,expense=None):
     return {"ruleCode":rule,"ruleVersion":RULE_VERSIONS[rule],"severity":severity,"reasonCode":reason,"outcome":outcome,"expenseKey":expense,"normalizedInput":normalized,"message":message}
 
@@ -76,17 +75,13 @@ def execute_validation(actor:Actor,invoice_id:str)->dict:
             append_event_tx(connection,"validation_completed","validation_run",run_id,actor_id=actor.user_id,organization_id=invoice[2],contract_id=invoice[0],payload={"invoiceVersionId":invoice_id,"configurationVersionId":invoice[1],"engineVersion":ENGINE_VERSION,"inputHash":input_hash,"outputHash":output_hash})
             connection.commit()
         return get_validation(actor,run_id)
-    with database() as connection:
-        org=connection.execute("select organization_id from invoice_versions where id=%s",(invoice_id,)).fetchone()
-    if not org:raise FileNotFoundError(invoice_id)
-    return execute_authorized(actor,Action.CREATE,_scope(invoice_id,org[0]),command)
+    return execute_authorized(actor,Action.CREATE,invoice_scope(actor,invoice_id),command)
 
 def get_validation(actor:Actor,run_id:str)->dict:
     with database() as connection:
         run=connection.execute("select id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,status from validation_runs where id=%s",(run_id,)).fetchone()
         if not run:raise FileNotFoundError(run_id)
-        org=connection.execute("select organization_id from invoice_versions where id=%s",(run[1],)).fetchone()[0]
-        require_permission(actor,Action.READ,_scope(run[1],org))
+        require_permission(actor,Action.READ,invoice_scope(actor,run[1]))
         rows=connection.execute("select rule_code,rule_version,severity,reason_code,outcome,expense_key,normalized_input,message from validation_results where validation_run_id=%s order by rule_code,expense_key nulls first,reason_code",(run_id,)).fetchall()
     return {"id":run[0],"invoiceVersionId":run[1],"configurationVersionId":run[2],"engineVersion":run[3],"normalizedInputs":run[4],"inputHash":run[5],"outputHash":run[6],"status":run[7],"results":[{"ruleCode":r[0],"ruleVersion":r[1],"severity":r[2],"reasonCode":r[3],"outcome":r[4],"expenseKey":r[5],"normalizedInput":r[6],"message":r[7]} for r in rows]}
 

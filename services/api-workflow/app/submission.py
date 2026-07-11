@@ -1,6 +1,7 @@
 import json,uuid
 from .attestation import current_attestation
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized
+from .access_scope import invoice_scope
+from .authorization import Action,Actor,execute_authorized
 from .provenance import append_event_tx
 from .runtime import database
 
@@ -10,7 +11,7 @@ def submit(actor:Actor,invoice_id:str)->dict:
     with database() as connection:
         invoice=connection.execute("select organization_id,contract_id,configuration_version_id,version,state from invoice_versions where id=%s",(invoice_id,)).fetchone()
     if not invoice:raise FileNotFoundError(invoice_id)
-    scope=ResourceScope(invoice_id,ResourceKind.INVOICE,invoice[0],ngo_organization_id=invoice[0])
+    scope=invoice_scope(actor,invoice_id)
     def command():
         att=current_attestation(actor,invoice_id)
         if invoice[4]!="draft":raise SubmissionError("Only a draft version may be submitted")

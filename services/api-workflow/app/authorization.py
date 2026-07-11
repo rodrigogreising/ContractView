@@ -48,6 +48,9 @@ class ResourceScope:
     ngo_organization_id: str | None = None
     submitted: bool = False
     published_to_ngo: bool = False
+    contract_id: str | None = None
+    canonical: bool = False
+    actor_assigned: bool = False
 
 
 class ForbiddenError(PermissionError):
@@ -55,11 +58,27 @@ class ForbiddenError(PermissionError):
 
 
 def is_allowed(actor: Actor, action: Action, resource: ResourceScope) -> bool:
+    # Application code must construct scopes from persisted ownership and
+    # assignment data. Caller-authored scope claims always fail closed.
+    if not resource.canonical:
+        return False
+
     if actor.role is Role.AUDITOR:
-        return action is Action.READ
+        return (
+            resource.actor_assigned
+            and resource.submitted
+            and action is Action.READ
+            and resource.kind in {
+                ResourceKind.INVOICE,
+                ResourceKind.ARTIFACT,
+                ResourceKind.PACKAGE,
+                ResourceKind.GOVERNMENT_DECISION,
+                ResourceKind.AUDIT,
+            }
+        )
 
     if actor.role is Role.CONFIGURATION_ADMINISTRATOR:
-        return resource.kind is ResourceKind.CONFIGURATION and action in {
+        return resource.actor_assigned and resource.kind is ResourceKind.CONFIGURATION and action in {
             Action.READ, Action.CREATE, Action.UPDATE, Action.ACTIVATE
         }
 
@@ -67,6 +86,8 @@ def is_allowed(actor: Actor, action: Action, resource: ResourceScope) -> bool:
         if resource.ngo_organization_id != actor.organization_id and resource.owner_organization_id != actor.organization_id:
             return False
         if resource.kind is ResourceKind.GOVERNMENT_DECISION:
+            return action is Action.READ and resource.published_to_ngo
+        if resource.kind is ResourceKind.CONFIGURATION:
             return action is Action.READ and resource.published_to_ngo
         if action is Action.READ:
             return resource.kind in {
@@ -82,7 +103,11 @@ def is_allowed(actor: Actor, action: Action, resource: ResourceScope) -> bool:
         }
 
     if actor.role is Role.GOVERNMENT_REVIEWER:
-        if resource.agency_organization_id != actor.organization_id or not resource.submitted:
+        if resource.agency_organization_id != actor.organization_id:
+            return False
+        if resource.kind is ResourceKind.CONFIGURATION:
+            return action is Action.READ and resource.published_to_ngo
+        if not resource.submitted:
             return False
         if action is Action.READ:
             return resource.kind in {

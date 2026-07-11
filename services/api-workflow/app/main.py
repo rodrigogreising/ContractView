@@ -3,7 +3,7 @@ from fastapi import Cookie, Depends, FastAPI, File, Form, HTTPException, Respons
 from fastapi.responses import Response as BinaryResponse
 from pydantic import BaseModel
 from .authentication import SESSION_COOKIE, authenticate, identity, resolve_session, revoke_session
-from .authorization import ForbiddenError, ResourceKind, ResourceScope, Action, require_permission
+from .authorization import ForbiddenError
 from .ingestion import InvalidUpload, create_upload_job, list_jobs
 from .artifacts import download_artifact, get_artifact
 from .extraction_review import InvalidReview, list_extractions, review_field

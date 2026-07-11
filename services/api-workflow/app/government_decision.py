@@ -1,5 +1,6 @@
 import json,uuid
-from .authorization import Action,Actor,ResourceKind,ResourceScope,execute_authorized
+from .access_scope import government_decision_scope
+from .authorization import Action,Actor,execute_authorized
 from .provenance import append_event_tx
 from .runtime import database
 from .revision import create_return_revision_tx
@@ -12,7 +13,7 @@ def decide(actor:Actor,queue_id:str,decision:str,reason_code:str,note:str,line_k
         row=connection.execute("""select q.status,q.agency_organization_id,q.ngo_organization_id,s.id,s.invoice_version_id,s.package_id,iv.version,iv.contract_id
           from government_queue_items q join submissions s on s.id=q.submission_id join invoice_versions iv on iv.id=s.invoice_version_id where q.id=%s""",(queue_id,)).fetchone()
     if not row:raise FileNotFoundError(queue_id)
-    scope=ResourceScope(queue_id,ResourceKind.GOVERNMENT_DECISION,row[1],agency_organization_id=row[1],ngo_organization_id=row[2],submitted=True)
+    scope=government_decision_scope(actor,queue_id)
     action=Action.RETURN if decision=="returned" else Action.APPROVE
     def command():
         if decision not in {"returned","approved"}:raise DecisionError("Unsupported decision")

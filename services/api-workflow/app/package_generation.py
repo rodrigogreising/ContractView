@@ -10,7 +10,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 
 from .artifacts import download_artifact, store_artifact
 from .attestation import current_attestation
-from .authorization import Action, Actor, ResourceKind, ResourceScope, execute_authorized
+from .access_scope import invoice_scope
+from .authorization import Action, Actor, ResourceKind, execute_authorized
 from .invoice_draft import get_draft
 from .provenance import append_event_tx
 from .runtime import database
@@ -31,7 +32,7 @@ def generate_package(actor:Actor,invoice_id:str)->dict:
     with database() as connection:
         row=connection.execute("select organization_id,contract_id,version from invoice_versions where id=%s",(invoice_id,)).fetchone()
     if not row: raise FileNotFoundError(invoice_id)
-    scope=ResourceScope(invoice_id,ResourceKind.PACKAGE,row[0],ngo_organization_id=row[0])
+    scope=invoice_scope(actor,invoice_id,kind=ResourceKind.PACKAGE)
     def command():
         att=current_attestation(actor,invoice_id)
         if not att or not att["current"]: raise PackageError("A current exact-version attestation is required")

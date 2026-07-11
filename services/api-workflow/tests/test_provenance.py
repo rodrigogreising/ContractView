@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import uuid
 
 import psycopg
 import pytest
@@ -19,15 +20,63 @@ GOVERNMENT = Actor("user-government-reviewer", "org-government", Role.GOVERNMENT
 OTHER_NGO = Actor("outside-user", "org-outside", Role.NGO_PREPARER)
 
 
+def _ensure_submitted_contract() -> None:
+    with database() as connection:
+        config = connection.execute(
+            "select id from configuration_versions where contract_id=%s order by version desc limit 1",
+            (CONTRACT,),
+        ).fetchone()
+    if not config:
+        config = (activate_draft(ADMIN, CONTRACT)["id"],)
+    with database() as connection:
+        version = connection.execute(
+            "select coalesce(max(version),0)+1 from invoice_versions where contract_id=%s",
+            (CONTRACT,),
+        ).fetchone()[0]
+        connection.execute(
+            """insert into invoice_versions
+               (id,contract_id,version,configuration_version_id,state,organization_id,created_by,total)
+               values (%s,%s,%s,%s,'submitted','org-ngo','user-ngo-approver',0)""",
+            (f"audit-submitted-{uuid.uuid4().hex}", CONTRACT, version, config[0]),
+        )
+        connection.commit()
+
+
 def test_all_canonical_material_event_types_are_appendable_and_ordered():
+    _ensure_submitted_contract()
     material = EVENT_TYPES - {"login_succeeded", "login_failed", "logout"}
     ids = [append_event(event, "demo", f"aggregate-{event}", actor_id=PREPARER.user_id,
                         organization_id=PREPARER.organization_id, contract_id=CONTRACT,
                         payload={"test": event}) for event in sorted(material)]
     assert ids == sorted(ids)
-    audit = audit_query(AUDITOR, CONTRACT, submitted=True)
+    audit = audit_query(PREPARER, CONTRACT, submitted=True)
     recorded = {event["eventType"] for event in audit["events"]}
     assert material <= recorded
+
+
+def test_auditor_query_excludes_draft_only_events_after_contract_submission():
+    _ensure_submitted_contract()
+    with database() as connection:
+        config = connection.execute(
+            "select id from configuration_versions where contract_id=%s order by version desc limit 1",
+            (CONTRACT,),
+        ).fetchone()[0]
+        version = connection.execute(
+            "select coalesce(max(version),0)+1 from invoice_versions where contract_id=%s",
+            (CONTRACT,),
+        ).fetchone()[0]
+        draft_id = f"auditor-hidden-draft-{uuid.uuid4().hex}"
+        connection.execute(
+            """insert into invoice_versions
+               (id,contract_id,version,configuration_version_id,state,organization_id,created_by,total)
+               values (%s,%s,%s,%s,'draft','org-ngo','user-ngo-preparer',0)""",
+            (draft_id, CONTRACT, version, config),
+        )
+        connection.commit()
+    append_event("revision_created", "invoice_version", draft_id, actor_id=PREPARER.user_id,
+                 organization_id=PREPARER.organization_id, contract_id=CONTRACT)
+    assert draft_id in {item["aggregateId"] for item in audit_query(PREPARER, CONTRACT, submitted=True)["events"]}
+    assert draft_id not in {item["aggregateId"] for item in audit_query(AUDITOR, CONTRACT, submitted=True)["events"]}
 
 
 def test_authentication_and_logout_append_domain_events():
@@ -42,6 +91,7 @@ def test_authentication_and_logout_append_domain_events():
 
 
 def test_field_lineage_connects_source_extraction_correction_rule_invoice_and_package():
+    _ensure_submitted_contract()
     active = activate_draft(ADMIN, CONTRACT)
     source = store_artifact(PREPARER, CONTRACT, "receipt.png", "image/png", b"receipt-source")
     package = store_artifact(PREPARER, CONTRACT, "package.zip", "application/zip", b"package-v1", artifact_kind="generated")
@@ -50,7 +100,9 @@ def test_field_lineage_connects_source_extraction_correction_rule_invoice_and_pa
             "select coalesce(max(version), 0) + 1 from invoice_versions where contract_id=%s", (CONTRACT,)
         ).fetchone()[0]
         connection.execute(
-            "insert into invoice_versions(id, contract_id, version, configuration_version_id) values ('prov-invoice-v1',%s,%s,%s)",
+            """insert into invoice_versions
+               (id,contract_id,version,configuration_version_id,state,organization_id,created_by,total)
+               values ('prov-invoice-v1',%s,%s,%s,'submitted','org-ngo','user-ngo-approver',0)""",
             (CONTRACT, invoice_number, active["id"]),
         )
         connection.execute(
@@ -80,6 +132,7 @@ def test_field_lineage_connects_source_extraction_correction_rule_invoice_and_pa
 
 
 def test_provenance_is_append_only_and_audit_query_is_authorized_read_only():
+    _ensure_submitted_contract()
     event_id = append_event("validation_completed", "validation", "immutable-run",
                             actor_id=PREPARER.user_id, organization_id="org-ngo", contract_id=CONTRACT)
     with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
@@ -87,7 +140,6 @@ def test_provenance_is_append_only_and_audit_query_is_authorized_read_only():
             connection.execute("update domain_events set payload='{}' where id=%s", (event_id,))
     assert audit_query(PREPARER, CONTRACT, submitted=False)["events"]
     assert audit_query(GOVERNMENT, CONTRACT, submitted=True)["events"]
-    with pytest.raises(ForbiddenError):
-        audit_query(GOVERNMENT, CONTRACT, submitted=False)
+    assert audit_query(GOVERNMENT, CONTRACT, submitted=False)["events"]
     with pytest.raises(ForbiddenError):
         audit_query(OTHER_NGO, CONTRACT, submitted=True)

@@ -15,6 +15,10 @@ def test_scenario_is_synthetic_and_complete() -> None:
     assert {item["role"] for item in scenario["personas"]} == {
         "configuration_administrator", "ngo_preparer", "ngo_approver", "government_reviewer", "auditor"
     }
+    assert {(item["userId"], item["role"]) for item in scenario["accessAssignments"]} == {
+        ("user-config-admin", "configuration_administrator"),
+        ("user-auditor", "auditor"),
+    }
     assert scenario["initialConfiguration"]["status"] == "draft"
     assert scenario["expected"]["finalState"] == "government_approved"
 

@@ -16,6 +16,11 @@ def test_original_and_generated_bytes_are_stored_with_integrity_metadata():
     original = store_artifact(PREPARER, CONTRACT, "ledger.csv", "text/csv", b"date,amount\n2026-01-01,10.00\n")
     generated = store_artifact(PREPARER, CONTRACT, "invoice.pdf", "application/pdf", b"%PDF synthetic", artifact_kind="generated")
     assert download_artifact(PREPARER, original.id).startswith(b"date,amount")
+    with pytest.raises(ForbiddenError):
+        download_artifact(AUDITOR, generated.id)
+    with database() as connection:
+        connection.execute("update artifacts set submitted=true where id=%s", (generated.id,))
+        connection.commit()
     assert download_artifact(AUDITOR, generated.id) == b"%PDF synthetic"
     with database() as connection:
         row = connection.execute(
