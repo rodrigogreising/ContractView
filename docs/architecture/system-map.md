@@ -41,6 +41,8 @@ The first implementation target is an MVP pilot: one agency division, one contra
 | Rule contracts | Rule input/output interfaces, severity taxonomy, reason-code conventions, deterministic execution contract. |
 | Event contracts | Event names, payload requirements, lineage references, and version reference shapes. |
 | Configuration contracts | Schema, mapping, workflow, view, template, and configuration bundle definitions. |
+| Infrastructure | Deployment topology, environment configuration contracts, resource provisioning definitions, and operational wiring for runtime units. |
+| Persistence | Relational schema and migration definitions, cache key/TTL contracts, transaction boundaries, and storage adapter interfaces. |
 | Test fixtures | Certified sample contracts, ledgers, artifacts, users, rule sets, and journey data. |
 
 ## Ownership Rules
@@ -50,12 +52,16 @@ The first implementation target is an MVP pilot: one agency division, one contra
 - Field lineage and material action history are owned by the provenance/event service.
 - Runtime compliance decisions are owned by the deterministic validation engine.
 - Configuration lifecycle and activation are owned by the configuration registry.
+- Domain services retain ownership of their canonical data; the persistence package defines storage mechanics but does not become a shared data owner.
+- The infrastructure package owns provisioning and deployment definitions, not application behavior or production approval authority.
 - Role-specific screens are projections over shared canonical state, not separate stakeholder copies.
 
 ## Dependency Rules
 
 - Applications may depend on API contracts and shared domain types.
 - Services may depend on shared packages, but must not import another service's internal implementation.
+- Services may use persistence contracts and adapters only for data they own; they must not reach through the package into another service's tables or cache namespace.
+- Infrastructure may compose deployable units and managed resources, but application packages and services must not depend on infrastructure implementation details.
 - The validation engine reads explicit inputs and configuration versions; it must not query mutable UI state.
 - The package generation service reads approved templates and invoice versions; it must not infer missing data with AI.
 - Reporting reads projections or replicas; it must not mutate canonical workflow state.

@@ -186,6 +186,40 @@ It must not:
 - Mutate canonical invoice state.
 - Be the only source for certification evidence.
 
+### Infrastructure Package
+
+The infrastructure package defines how ContractView runtime units and managed resources are provisioned, configured, connected, and observed.
+
+It may:
+
+- Define deployment topology, environment configuration contracts, resource provisioning, secrets references, networking, observability wiring, backup policies, and recovery settings.
+- Compose database, cache, object-storage, queue, and service resources from explicit versioned configuration.
+- Emit deployment and infrastructure-change evidence through the delivery system.
+
+It must not:
+
+- Contain domain behavior, workflow decisions, validation rules, or service-owned schema definitions.
+- Grant itself approval authority for production configuration or infrastructure changes.
+- Make application services depend on a specific cloud provider through their domain interfaces.
+
+### Persistence Package
+
+The persistence package defines the database and cache system used by service-owned data boundaries.
+
+It may:
+
+- Define relational schemas, migrations, transaction helpers, storage adapter interfaces, cache namespaces, key formats, TTL policy contracts, and invalidation primitives.
+- Provide deterministic migration ordering and compatibility checks.
+- Expose explicit persistence contracts to services while keeping provider details behind adapters.
+
+It must not:
+
+- Own canonical domain data; each service remains the owner of the records in its schema and cache namespace.
+- Permit cross-service table access, shared mutable models, cache-only audit evidence, or cache state as the source of truth.
+- Hide destructive migrations, mutable submitted-package behavior, or provenance loss behind generic repository helpers.
+
+The persistence package may depend on domain types needed to define storage contracts. Infrastructure may consume persistence deployment requirements. Persistence must not depend on infrastructure, apps, or service internals.
+
 ## New Unit Checklist
 
 Any new service or package must document:
