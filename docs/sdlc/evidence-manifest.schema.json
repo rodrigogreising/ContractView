@@ -53,10 +53,16 @@
     "certification": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["behaviorChanged", "rationale", "evidenceKinds", "riskCoverage", "cleanRuntimeRequired"],
+      "required": ["behaviorChanged", "rationale", "requiredReviewSkills", "evidenceKinds", "riskCoverage", "cleanRuntimeRequired"],
       "properties": {
         "behaviorChanged": { "type": "boolean" },
         "rationale": { "type": "string", "minLength": 1 },
+        "requiredReviewSkills": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^cv-review-" }
+        },
         "evidenceKinds": {
           "type": "array",
           "minItems": 1,

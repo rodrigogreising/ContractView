@@ -119,9 +119,22 @@ def validate_manifest(
 
     labels = set(str(label) for label in manifest["riskAndGateLabels"])
     certification = manifest["certification"]
+    required_review_skills: list[str] = []
     if not isinstance(certification, dict):
         failures.append("certification must be an object")
     else:
+        declared_review_skills = certification.get("requiredReviewSkills")
+        if (
+            not isinstance(declared_review_skills, list)
+            or not declared_review_skills
+            or any(
+                not str(skill).startswith("cv-review-")
+                for skill in declared_review_skills
+            )
+        ):
+            failures.append("certification must declare required cv-review-* AI skills")
+        else:
+            required_review_skills = [str(skill) for skill in declared_review_skills]
         evidence_kinds = certification.get("evidenceKinds")
         if not isinstance(evidence_kinds, list) or not evidence_kinds:
             failures.append("certification must name at least one evidence kind")
@@ -205,6 +218,13 @@ def validate_manifest(
             or any(not str(skill).startswith("cv-review-") for skill in review_skills)
         ):
             failures.append("review must name applicable cv-review-* AI skills")
+        else:
+            missing_reviews = sorted(set(required_review_skills) - set(review_skills))
+            if missing_reviews:
+                failures.append(
+                    "completed review omits required AI reviews: "
+                    + ", ".join(missing_reviews)
+                )
         if review.get("decision") == "Approved" and review.get("evidenceAdequate") is not True:
             failures.append("Approved AI review requires adequate executable evidence")
         if phase == "done" and review.get("decision") != "Approved":

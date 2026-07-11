@@ -23,6 +23,7 @@ evidence proves the changed behavior or governing policy works.
 Every issue manifest declares:
 
 - whether runtime or user-visible behavior changed;
+- which `cv-review-*` AI skills are required and which completed the review;
 - the evidence kinds needed for that change;
 - how each risk and gate label is covered;
 - whether a clean runtime, Compose, or journey run is required;

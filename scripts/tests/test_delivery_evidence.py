@@ -47,6 +47,7 @@ def manifest() -> dict[str, object]:
         "certification": {
             "behaviorChanged": False,
             "rationale": "Process-only change is certified by policy and validator tests.",
+            "requiredReviewSkills": ["cv-review-implementation-tests"],
             "evidenceKinds": ["policy", "unit"],
             "riskCoverage": {},
             "cleanRuntimeRequired": False,
@@ -173,6 +174,15 @@ class DeliveryEvidenceTests(unittest.TestCase):
         evidence["review"]["decision"] = "Approved"  # type: ignore[index]
         failures = self.validate(evidence)
         self.assertTrue(any("adequate executable evidence" in failure for failure in failures))
+
+    def test_completed_review_must_cover_every_required_ai_skill(self) -> None:
+        evidence = manifest()
+        evidence["certification"]["requiredReviewSkills"] = [  # type: ignore[index]
+            "cv-review-implementation-tests",
+            "cv-review-release-readiness",
+        ]
+        failures = self.validate(evidence)
+        self.assertTrue(any("omits required AI reviews" in failure for failure in failures))
 
     def test_done_without_post_merge_verification_fails(self) -> None:
         evidence = copy.deepcopy(manifest())

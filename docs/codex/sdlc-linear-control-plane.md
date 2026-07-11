@@ -155,7 +155,7 @@ PR head SHA:
 Evidence manifest path:
 Exact checks and exit codes:
 Environment versions:
-Applicable AI review skills:
+Required AI review skills:
 Risk/gate evidence coverage:
 Certification rationale:
 Clean runtime/Compose/journey evidence required: Yes | No
@@ -171,7 +171,7 @@ Dependency impact:
 Decision: Approved | Approved with required fixes | Blocked
 Reviewer:
 Review method: AI
-AI review skills:
+Completed AI review skills:
 Evidence adequate for changed behavior: Yes | No
 Human approval evidence (only when required):
 Reviewed base SHA:

@@ -69,6 +69,15 @@ def main() -> int:
                 "docs/sdlc/evidence-manifest.schema.json: missing required fields "
                 + ", ".join(missing)
             )
+        certification_properties = (
+            schema.get("properties", {})
+            .get("certification", {})
+            .get("properties", {})
+        )
+        if "requiredReviewSkills" not in certification_properties:
+            failures.append(
+                "docs/sdlc/evidence-manifest.schema.json: missing requiredReviewSkills"
+            )
 
     review_skills = sorted((ROOT / ".agents/skills").glob("cv-review-*/SKILL.md"))
     if len(review_skills) != 10:
