@@ -60,5 +60,10 @@
   "SUB-49": [
     {"issue": "SUB-47", "mergeSha": "44115b270e83cc03c8266a3db6c2f357cbe8a6cc", "postMergeVerified": true},
     {"issue": "SUB-66", "mergeSha": "d8f99ebd27a5d3d99a6d1ad59477e94acd142ce3", "postMergeVerified": true}
+  ],
+  "SUB-46": [
+    {"issue": "SUB-39", "mergeSha": "44115b270e83cc03c8266a3db6c2f357cbe8a6cc", "postMergeVerified": true},
+    {"issue": "SUB-49", "mergeSha": "699f5eb2f27eae96b314c9be0ff9f5837f37ca2f", "postMergeVerified": true},
+    {"issue": "SUB-66", "mergeSha": "d8f99ebd27a5d3d99a6d1ad59477e94acd142ce3", "postMergeVerified": true}
   ]
 }

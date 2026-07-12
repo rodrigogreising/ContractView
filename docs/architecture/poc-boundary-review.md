@@ -234,3 +234,18 @@ updates queue/invoice state, creates a successor, or appends provenance. The
 event keeps the Government organization as actor organization and the NGO as
 resource organization. This is an implementation refinement inside ADR 0002;
 it adds no layer, service, table owner, or network boundary.
+
+## SUB-46 Returned Revision And Resubmission Boundary
+
+The revision command remains in the Invoices application capability. It uses
+capability-owned repositories for successor state and a declared read-only
+Invoices/Workflow model solely to bind the correction to the exact Government
+decision line keys. The command cannot accept caller-supplied tenant scope,
+mutate the Workflow decision, or expose a raw database connection.
+
+The returned v2 line is editable only by the assigned NGO Preparer. Validation,
+attestation, package generation, and resubmission remain separate deterministic
+and human-authority commands; a distinct NGO Approver session is required.
+Provenance appends the correction/decision link. No service split, shared table
+ownership, cross-capability write, AI authority, or client-side authorization
+exception is introduced.

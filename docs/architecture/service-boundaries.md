@@ -319,3 +319,24 @@ Pydantic contracts and web TypeScript types; generated files are never edited
 directly. Closed-vocabulary drift or stale consumers fail the shared-contract
 validator. These packages emit no events, own no database tables, and grant no
 human authority.
+
+## Returned Revision Boundary (SUB-46)
+
+- Owner role: Invoices owns successor state, cloned lines, version links, and
+  revision corrections; Workflow owns the immutable Government decision;
+  Provenance owns events, relations, and lineage.
+- Allowed dependency: the Invoices application command reads the exact return
+  decision through a declared, read-only cross-capability read model. It does
+  not query Workflow tables through an Invoices repository or write them.
+- Data and events: the editable successor references one immutable predecessor
+  and decision. A correction appends lineage and an `invoice_line_corrected`
+  event with invoice and decision version references.
+- Deterministic behavior: only a line key contained in the bound return decision
+  may change; invalid, unauthorized, stale, or unrelated-line requests roll
+  back without material-revision, line, correction, lineage, or event mutation.
+- Human authority: NGO Preparer alone corrects; NGO Approver separately
+  revalidates, attests, packages, and submits; Government Reviewer alone makes
+  the return/final approval decision. The web workspace grants no authority.
+- Prohibited responsibilities: correction cannot mutate v1 evidence, select an
+  arbitrary draft line, create validation findings, attest, submit, approve, or
+  invoke AI.

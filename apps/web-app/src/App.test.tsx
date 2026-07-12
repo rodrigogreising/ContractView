@@ -9,6 +9,7 @@ import {
   FindingResolutionView,
   GovernmentWorkspace,
   InvoiceDraftView,
+  RevisionFeedbackPanel,
   ValidationView,
 } from "./App";
 
@@ -118,6 +119,104 @@ describe("authentication shell", () => {
     expect(html).toContain("95");
     expect(html).toContain("Accept");
     expect(html).toContain("Correct");
+  });
+  it("binds revision correction controls to the exact returned line", () => {
+    const html = renderToString(
+      <RevisionFeedbackPanel
+        feedback={{
+          invoiceVersionId: "invoice-v2",
+          predecessorInvoiceVersionId: "invoice-v1",
+          decisionId: "decision-v1",
+          reasonCode: "EVIDENCE_CORRECTION",
+          note: "Correct the service evidence and resubmit",
+          lineKeys: ["EXP-004"],
+        }}
+        draft={{
+          id: "invoice-v2",
+          version: 2,
+          configurationVersionId: "config-v1",
+          state: "draft",
+          total: "100.00",
+          categories: [],
+          lines: [
+            {
+              expenseKey: "EXP-003",
+              date: "2026-06-18",
+              vendor: "Synthetic Vendor",
+              description: "Unrelated line",
+              category: "Program",
+              amount: "50.00",
+              ledgerArtifactId: "ledger",
+              ledgerSource: "CSV!F4",
+              evidenceArtifactId: "evidence-3",
+              extractionStatus: "accepted",
+            },
+            {
+              expenseKey: "EXP-004",
+              date: "2026-06-20",
+              vendor: "Synthetic Vendor",
+              description: "Returned evidence line",
+              category: "Program",
+              amount: "50.00",
+              ledgerArtifactId: "ledger",
+              ledgerSource: "CSV!F5",
+              evidenceArtifactId: "evidence-4",
+              extractionStatus: "accepted",
+            },
+          ],
+          findings: [],
+        }}
+        onCorrect={() => {}}
+      />,
+    );
+    expect(html).toContain("Government feedback on version 1");
+    expect(html).toMatch(/Exact returned lines:.*EXP-004/);
+    expect(html).toMatch(/Corrected description for.*EXP-004/);
+    expect(html).toContain("Returned evidence line");
+    expect(html).not.toContain("Corrected description for EXP-003");
+    expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Apply correction/);
+  });
+  it("refuses to fall back to an unrelated draft line when feedback is malformed", () => {
+    const html = renderToString(
+      <RevisionFeedbackPanel
+        feedback={{
+          invoiceVersionId: "invoice-v2",
+          predecessorInvoiceVersionId: "invoice-v1",
+          decisionId: "decision-v1",
+          reasonCode: "EVIDENCE_CORRECTION",
+          note: "Malformed synthetic feedback",
+          lineKeys: [],
+        }}
+        draft={{
+          id: "invoice-v2",
+          version: 2,
+          configurationVersionId: "config-v1",
+          state: "draft",
+          total: "50.00",
+          categories: [],
+          lines: [
+            {
+              expenseKey: "EXP-003",
+              date: "2026-06-18",
+              vendor: "Synthetic Vendor",
+              description: "Unrelated line",
+              category: "Program",
+              amount: "50.00",
+              ledgerArtifactId: "ledger",
+              ledgerSource: "CSV!F4",
+              evidenceArtifactId: "evidence-3",
+              extractionStatus: "accepted",
+            },
+          ],
+          findings: [],
+        }}
+        onCorrect={() => {}}
+      />,
+    );
+    expect(html).toMatch(/Exact returned lines:.*none/);
+    expect(html).toContain("No correctable returned line");
+    expect(html).toMatch(/<button[^>]*disabled=""/);
+    expect(html).not.toContain("Corrected description for EXP-003");
   });
   it("renders stable draft totals, budgets, evidence, extraction, and findings", () => {
     const html = renderToString(

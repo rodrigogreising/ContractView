@@ -228,6 +228,24 @@ flag is enabled and are absent from the default production bundle. Client role
 routing remains presentational; every command still authorizes the server
 session, assignment, resource, and lifecycle state.
 
+### SUB-46 Implementation Note: Returned Revision And Resubmission
+
+No new ADR is required. SUB-46 makes the existing immutable revision decision
+executable within the Invoices capability. A Government return atomically
+creates one editable successor linked to the exact immutable predecessor and
+decision. The correction command resolves canonical invoice scope and uses a
+declared read model to prove that the requested expense key is one of the exact
+lines named by that decision; an arbitrary line on the draft cannot be edited.
+
+The Preparer correction appends a normalized correction record, same-field
+lineage successor, material-revision increment, and versioned event referencing
+the decision. A separate NGO Approver must then run deterministic validation,
+attest, generate a new package, and resubmit. V1 package bytes/hashes,
+validation findings, decision feedback, events, and snapshots are compared
+before and after the complete v2 path. This implements ADR 0001 provenance,
+determinism, and human-authority pillars without changing deployment shape or
+capability ownership.
+
 ## AI Boundary
 
 - One replaceable OCR/LLM adapter extracts draft fields from one supported synthetic receipt/vendor-invoice format.

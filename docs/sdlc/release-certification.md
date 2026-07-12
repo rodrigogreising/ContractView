@@ -132,6 +132,22 @@ canonical Government actor plus exact invoice, submission, package, and
 decision versions. Passing SUB-49 unblocks correction/resubmission; it does not
 replace the final Journey 11 recording.
 
+### Returned Revision Certification
+
+SUB-46 must prove that a correction is authorized against the canonical
+returned successor and the exact affected line set in its immutable Government
+decision. An unrelated existing v2 line, an unauthorized role, a non-draft
+invoice, or incomplete correction input must produce zero mutation. The
+accepted correction records normalized values, the human Preparer, same-field
+lineage, material revision, and the decision version reference.
+
+The same integration path must then execute deterministic v2 validation and a
+separate NGO Approver attestation, package, and resubmission. V1 package bytes
+and hashes, findings, feedback, events, and snapshots must remain byte/value
+identical; v2 must retain its predecessor/decision link and distinct validation,
+package-build, and archive hashes. Passing SUB-46 unblocks the audit timeline;
+it does not replace the final clean Playwright recording or release review.
+
 ### Public Repository Publication
 
 Public source disclosure is a separate release decision from POC runtime
