@@ -218,6 +218,13 @@ CONTRACT_REQUIRED_FIELDS = {
     'ConfigurationLifecycleResponseDto': frozenset(['versions']),
     'ActiveConfigurationDto': frozenset(['id', 'version', 'activated_at']),
     'EventEnvelope': frozenset(['event_id', 'event_type', 'schema_version', 'actor', 'organization_id', 'contract_id', 'aggregate', 'occurred_at', 'payload', 'version_references']),
+    'AuditEventDto': frozenset(['id', 'event', 'event_hash']),
+    'AuditLineageDto': frozenset(['id', 'field_name', 'field_value', 'recorded_at']),
+    'AuditRelationDto': frozenset(['id', 'relation_type', 'source', 'target', 'actor', 'relation_hash', 'created_at']),
+    'AuditSnapshotDto': frozenset(['id', 'invoice_version_id', 'invoice_version', 'material_revision', 'stage', 'payload', 'snapshot_hash', 'actor', 'created_at']),
+    'AuditPackageDto': frozenset(['package_id', 'invoice_version_id', 'invoice_version', 'reproduction_manifest_id', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'build_input_hash', 'package_manifest_hash', 'archive_sha256', 'reproduction_manifest_hash', 'template_id', 'template_version', 'template_hash', 'manifest', 'build_input']),
+    'ClaimedAmountTrailDto': frozenset(['expense_key', 'claimed_amount', 'source_artifact_id', 'source_location', 'validation_run_id', 'invoice_snapshot_id', 'invoice_version_id', 'invoice_version', 'package_id', 'package_manifest_hash', 'archive_sha256']),
+    'AuditTimelineDto': frozenset(['contract_id', 'events', 'lineage', 'relations', 'snapshots', 'packages', 'claimed_amount_trails']),
 }
 
 
@@ -486,3 +493,95 @@ class EventEnvelope(ContractModel):
     payload: dict[str, Any]
     version_references: list[VersionReference]
     reason_code: ReasonCode | None = None
+
+
+class AuditEventDto(ContractModel):
+    id: int
+    event: EventEnvelope
+    event_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class AuditLineageDto(ContractModel):
+    id: int
+    field_name: str
+    field_value: Any
+    source_artifact_id: str | None = None
+    source_location: str | None = None
+    importer_version: str | None = None
+    extractor_provider: str | None = None
+    extractor_model: str | None = None
+    prompt_version: str | None = None
+    parser_version: str | None = None
+    mapping_version: str | None = None
+    correction_actor: ActorReference | None = None
+    correction_reason: str | None = None
+    validation_run_id: str | None = None
+    invoice_version_id: str | None = None
+    package_artifact_id: str | None = None
+    predecessor_lineage_id: int | None = None
+    recorded_at: datetime
+
+
+class AuditRelationDto(ContractModel):
+    id: str
+    relation_type: RelationType
+    source: VersionReference
+    target: VersionReference
+    actor: ActorReference
+    reason_code: ReasonCode | None = None
+    relation_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    created_at: datetime
+
+
+class AuditSnapshotDto(ContractModel):
+    id: str
+    invoice_version_id: str
+    invoice_version: int
+    material_revision: int
+    stage: str
+    payload: dict[str, Any]
+    snapshot_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    actor: ActorReference
+    created_at: datetime
+
+
+class AuditPackageDto(ContractModel):
+    package_id: str
+    invoice_version_id: str
+    invoice_version: int
+    reproduction_manifest_id: str
+    validation_input_manifest_id: str
+    validation_input_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    build_input_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    package_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    archive_sha256: str = Field(pattern='^[a-f0-9]{64}$')
+    reproduction_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    template_id: str
+    template_version: int
+    template_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    manifest: dict[str, Any]
+    build_input: dict[str, Any]
+
+
+class ClaimedAmountTrailDto(ContractModel):
+    expense_key: str
+    claimed_amount: str
+    source_artifact_id: str
+    source_location: str
+    validation_run_id: str
+    invoice_snapshot_id: str
+    invoice_version_id: str
+    invoice_version: int
+    package_id: str
+    package_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    archive_sha256: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class AuditTimelineDto(ContractModel):
+    contract_id: str
+    events: list[AuditEventDto]
+    lineage: list[AuditLineageDto]
+    relations: list[AuditRelationDto]
+    snapshots: list[AuditSnapshotDto]
+    packages: list[AuditPackageDto]
+    claimed_amount_trails: list[ClaimedAmountTrailDto]

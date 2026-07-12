@@ -1,6 +1,6 @@
 {
   "package": "event-contracts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependsOn": {"domain-types": "^1.0.0", "configuration-contracts": "^1.0.0"},
   "vocabularies": {
     "eventTypes": {"python": "EventType", "typescript": "EventType", "constant": "EVENT_TYPES", "values": ["login_succeeded", "login_failed", "logout", "config_tested", "config_approved", "config_activated", "config_superseded", "config_retired", "config_rollback_prepared", "artifact_uploaded", "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed", "invoice_line_corrected", "finding_resolved", "attested", "package_generated", "submitted", "returned", "revision_created", "resubmitted", "approved"]}
@@ -18,6 +18,91 @@
       {"name": "payload", "type": "map<string,any>", "required": true},
       {"name": "versionReferences", "type": "VersionReference[]", "required": true},
       {"name": "reasonCode", "type": "ReasonCode", "required": false, "nullable": true}
+    ]},
+    "AuditEventDto": {"model": "AuditEventDto", "fields": [
+      {"name": "id", "type": "integer", "required": true},
+      {"name": "event", "type": "EventEnvelope", "required": true},
+      {"name": "eventHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "AuditLineageDto": {"model": "AuditLineageDto", "fields": [
+      {"name": "id", "type": "integer", "required": true},
+      {"name": "fieldName", "type": "string", "required": true},
+      {"name": "fieldValue", "type": "any", "required": true},
+      {"name": "sourceArtifactId", "type": "string", "required": false, "nullable": true},
+      {"name": "sourceLocation", "type": "string", "required": false, "nullable": true},
+      {"name": "importerVersion", "type": "string", "required": false, "nullable": true},
+      {"name": "extractorProvider", "type": "string", "required": false, "nullable": true},
+      {"name": "extractorModel", "type": "string", "required": false, "nullable": true},
+      {"name": "promptVersion", "type": "string", "required": false, "nullable": true},
+      {"name": "parserVersion", "type": "string", "required": false, "nullable": true},
+      {"name": "mappingVersion", "type": "string", "required": false, "nullable": true},
+      {"name": "correctionActor", "type": "ActorReference", "required": false, "nullable": true},
+      {"name": "correctionReason", "type": "string", "required": false, "nullable": true},
+      {"name": "validationRunId", "type": "string", "required": false, "nullable": true},
+      {"name": "invoiceVersionId", "type": "string", "required": false, "nullable": true},
+      {"name": "packageArtifactId", "type": "string", "required": false, "nullable": true},
+      {"name": "predecessorLineageId", "type": "integer", "required": false, "nullable": true},
+      {"name": "recordedAt", "type": "datetime", "required": true}
+    ]},
+    "AuditRelationDto": {"model": "AuditRelationDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "relationType", "type": "RelationType", "required": true},
+      {"name": "source", "type": "VersionReference", "required": true},
+      {"name": "target", "type": "VersionReference", "required": true},
+      {"name": "actor", "type": "ActorReference", "required": true},
+      {"name": "reasonCode", "type": "ReasonCode", "required": false, "nullable": true},
+      {"name": "relationHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "createdAt", "type": "datetime", "required": true}
+    ]},
+    "AuditSnapshotDto": {"model": "AuditSnapshotDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "invoiceVersionId", "type": "string", "required": true},
+      {"name": "invoiceVersion", "type": "integer", "required": true},
+      {"name": "materialRevision", "type": "integer", "required": true},
+      {"name": "stage", "type": "string", "required": true},
+      {"name": "payload", "type": "map<string,any>", "required": true},
+      {"name": "snapshotHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "actor", "type": "ActorReference", "required": true},
+      {"name": "createdAt", "type": "datetime", "required": true}
+    ]},
+    "AuditPackageDto": {"model": "AuditPackageDto", "fields": [
+      {"name": "packageId", "type": "string", "required": true},
+      {"name": "invoiceVersionId", "type": "string", "required": true},
+      {"name": "invoiceVersion", "type": "integer", "required": true},
+      {"name": "reproductionManifestId", "type": "string", "required": true},
+      {"name": "validationInputManifestId", "type": "string", "required": true},
+      {"name": "validationInputManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "buildInputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "packageManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "archiveSha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "reproductionManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "templateId", "type": "string", "required": true},
+      {"name": "templateVersion", "type": "integer", "required": true},
+      {"name": "templateHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "manifest", "type": "map<string,any>", "required": true},
+      {"name": "buildInput", "type": "map<string,any>", "required": true}
+    ]},
+    "ClaimedAmountTrailDto": {"model": "ClaimedAmountTrailDto", "fields": [
+      {"name": "expenseKey", "type": "string", "required": true},
+      {"name": "claimedAmount", "type": "string", "required": true},
+      {"name": "sourceArtifactId", "type": "string", "required": true},
+      {"name": "sourceLocation", "type": "string", "required": true},
+      {"name": "validationRunId", "type": "string", "required": true},
+      {"name": "invoiceSnapshotId", "type": "string", "required": true},
+      {"name": "invoiceVersionId", "type": "string", "required": true},
+      {"name": "invoiceVersion", "type": "integer", "required": true},
+      {"name": "packageId", "type": "string", "required": true},
+      {"name": "packageManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "archiveSha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "AuditTimelineDto": {"model": "AuditTimelineDto", "fields": [
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "events", "type": "AuditEventDto[]", "required": true},
+      {"name": "lineage", "type": "AuditLineageDto[]", "required": true},
+      {"name": "relations", "type": "AuditRelationDto[]", "required": true},
+      {"name": "snapshots", "type": "AuditSnapshotDto[]", "required": true},
+      {"name": "packages", "type": "AuditPackageDto[]", "required": true},
+      {"name": "claimedAmountTrails", "type": "ClaimedAmountTrailDto[]", "required": true}
     ]}
   },
   "evolution": "Payload additions are optional within a minor version. Required-field, type, constraint, or semantic changes require a new schemaVersion and major package version."

@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import type { ActiveConfigurationDto as ActiveConfiguration, ContractContextDto, GovernedConfigurationVersionDto as GovernedConfigurationVersion, IdentityDto as User, ValidationRunDto as ValidationRun } from "../generated/contracts";
+import type { ActiveConfigurationDto as ActiveConfiguration, AuditTimelineDto, ContractContextDto, GovernedConfigurationVersionDto as GovernedConfigurationVersion, IdentityDto as User, ValidationRunDto as ValidationRun } from "../generated/contracts";
 import type { ApprovalPreview, Attestation, Configuration, Extraction, Finding, GeneratedPackage, InvoiceDraft, Job, RevisionFeedback, Submission } from "../domain/types";
 import { roleLabel } from "../presentation/roleLabel";
 import { AuditorWorkspace } from "./AuditorWorkspace";
@@ -22,6 +22,7 @@ export function AuthenticatedWorkspace({
   validation,
   findings,
   revisionFeedback,
+  auditTimeline = null,
   approvalPreview,
   attestation,
   generatedPackage,
@@ -58,6 +59,7 @@ export function AuthenticatedWorkspace({
   validation: ValidationRun | null;
   findings: Finding[];
   revisionFeedback: RevisionFeedback | null;
+  auditTimeline?: AuditTimelineDto | null;
   approvalPreview: ApprovalPreview | null;
   attestation: Attestation | null;
   generatedPackage: GeneratedPackage | null;
@@ -124,7 +126,7 @@ export function AuthenticatedWorkspace({
         {user.role === "configuration_administrator" && configuration && <ConfigurationWorkspace configuration={configuration} active={activeConfiguration} versions={configurationLifecycle} message={message} onSave={onSaveConfiguration} onTest={onTestConfiguration} onApprove={onApproveConfiguration} onActivate={onActivateConfiguration} onSupersede={onSupersedeConfiguration} onRetire={onRetireConfiguration} onRollback={onRollbackConfiguration} />}
         {user.role === "ngo_preparer" && <NgoPreparerWorkspace jobs={jobs} extractions={extractions} draft={draft} validation={validation} findings={findings} feedback={revisionFeedback} message={message} onUpload={onUpload} onReview={onReview} onAssemble={onAssemble} onValidate={onValidate} onResolve={onResolveFinding} onCorrect={onCorrectRevision} />}
         {user.role === "ngo_approver" && approvalPreview && <NgoApproverWorkspace preview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onAttest={onAttest} onGeneratePackage={onGeneratePackage} onSubmit={onSubmitInvoice} />}
-        {user.role === "auditor" && <AuditorWorkspace />}
+        {user.role === "auditor" && <AuditorWorkspace timeline={auditTimeline} />}
       </main>
     </>
   );

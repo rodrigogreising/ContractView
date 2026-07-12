@@ -224,3 +224,12 @@ Certified | Certified with exceptions | Blocked
 - Security/privacy:
 - Release owner:
 ```
+
+## SUB-50 Audit Timeline Gate
+
+SUB-50 is eligible for approval only when the immutable PR diff proves a typed
+GET-only audit contract, canonical submitted scope, exact actor/version/hash
+evidence, both package trails, and zero-mutation Auditor denial. The clean
+Compose suite must pass twice with identical semantic fingerprints. Passing
+this gate satisfies the audit reconstruction precursor but does not replace
+SUB-55 Playwright artifacts or release approval.

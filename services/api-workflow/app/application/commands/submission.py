@@ -32,10 +32,13 @@ def submit(actor:Actor,invoice_id:str)->dict:
                 {"kind":"submission","id":submission_id,"version":invoice[3]},actor=actor)
             connection.workflow.execute(Statement.SUBMISSION_WRITE_GOVERNMENT_QUEUE_ITEMS_006,(queue_id,submission_id,contract[0],contract[1]))
             artifact_rows=connection.read_models.execute(Statement.SUBMISSION_READ_EXTRACTION_FIELDS_EXTRACTION_FIELDS_EXTRACTION_RUNS_EXTRACTION_RUNS_008,(package[0],invoice_id,invoice_id,invoice_id,invoice_id)).fetchall()
+            is_resubmission=bool(connection.invoices.execute(
+                Statement.SUBMISSION_READ_INVOICE_VERSION_LINKS_010,(invoice_id,)
+            ).fetchone()[0])
             artifact_ids=[row[0] for row in artifact_rows]
             if artifact_ids:
                 connection.artifacts.execute(Statement.SUBMISSION_WRITE_ARTIFACTS_009,(artifact_ids,))
-            append_event_tx(connection,"submitted","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=invoice[1],payload={"submissionId":submission_id,"queueItemId":queue_id,"packageId":package[0],"invoiceVersion":invoice[3],"configurationVersionId":invoice[2],"packageHashes":dict(hashes),"invoiceSnapshotId":snapshot["id"]},version_references=[
+            append_event_tx(connection,"resubmitted" if is_resubmission else "submitted","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=invoice[1],payload={"submissionId":submission_id,"queueItemId":queue_id,"packageId":package[0],"invoiceVersion":invoice[3],"configurationVersionId":invoice[2],"packageHashes":dict(hashes),"invoiceSnapshotId":snapshot["id"]},version_references=[
                 {"kind":"submission","id":submission_id,"version":invoice[3]},
                 {"kind":"invoice_snapshot","id":snapshot["id"],"version":snapshot["payload"]["materialRevision"],"sha256":snapshot["sha256"]},
                 {"kind":"invoice","id":invoice_id,"version":invoice[3]},

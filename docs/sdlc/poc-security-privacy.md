@@ -319,3 +319,21 @@ Controlling issue: `SUB-46`. Project stage: Build.
 All tested identities and records remain synthetic and reserved-domain. This
 does not add real-data handling, hosted retention, SSO/MFA, or production
 promotion authority.
+
+## SUB-50 Auditor Scope And Zero-Mutation Evidence
+
+Controlling issue: `SUB-50`. Project stage: Build.
+
+- The server resolves audit access from canonical contract assignment and
+  submitted invoice state; query parameters do not grant tenant visibility.
+- `/audit/timeline` is GET-only. The Auditor workspace receives no mutation
+  callback and renders no form or action button.
+- HTTP denial tests exercise configuration, invoice assembly, validation,
+  attestation, package, and submission commands under a real Auditor session
+  and compare mutation-sensitive table counts before and after.
+- Actor identity is enriched from canonical users; typed events and relations
+  preserve actor and resource organizations separately.
+- Only submitted evidence is returned; draft-only evidence remains hidden.
+
+All content remains synthetic and reserved-domain. This adds no broader
+retention, real-data, public-write, support-access, or production authority.

@@ -26,7 +26,7 @@ from app.submission import submit
 from app.government_review import list_queue,review_context
 from app.government_decision import DecisionError,decide
 from app.revision import RevisionError,correct_revision,revision_feedback
-from app.provenance import audit_query
+from app.provenance import audit_query,audit_timeline
 from app.artifacts import download_artifact
 from io import BytesIO
 import zipfile
@@ -231,7 +231,7 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert submitted_sources and all(item[1] for item in submitted_sources)
     assert all(download_artifact(AUDITOR,item[0]) for item in submitted_sources)
     auditor_evidence=audit_query(AUDITOR,CONTRACT,submitted=True)
-    assert {"extraction_drafted","field_reviewed","validation_completed","attested","package_generated","submitted"} <= {item["eventType"] for item in auditor_evidence["events"]}
+    assert {"extraction_drafted","field_corrected","validation_completed","attested","package_generated","submitted"} <= {item["eventType"] for item in auditor_evidence["events"]}
     assert any(item["invoiceVersionId"]==invoice["id"] for item in auditor_evidence["lineage"])
     assert event==(submission["id"],submission["packageId"])
     assert snapshot_links==("validation","attestation","package","submission")
@@ -394,6 +394,19 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert {submission["packageId"],v2_package["id"]} <= set(reproduced_packages)
     assert all(item["validationInputManifestHash"] and item["buildInputHash"] and item["packageManifestHash"] and item["archiveSha256"] for item in reproduced_packages.values())
     assert all(item["templateId"]=="reimbursement-invoice-pdf" and item["templateVersion"]==1 and len(item["templateHash"])==64 for item in reproduced_packages.values())
+    timeline=audit_timeline(AUDITOR,CONTRACT)
+    required_timeline_events={
+        "config_activated","artifact_uploaded","extraction_drafted","field_corrected",
+        "validation_completed","finding_resolved","attested","package_generated",
+        "submitted","returned","revision_created","invoice_line_corrected","resubmitted","approved",
+    }
+    assert required_timeline_events <= {item["event"]["eventType"] for item in timeline["events"]}
+    assert all(item["event"]["actor"]["userId"] and item["event"]["actor"]["organizationId"] and item["event"]["actor"]["role"] for item in timeline["events"])
+    exp004_trails=[item for item in timeline["claimedAmountTrails"] if item["expenseKey"]=="EXP-004"]
+    assert {item["invoiceVersion"] for item in exp004_trails} >= {invoice["version"],v2["version"]}
+    assert {item["packageId"] for item in exp004_trails} >= {submission["packageId"],v2_package["id"]}
+    assert len({item["archiveSha256"] for item in exp004_trails}) >= 2
+    assert all(item["sourceArtifactId"] and item["sourceLocation"] and item["validationRunId"] and item["invoiceSnapshotId"] for item in exp004_trails)
     with pytest.raises(psycopg.errors.RaiseException,match="append-only"):
         with database() as connection:
             connection.execute("update invoice_snapshots set payload='{}' where id=%s",(v1_snapshots_before[0][0],))

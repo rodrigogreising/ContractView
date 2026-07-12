@@ -6,7 +6,12 @@ import uuid
 
 from .access_scope import audit_scope
 from ...authorization import Action, Actor, Role, require_permission
-from ...shared_contracts import MATERIAL_EVENT_TYPES, RelationContract, VersionReference
+from ...shared_contracts import (
+    AuditTimelineDto,
+    MATERIAL_EVENT_TYPES,
+    RelationContract,
+    VersionReference,
+)
 
 from ..ports.statements import Statement
 from ..transaction import transaction as database
@@ -270,6 +275,115 @@ def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str,
             ["packageId","invoiceVersionId","invoiceVersion","reproductionManifestId",
              "validationInputManifestId","validationInputManifestHash","buildInputHash",
              "packageManifestHash","archiveSha256","reproductionManifestHash","templateId",
-             "templateVersion","templateHash","manifest"], row
+             "templateVersion","templateHash","manifest","buildInput"], row
         )) for row in reproduction],
     }
+
+
+def _actor_reference(user_id: str, role: str, organization_id: str) -> dict:
+    return {
+        "userId": user_id,
+        "organizationId": organization_id,
+        "role": role,
+    }
+
+
+def audit_timeline(actor: Actor, contract_id: str) -> dict:
+    """Build the typed, read-only public audit projection from submitted evidence."""
+    evidence = audit_query(actor, contract_id, submitted=True)
+    actor_ids = {
+        item[actor_key]
+        for collection, actor_key in (("lineage", "correctionActorId"), ("snapshots", "createdBy"))
+        for item in evidence[collection]
+        if item[actor_key]
+    }
+    canonical_actors: dict[str, dict] = {}
+    with database() as connection:
+        for actor_id in actor_ids:
+            row = connection.identity.execute(
+                Statement.PROVENANCE_READ_USERS_008,
+                (actor_id,),
+            ).fetchone()
+            if not row:
+                raise ValueError(f"Audit evidence references unknown actor: {actor_id}")
+            canonical_actors[actor_id] = _actor_reference(actor_id, row[0], row[1])
+
+    events = []
+    for item in evidence["events"]:
+        if not item["actorId"] or not item["actorRole"] or not item["actorOrganizationId"]:
+            raise ValueError(f"Material event lacks canonical actor evidence: {item['eventKey']}")
+        references = item["versionReferences"]
+        aggregate = next(
+            (reference for reference in references if reference["id"] == item["aggregateId"]),
+            _default_reference(item["aggregateType"], item["aggregateId"], item["payload"]),
+        )
+        events.append({
+            "id": item["id"],
+            "event": {
+                "eventId": item["eventKey"],
+                "eventType": item["eventType"],
+                "schemaVersion": item["schemaVersion"],
+                "actor": _actor_reference(
+                    item["actorId"], item["actorRole"], item["actorOrganizationId"]
+                ),
+                "organizationId": item["organizationId"],
+                "contractId": item["contractId"],
+                "aggregate": aggregate,
+                "occurredAt": item["occurredAt"],
+                "payload": item["payload"],
+                "versionReferences": references,
+                "reasonCode": item["reasonCode"],
+            },
+            "eventHash": item["eventHash"],
+        })
+
+    lineage = [{
+        **{key: value for key, value in item.items() if key != "correctionActorId"},
+        "correctionActor": canonical_actors.get(item["correctionActorId"]),
+    } for item in evidence["lineage"]]
+    relations = [{
+        "id": item["id"],
+        "relationType": item["relationType"],
+        "source": item["source"],
+        "target": item["target"],
+        "actor": _actor_reference(
+            item["actorId"], item["actorRole"], item["actorOrganizationId"]
+        ),
+        "reasonCode": item["reasonCode"],
+        "relationHash": item["relationHash"],
+        "createdAt": item["createdAt"],
+    } for item in evidence["relations"]]
+    snapshots = [{
+        **{key: value for key, value in item.items() if key not in {"createdBy", "actorRole"}},
+        "actor": canonical_actors[item["createdBy"]],
+    } for item in evidence["snapshots"]]
+
+    trails = []
+    for package in evidence["reproducibility"]:
+        build_input = package["buildInput"]
+        snapshot_id = build_input["invoiceSnapshot"]["id"]
+        for claim in build_input["claims"]:
+            trails.append({
+                "expenseKey": claim["expenseKey"],
+                "claimedAmount": claim["amount"],
+                "sourceArtifactId": claim["ledgerArtifactId"],
+                "sourceLocation": claim["ledgerSource"],
+                "validationRunId": claim["validationRunId"],
+                "invoiceSnapshotId": snapshot_id,
+                "invoiceVersionId": package["invoiceVersionId"],
+                "invoiceVersion": package["invoiceVersion"],
+                "packageId": package["packageId"],
+                "packageManifestHash": package["packageManifestHash"],
+                "archiveSha256": package["archiveSha256"],
+            })
+
+    projection = AuditTimelineDto.model_validate({
+        "contractId": contract_id,
+        "events": events,
+        "lineage": lineage,
+        "relations": relations,
+        "snapshots": snapshots,
+        "packages": evidence["reproducibility"],
+        "claimedAmountTrails": trails,
+    })
+    return projection.model_dump(by_alias=True, mode="json")
