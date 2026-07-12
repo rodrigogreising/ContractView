@@ -14,7 +14,7 @@ from app.runtime import database
 
 FIXTURE = Path("/app/fixtures/scenario.json")
 APP_ROOT = Path(__file__).resolve().parent.parent / "app"
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINISTRATOR)
 AUDITOR = Actor("user-auditor", "org-oversight", Role.AUDITOR)
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)

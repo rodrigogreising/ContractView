@@ -28,7 +28,7 @@ ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINIST
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 GOVERNMENT = Actor("user-government-reviewer", "org-government", Role.GOVERNMENT_REVIEWER)
 AUDITOR = Actor("user-auditor", "org-oversight", Role.AUDITOR)
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 
 
 def draft_payload():

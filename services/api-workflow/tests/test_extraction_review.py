@@ -10,11 +10,11 @@ from app.extraction_review import InvalidReview, UnreviewedField, list_extractio
 from app.ingestion import claim_next_job, create_upload_job, process_job
 from app.runtime import database
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 APPROVER = Actor("user-ngo-approver", "org-ngo", Role.NGO_APPROVER)
 OTHER_NGO = Actor("outside-user", "org-outside", Role.NGO_PREPARER)
-TEXT = """Northstar Learning Supply
+TEXT = """Synthetic Program Supplies Vendor B
 Date: 2026-06-18
 Workshop materials and learning kits $1,820.00
 Expense reference: VENDOR-INVOICE-EXP-003

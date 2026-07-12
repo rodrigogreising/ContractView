@@ -14,7 +14,7 @@ from app.ingestion import claim_next_job, create_upload_job, process_job
 from app.invoice_draft import assemble_draft
 from app.runtime import database
 
-CONTRACT="contract-metro-harbor-2026"
+CONTRACT="contract-synthetic-agency-ngo-2026"
 PREPARER=Actor("user-ngo-preparer","org-ngo",Role.NGO_PREPARER)
 APPROVER=Actor("user-ngo-approver","org-ngo",Role.NGO_APPROVER)
 ADMIN=Actor("user-config-admin","org-operations",Role.CONFIGURATION_ADMINISTRATOR)
@@ -22,7 +22,7 @@ FILES=Path("/app/fixtures/files")
 
 class InvoiceAdapter:
     provider="invoice-fixture-provider"; model="invoice-fixture-model-v1"
-    def extract(self,*_): return OcrResponse(self.provider,self.model,"Northstar Learning Supply\nDate: 2026-06-18\nWorkshop materials and learning kits $1,820.00\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
+    def extract(self,*_): return OcrResponse(self.provider,self.model,"Synthetic Program Supplies Vendor B\nDate: 2026-06-18\nWorkshop materials and learning kits $1,820.00\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
 
 def complete_job(job,adapter=None):
     claimed=claim_next_job(); assert claimed and claimed.id==job.id

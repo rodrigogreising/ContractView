@@ -26,10 +26,10 @@ describe("authentication shell", () => {
       <AuthenticatedWorkspace
         user={{
           id: "preparer",
-          displayName: "Maya Chen",
-          email: "m@demo",
+          displayName: "Synthetic NGO Preparer",
+          email: "member@example.test",
           organizationId: "org-ngo",
-          organizationName: "Harbor Community Services",
+          organizationName: "Synthetic Community Nonprofit",
           role: "ngo_preparer",
         }}
         jobs={[
@@ -80,8 +80,8 @@ describe("authentication shell", () => {
     expect(html).toContain("Upload ledger and evidence");
     expect(html).toContain("Upload and process");
     expect(html).toContain("running");
-    expect(html).toContain("Maya Chen");
-    expect(html).toContain("Harbor Community Services");
+    expect(html).toContain("Synthetic NGO Preparer");
+    expect(html).toContain("Synthetic Community Nonprofit");
     expect(html).toContain("Active config v");
   });
   it("shows source, proposal, confidence, accept, and correct controls", () => {
@@ -140,7 +140,7 @@ describe("authentication shell", () => {
             {
               expenseKey: "EXP-003",
               date: "2026-06-18",
-              vendor: "Northstar Learning Supply",
+              vendor: "Synthetic Program Supplies Vendor B",
               description: "Workshop materials",
               category: "Program Supplies",
               amount: "1280.00",
@@ -496,10 +496,10 @@ describe("authentication shell", () => {
       <GovernmentWorkspace
         user={{
           id: "reviewer",
-          displayName: "Samira Patel",
-          email: "s@demo",
+          displayName: "Synthetic Government Reviewer",
+          email: "synthetic@example.test",
           organizationId: "org-government",
-          organizationName: "Metro Public Programs Agency",
+          organizationName: "Synthetic Public Agency",
           role: "government_reviewer",
         }}
         activeConfiguration={{
@@ -511,7 +511,7 @@ describe("authentication shell", () => {
           {
             id: "queue-1",
             status: "submitted",
-            ngo: "Harbor Community Services",
+            ngo: "Synthetic Community Nonprofit",
             contract: "Community services contract",
             invoiceVersion: 1,
             amount: "10130.00",
@@ -526,7 +526,7 @@ describe("authentication shell", () => {
           status: "submitted",
           invoiceVersion: 1,
           amount: "10130.00",
-          ngo: "Harbor Community Services",
+          ngo: "Synthetic Community Nonprofit",
           contract: "Community services contract",
           configurationVersionId: "config-v1",
           zipArtifactId: "zip",
@@ -562,9 +562,9 @@ describe("authentication shell", () => {
         onLogout={() => {}}
       />,
     );
-    expect(html).toContain("Samira Patel");
+    expect(html).toContain("Synthetic Government Reviewer");
     expect(html).toContain("Government Reviewer");
-    expect(html).toContain("Harbor Community Services");
+    expect(html).toContain("Synthetic Community Nonprofit");
     expect(html).toContain("Inspect exact package");
     expect(html).toContain("Download exact package ZIP");
     expect(html).toContain("deterministic-validation-v1");

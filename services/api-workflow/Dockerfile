@@ -8,3 +8,4 @@ COPY services/api-workflow/app ./app
 COPY services/api-workflow/migrations ./migrations
 COPY services/api-workflow/tests ./tests
 COPY packages/test-fixtures ./fixtures
+COPY scripts/generate_test_fixtures.py ./generate_test_fixtures.py

@@ -25,7 +25,7 @@ Status: Approved
 
 ## Golden Expectation
 
-- Vendor: Northstar Learning Supply.
+- Vendor: Synthetic Program Supplies Vendor B.
 - Date: 2026-06-18.
 - Proposed amount: 1820.00 (intentionally requires correction to the approved claim total 1280.00 in SUB-36).
 - Source reference: VENDOR-INVOICE-EXP-003.

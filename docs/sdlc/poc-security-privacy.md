@@ -158,3 +158,25 @@ Controlling issue: `SUB-64` / REC-08. Project stage: Build.
 Residual POC risk: the evidence store is local PostgreSQL/MinIO without hosted
 backup, legal hold, retention automation, or external timestamping. Those
 controls are required before real data or production use.
+
+## SUB-79 Public Disclosure Boundary
+
+Controlling issue: `SUB-79`. Project stage: Build.
+
+- The private repository remains the durable SDLC and audit store. It is not
+  itself the public artifact because its Git history and control-plane evidence
+  contain identities and links outside the approved disclosure boundary.
+- Publication uses a deterministic allowlisted, history-free export with a
+  neutral repository identity. Internal implementation evidence, Linear and PR
+  links, local artifacts, and publication tooling are excluded.
+- Runtime fixtures use a positive synthetic-data contract: closed organization,
+  persona, vendor, employee-reference, and reserved-domain email catalogs. The
+  generated CSV, XLSX, PDF, and PNG artifacts are deterministic and their
+  content, metadata, and hashes are verified.
+- The candidate verifier rejects legacy/private identity fragments,
+  non-reserved email domains, Git metadata, and high-confidence secret shapes.
+  It records every included path and SHA-256 digest in
+  `PUBLICATION-MANIFEST.json`.
+- SUB-79 does not change repository visibility or grant a reuse license. A
+  separately recorded owner disclosure decision is required after the
+  candidate passes clean Compose certification and immutable AI review.

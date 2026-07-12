@@ -9,12 +9,12 @@ from app.extraction import OcrResponse
 from app.ingestion import claim_next_job, create_upload_job, list_jobs, process_job
 from app.runtime import database
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 AUDITOR = Actor("user-auditor", "org-oversight", Role.AUDITOR)
 FILES = Path("/app/fixtures/files")
 
-VALID_TEXT = """Northstar Learning Supply
+VALID_TEXT = """Synthetic Program Supplies Vendor B
 Date: 2026-06-18
 Workshop materials and learning kits $1,820.00
 Expense reference: VENDOR-INVOICE-EXP-003
@@ -51,7 +51,7 @@ def test_real_tesseract_worker_adapter_extracts_golden_draft_and_full_trace():
         event = connection.execute(
             "select event_type,payload->>'rawResponseArtifactId' from domain_events where aggregate_id=%s", (run[0],)
         ).fetchone()
-    assert fields == {"vendor":"Northstar Learning Supply","date":"2026-06-18","amount":"1820.00","sourceReference":"VENDOR-INVOICE-EXP-003"}
+    assert fields == {"vendor":"Synthetic Program Supplies Vendor B","date":"2026-06-18","amount":"1820.00","sourceReference":"VENDOR-INVOICE-EXP-003"}
     assert run[2:7] == ("tesseract-cli","tesseract-5.5.0-eng","vendor-invoice-fields-v1","vendor-invoice-parser-v1","vendor-date-amount-reference-v1")
     assert run[7] == "page=1" and run[8] > Decimal("0.8500")
     assert run[9:] == ("needs_review", "HUMAN_REVIEW_REQUIRED")

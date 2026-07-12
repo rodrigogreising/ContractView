@@ -1,6 +1,7 @@
 .env
 .DS_Store
 node_modules/
+.venv/
 .pnpm-store/
 dist/
 coverage/

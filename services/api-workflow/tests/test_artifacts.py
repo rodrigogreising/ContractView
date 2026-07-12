@@ -9,7 +9,7 @@ from app.settings import get_settings
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 OTHER_NGO = Actor("outside-user", "org-outside", Role.NGO_PREPARER)
 AUDITOR = Actor("user-auditor", "org-oversight", Role.AUDITOR)
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 
 
 def test_original_and_generated_bytes_are_stored_with_integrity_metadata():

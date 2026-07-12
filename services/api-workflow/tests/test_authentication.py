@@ -4,12 +4,12 @@ from app.runtime import database
 
 
 def test_seeded_login_creates_resolvable_opaque_session():
-    result = authenticate("ngo.preparer@contractview.demo", "Demo-Prepare-2026!")
+    result = authenticate("ngo.preparer@example.test", "Demo-Prepare-2026!")
     assert result is not None
     token, actor, profile = result
     assert actor.role is Role.NGO_PREPARER
     assert actor.organization_id == "org-ngo"
-    assert profile["display_name"] == "Maya Chen"
+    assert profile["display_name"] == "Synthetic NGO Preparer"
     assert "ngo.preparer" not in token
     resolved = resolve_session(token)
     assert resolved is not None
@@ -20,21 +20,21 @@ def test_seeded_login_creates_resolvable_opaque_session():
 
 
 def test_identity_preserves_the_public_organization_identifier():
-    _, actor, profile = authenticate("ngo.preparer@contractview.demo", "Demo-Prepare-2026!")
+    _, actor, profile = authenticate("ngo.preparer@example.test", "Demo-Prepare-2026!")
     assert identity(actor, profile)["organizationId"] == "org-ngo"
 
 
 def test_invalid_password_creates_no_session():
     with database() as connection:
         before = connection.execute("select count(*) from sessions").fetchone()[0]
-    assert authenticate("ngo.preparer@contractview.demo", "incorrect") is None
+    assert authenticate("ngo.preparer@example.test", "incorrect") is None
     with database() as connection:
         after = connection.execute("select count(*) from sessions").fetchone()[0]
     assert after == before
 
 
 def test_logout_revokes_server_session_immediately():
-    token, _, _ = authenticate("auditor@contractview.demo", "Demo-Audit-2026!")
+    token, _, _ = authenticate("auditor@example.test", "Demo-Audit-2026!")
     assert resolve_session(token) is not None
     revoke_session(token)
     assert resolve_session(token) is None
