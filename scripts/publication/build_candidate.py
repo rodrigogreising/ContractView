@@ -63,7 +63,6 @@ TEXT_SUFFIXES = {
     ".yml",
 }
 LEGACY_FRAGMENTS = (
-    "shoken",
     "contractview",
     "seaofmachines",
     "viaadsolem",
@@ -76,6 +75,9 @@ LEGACY_FRAGMENTS = (
     "northstar learning supply",
     "civic equipment rental",
 )
+BLOCKED_TOKEN_DIGESTS = {
+    "de9254c1685e4a3cc5a7b571140e8bf6cf3877be6e7bf0a2d3cb3858ce8d033b",
+}
 SECRET_PATTERNS = (
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(r"AKIA[0-9A-Z]{16}"),
@@ -180,6 +182,11 @@ def verify_text(path: Path, content: str, failures: list[str]) -> None:
     for fragment in LEGACY_FRAGMENTS:
         if fragment in lowered:
             failures.append(f"{path}: contains blocked legacy/private fragment")
+    if any(
+        sha256(token.encode("utf-8")).hexdigest() in BLOCKED_TOKEN_DIGESTS
+        for token in re.findall(r"[a-z0-9]+", lowered)
+    ):
+        failures.append(f"{path}: contains a blocked legacy identity token")
     for pattern in SECRET_PATTERNS:
         if pattern.search(content):
             failures.append(f"{path}: contains a high-confidence secret shape")
