@@ -67,6 +67,50 @@ class ModuleBoundaryTests(unittest.TestCase):
         self.assertIn(expected, boundaries._imported_module_paths(source, absolute))
         self.assertIn(expected, boundaries._imported_module_paths(source, from_package))
 
+    def test_concrete_provider_imports_are_forbidden_in_application(self) -> None:
+        self.assertTrue(
+            {"argon2", "openpyxl", "reportlab"}.issubset(boundaries.INFRASTRUCTURE_IMPORTS)
+        )
+
+    def test_path_specific_worker_capability_is_resolved(self) -> None:
+        ownership, _ = boundaries.load_policies()
+        runner = boundaries.APP_ROOT / "worker_runtime/runner.py"
+        self.assertEqual("platform", boundaries.capability_for_path(runner, ownership))
+
+    def test_statement_consumer_capability_mismatch_fails(self) -> None:
+        ownership, _ = boundaries.load_policies()
+        catalog = json.loads(boundaries.CATALOG_PATH.read_text())
+        name = next(key for key, value in catalog.items() if value["kind"] == "repository")
+        catalog[name]["consumerCapability"] = "incorrect-capability"
+        failures = boundaries.validate_catalog(catalog, ownership)
+        self.assertTrue(any("collaboration kind is inconsistent" in failure for failure in failures))
+
+    def test_statement_use_must_match_declared_consumer(self) -> None:
+        ownership, _ = boundaries.load_policies()
+        catalog = json.loads(boundaries.CATALOG_PATH.read_text())
+        name = next(
+            key
+            for key, value in catalog.items()
+            if value["consumerCapability"] == "validation" and value["kind"] == "repository"
+        )
+        definition = dict(catalog[name])
+        definition["consumerCapability"] = "workflow"
+        path = boundaries.APP_ROOT / "application/commands/validation.py"
+        failures = boundaries.statement_use_failures(
+            path, name, definition, definition["owner"], ownership
+        )
+        self.assertTrue(any("consumer capability mismatch" in failure for failure in failures))
+
+    def test_statement_collaboration_kind_mismatch_fails(self) -> None:
+        ownership, _ = boundaries.load_policies()
+        catalog = json.loads(boundaries.CATALOG_PATH.read_text())
+        name = next(
+            key for key, value in catalog.items() if value["kind"] == "application-query-port"
+        )
+        catalog[name]["kind"] = "repository"
+        failures = boundaries.validate_catalog(catalog, ownership)
+        self.assertTrue(any("collaboration kind is inconsistent" in failure for failure in failures))
+
 
 if __name__ == "__main__":
     unittest.main()

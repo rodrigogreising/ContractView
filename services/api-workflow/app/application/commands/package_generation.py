@@ -3,11 +3,6 @@ from hashlib import sha256
 from io import BytesIO, StringIO
 import json, uuid, zipfile
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import LETTER
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-
 from .artifacts import download_artifact, store_artifact
 from .attestation import current_attestation
 from .access_scope import invoice_scope
@@ -15,19 +10,12 @@ from ...authorization import Action, Actor, ResourceKind, execute_authorized
 from .invoice_draft import get_draft
 from .provenance import append_event_tx
 
+from ..package_rendering import render_invoice_pdf
 from ..ports.statements import Statement
 from ..transaction import transaction as database
 class PackageError(ValueError): pass
 
 def _json(value): return json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()
-
-def _pdf(invoice):
-    out=BytesIO();doc=SimpleDocTemplate(out,pagesize=LETTER,title=f"Invoice v{invoice['version']}",author="ContractView POC",invariant=1)
-    styles=getSampleStyleSheet();story=[Paragraph("Reimbursement Invoice",styles["Title"]),Paragraph(f"Invoice version {invoice['version']} | Configuration {invoice['configurationVersionId']}",styles["Normal"]),Spacer(1,12)]
-    rows=[["Expense","Date","Vendor","Category","Amount"]]+[[x["expenseKey"],x["date"],x["vendor"],x["category"],f"${x['amount']}"] for x in invoice["lines"]]
-    table=Table(rows,repeatRows=1,colWidths=[60,65,150,100,65]);table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor("#294d37")),("TEXTCOLOR",(0,0),(-1,0),colors.white),("GRID",(0,0),(-1,-1),.5,colors.grey),("FONTSIZE",(0,0),(-1,-1),8),("VALIGN",(0,0),(-1,-1),"TOP"),("ALIGN",(-1,1),(-1,-1),"RIGHT")]))
-    story += [table,Spacer(1,14),Paragraph(f"Total requested: ${invoice['total']}",styles["Heading2"]),Paragraph("Synthetic demonstration data only",styles["Italic"])]
-    doc.build(story);return out.getvalue()
 
 def generate_package(actor:Actor,invoice_id:str)->dict:
     with database() as connection:
@@ -47,7 +35,7 @@ def generate_package(actor:Actor,invoice_id:str)->dict:
             if line["evidenceArtifactId"] and line["evidenceArtifactId"] not in evidence:evidence[line["evidenceArtifactId"]]=download_artifact(actor,line["evidenceArtifactId"])
         package_id=f"package-{uuid.uuid4().hex}";base={"packageId":package_id,"invoiceVersionId":invoice_id,"invoiceVersion":invoice["version"],"attestationId":att["id"],"claims":claims}
         csv_out=StringIO();writer=DictWriter(csv_out,fieldnames=list(claims[0]));writer.writeheader();writer.writerows(claims)
-        files={"invoice.pdf":_pdf(invoice),"validation-summary.json":_json(validation),"manifest.csv":csv_out.getvalue().encode()}
+        files={"invoice.pdf":render_invoice_pdf(invoice),"validation-summary.json":_json(validation),"manifest.csv":csv_out.getvalue().encode()}
         for artifact_id,content in sorted(evidence.items()):files[f"evidence/{artifact_id}"]=content
         manifest={**base,"files":[{"path":p,"sha256":sha256(b).hexdigest(),"byteSize":len(b)} for p,b in sorted(files.items())]};files["manifest.json"]=_json(manifest)
         stored={p:store_artifact(actor,row[1],p.split("/")[-1],"application/pdf" if p.endswith(".pdf") else "application/json" if p.endswith(".json") else "text/csv" if p.endswith(".csv") else "application/octet-stream",b,artifact_kind="generated") for p,b in files.items()}

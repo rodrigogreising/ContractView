@@ -50,18 +50,26 @@ update was split into a read projection and artifact-owned update.
 
 ## Non-Persistence Adapters
 
-MinIO artifact bytes, runtime health, and Tesseract execution are behind
-application-owned ports. Application commands no longer import MinIO,
-PostgreSQL, settings, runtime composition, or subprocess execution. Tesseract
-remains the single real replaceable extraction adapter; this refactor changes
-placement, not AI authority.
+MinIO artifact bytes, runtime health, Tesseract execution, Argon2 password
+verification, OpenPyXL workbook parsing, and ReportLab PDF rendering are behind
+application-owned ports. Application commands no longer import their provider
+packages, PostgreSQL, settings, runtime composition, or subprocess execution.
+Tesseract remains the single real replaceable extraction adapter; this refactor
+changes placement, not AI authority.
+
+Package generation is explicitly split: the workflow application coordinator
+checks attestation and authority, while the Packages capability owns package
+persistence and deterministic rendering. This prevents a circular capability
+implementation dependency without transferring canonical package ownership to
+workflow.
 
 ## Executable Evidence
 
 - Persistence statement validator: 149 named statements, no inline application
   SQL, no unused IDs, SQL-derived read/write tables matching catalog metadata,
   no unowned table references, no multi-owner writes, and no owner/table
-  mismatch.
+  mismatch. Every use must match its declared consumer capability and valid
+  repository/query-port/command-port/read-model semantics.
 - Module validator: six layer directions, 39 table owners, all migration tables
   owned, no application/domain infrastructure imports, and declared capability
   dependencies only.
@@ -78,7 +86,7 @@ placement, not AI authority.
   all five API, worker, web, PostgreSQL, and MinIO services report healthy.
 - A real server-issued auditor session passed readiness, login, `/auth/me`, and
   logout with the seeded `org-oversight` identity preserved.
-- The 41 repository policy tests pass, including negative dependency,
+- The 46 repository policy tests pass, including negative dependency,
   persistence-owner, statement-drift, and transaction-boundary cases.
 - The full API suite is clean-reset deterministic but is not independently
   isolated per test: an immediate second run against its mutated database does

@@ -10,14 +10,18 @@ from pathlib import Path
 try:
     from scripts.check_persistence_statements import (
         CATALOG_PATH,
+        capability_for_path,
         sql_footprint,
+        statement_use_failures,
         validate_catalog as validate_statement_catalog,
         validate as check_statements,
     )
 except ModuleNotFoundError:
     from check_persistence_statements import (
         CATALOG_PATH,
+        capability_for_path,
         sql_footprint,
+        statement_use_failures,
         validate_catalog as validate_statement_catalog,
         validate as check_statements,
     )
@@ -32,7 +36,16 @@ SQL = re.compile(
     r"create\s+(?:table|schema)\b|alter\s+table\b|drop\s+(?:table|schema)\b)",
     re.I,
 )
-INFRASTRUCTURE_IMPORTS = {"fastapi", "minio", "psycopg", "pydantic_settings", "subprocess"}
+INFRASTRUCTURE_IMPORTS = {
+    "argon2",
+    "fastapi",
+    "minio",
+    "openpyxl",
+    "psycopg",
+    "pydantic_settings",
+    "reportlab",
+    "subprocess",
+}
 
 
 def load_policies() -> tuple[dict, dict]:
@@ -152,10 +165,15 @@ def validate() -> list[str]:
                             f"{relative}:{node.lineno}"
                         )
 
-        source_capability = ownership["moduleCapabilities"].get(path.name)
+        source_capability = capability_for_path(path, ownership)
         if source_capability and source_capability != "shared":
             allowed_capabilities = set(
-                architecture["capabilities"].get(source_capability, {}).get("allowedApplicationDependencies", [])
+                architecture["capabilities"].get(source_capability, {}).get(
+                    "allowedApplicationDependencies",
+                    ownership.get("entrypointCapabilityDependencies", {}).get(
+                        source_capability, []
+                    ),
+                )
             ) | {source_capability, "shared"}
             for node in ast.walk(tree):
                 if not isinstance(node, (ast.Import, ast.ImportFrom)):

@@ -50,6 +50,36 @@ def _module_for_statement(name: str, policy: dict) -> str:
     )
 
 
+def capability_for_path(path: Path, policy: dict) -> str | None:
+    relative = path.relative_to(APP).as_posix()
+    return policy["moduleCapabilities"].get(relative) or policy["moduleCapabilities"].get(path.name)
+
+
+def statement_use_failures(
+    path: Path,
+    name: str,
+    definition: dict,
+    actual_repository: str,
+    policy: dict,
+) -> list[str]:
+    failures: list[str] = []
+    expected_repository = (
+        "read_models" if definition["kind"] == "declared-read-model" else definition["owner"]
+    )
+    if actual_repository != expected_repository:
+        failures.append(
+            f"statement bypasses capability repository: {path.relative_to(APP)} "
+            f"uses {actual_repository}, expected {expected_repository} for {name}"
+        )
+    source_capability = capability_for_path(path, policy)
+    if source_capability != definition["consumerCapability"]:
+        failures.append(
+            f"statement consumer capability mismatch: {path.relative_to(APP)} "
+            f"is {source_capability}, expected {definition['consumerCapability']} for {name}"
+        )
+    return failures
+
+
 def code_paths() -> list[Path]:
     return sorted(
         path
@@ -128,6 +158,36 @@ def validate_catalog(policy: dict, catalog: dict) -> list[str]:
                 f"statement operation metadata differs from SQL: {name} "
                 f"(declared={definition.get('operation')}, actual={actual_operation})"
             )
+        owner = definition["owner"]
+        consumer = definition["consumerCapability"]
+        kind = definition["kind"]
+        source_owners = set(definition["sourceOwners"])
+        collaboration_valid = (
+            (kind == "repository" and consumer == owner and source_owners == {owner})
+            or (
+                kind == "application-query-port"
+                and actual_operation == "read"
+                and consumer != owner
+                and source_owners == {owner}
+            )
+            or (
+                kind == "application-command-port"
+                and actual_operation == "write"
+                and consumer != owner
+                and source_owners == {owner}
+            )
+            or (
+                kind == "declared-read-model"
+                and actual_operation == "read"
+                and len(actual_reads) > 1
+            )
+        )
+        if not collaboration_valid:
+            failures.append(
+                f"statement collaboration kind is inconsistent: {name} "
+                f"(kind={kind}, owner={owner}, consumer={consumer}, "
+                f"sourceOwners={sorted(source_owners)}, operation={actual_operation})"
+            )
         write_owners = {policy["tableOwners"].get(table) for table in definition["writeTables"]}
         if len(write_owners) > 1:
             failures.append(f"cross-capability write statement: {name}")
@@ -172,14 +232,10 @@ def validate() -> list[str]:
             definition = catalog.get(name)
             if definition is None:
                 continue
-            expected = "read_models" if definition["kind"] == "declared-read-model" else definition["owner"]
             receiver = node.func.value
             actual = receiver.attr if isinstance(receiver, ast.Attribute) else "unit_of_work"
-            if actual != expected:
-                failures.append(
-                    f"statement bypasses capability repository: {path.relative_to(APP)}:{node.lineno} "
-                    f"uses {actual}, expected {expected}"
-                )
+            for failure in statement_use_failures(path, name, definition, actual, policy):
+                failures.append(f"{failure} at line {node.lineno}")
 
     if missing := sorted(used - catalog.keys()):
         failures.append("used statements missing from catalog: " + ", ".join(missing))

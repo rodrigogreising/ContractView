@@ -8,6 +8,9 @@ from ..application.transaction import configure_transaction_factory
 from ..application.object_storage import configure_object_store_factory
 from ..application.runtime_health import configure_runtime_health_factory
 from ..application.extraction_provider import configure_extraction_adapter_factory
+from ..application.ledger_documents import configure_spreadsheet_parser_factory
+from ..application.package_rendering import configure_invoice_pdf_renderer_factory
+from ..application.passwords import configure_password_verifier_factory
 
 _composed = False
 
@@ -49,4 +52,25 @@ def compose() -> None:
         return TesseractCliAdapter()
 
     configure_extraction_adapter_factory(extraction_adapter_factory)
+
+    def password_verifier_factory():
+        from ..adapters.identity.argon2 import Argon2PasswordVerifier
+
+        return Argon2PasswordVerifier()
+
+    configure_password_verifier_factory(password_verifier_factory)
+
+    def spreadsheet_parser_factory():
+        from ..adapters.ledger.openpyxl import OpenpyxlSpreadsheetParser
+
+        return OpenpyxlSpreadsheetParser()
+
+    configure_spreadsheet_parser_factory(spreadsheet_parser_factory)
+
+    def invoice_pdf_renderer_factory():
+        from ..adapters.packages.reportlab import ReportLabInvoicePdfRenderer
+
+        return ReportLabInvoicePdfRenderer()
+
+    configure_invoice_pdf_renderer_factory(invoice_pdf_renderer_factory)
     _composed = True

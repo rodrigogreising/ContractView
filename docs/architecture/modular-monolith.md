@@ -179,9 +179,11 @@ service mesh, or network deployment complexity.
 - Nineteen use-case modules live in `app/application/commands`; flat modules
   are compatibility exports only.
 - Application-owned ports define the unit of work, capability repositories,
-  immutable object storage, runtime health, and replaceable extraction.
+  immutable object storage, runtime health, replaceable extraction, password
+  verification, spreadsheet parsing, and deterministic PDF rendering.
 - `app/adapters/persistence` owns PostgreSQL SQL and transaction adaptation;
-  MinIO and Tesseract are separate integration adapters.
+  MinIO, Tesseract, Argon2, OpenPyXL, and ReportLab are separate integration
+  adapters.
 - `app/http` and `app/worker_runtime` contain transport/polling behavior, while
   the three legacy executable module names are thin composition wrappers.
 - Thirty-nine physical tables have one capability owner. One hundred forty-nine
@@ -195,7 +197,17 @@ service mesh, or network deployment complexity.
 also prove wrong-owner, inline-SQL, and read-model misuse is rejected before a
 database call. The persistence checker derives read and write tables from each
 SQL statement independently and rejects stale catalog metadata, so changing SQL
-cannot evade ownership checks by retaining a prior declaration.
+cannot evade ownership checks by retaining a prior declaration. It also binds
+every statement use to its declared consumer capability and verifies that
+repository, query-port, command-port, and read-model collaboration kinds match
+the SQL operation and owner relationship.
+
+`package_generation.py` is the workflow application coordinator because it
+checks the current attestation and authority before requesting package work.
+The Packages capability retains canonical package-table ownership and owns the
+deterministic PDF-rendering port/adapter. This avoids a Packages-to-Workflow-to-
+Packages implementation cycle while keeping package data and rendering outside
+the workflow capability.
 
 ## Historical Gap And Transition
 

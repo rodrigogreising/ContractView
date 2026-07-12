@@ -3,18 +3,15 @@ from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import secrets
 
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
-
 from ...authorization import Actor, Role
 from .provenance import append_event_tx
 from ...shared_contracts import IdentityDto
 
+from ..passwords import password_matches
 from ..ports.statements import Statement
 from ..transaction import transaction as database
 SESSION_COOKIE = "contractview_session"
 SESSION_TTL = timedelta(hours=8)
-_passwords = PasswordHasher()
 
 
 def _digest(token: str) -> str:
@@ -31,9 +28,7 @@ def authenticate(email: str, password: str) -> tuple[str, Actor, dict[str, str]]
             append_event_tx(connection, "login_failed", "session", "unknown", payload={"email": email.strip().lower()})
             connection.commit()
             return None
-        try:
-            _passwords.verify(row[5], password)
-        except VerifyMismatchError:
+        if not password_matches(row[5], password):
             connection.identity.execute(Statement.AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_003, (row[0],))
             append_event_tx(connection, "login_failed", "session", row[0], actor_id=row[0], organization_id=row[1])
             connection.commit()

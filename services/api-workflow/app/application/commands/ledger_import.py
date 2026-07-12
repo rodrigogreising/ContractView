@@ -1,16 +1,15 @@
 import csv
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
-from io import BytesIO, StringIO
+from io import StringIO
 import json
 import uuid
-
-from openpyxl import load_workbook
 
 from .artifacts import Artifact, read_and_verify_artifact
 from .ingestion import IngestionJob
 from .provenance import LineageInput, append_lineage_tx
 
+from ..ledger_documents import parse_xlsx
 from ..ports.statements import Statement
 from ..transaction import transaction as database
 IMPORTER_VERSION = "ledger-importer-v1"
@@ -51,11 +50,9 @@ def parse_ledger(filename: str, content: bytes) -> tuple[str, list[tuple[int, di
         header_index = 0
     elif filename.lower().endswith(".xlsx"):
         try:
-            workbook = load_workbook(BytesIO(content), read_only=True, data_only=True)
-            worksheet = workbook.active
-            sheet = worksheet.title
-            rows = [list(row) for row in worksheet.iter_rows(values_only=True)]
-            workbook.close()
+            spreadsheet = parse_xlsx(content)
+            sheet = spreadsheet.sheet
+            rows = spreadsheet.rows
             normalized_rows = [[str(value).strip().lower().replace(" ", "_") for value in row] for row in rows]
             header_index = next((index for index, row in enumerate(normalized_rows) if row == HEADERS), -1)
         except Exception as error:

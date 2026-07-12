@@ -87,8 +87,9 @@ activate configuration or expand AI/human authority.
 The logical layers now have executable package boundaries. Generated contracts
 and authorization live in `app/domain`; application commands live in
 `app/application/commands`; repository, object-store, runtime-health, and
-extraction interfaces are application-owned ports; PostgreSQL, MinIO, and
-Tesseract implementations live under `app/adapters`; FastAPI routes live under
+extraction, password verification, spreadsheet parsing, and PDF-rendering
+interfaces are application-owned ports; PostgreSQL, MinIO, Tesseract, Argon2,
+OpenPyXL, and ReportLab implementations live under `app/adapters`; FastAPI routes live under
 `app/http`; worker polling and health live under `app/worker_runtime`; and
 `app/integration` is the only composition root. `app.main`, `app.worker`, and
 `app.worker_health` are thin deployable compatibility entrypoints, so the POC

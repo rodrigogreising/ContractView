@@ -53,6 +53,13 @@ packages contain no SQL; migrations and runtime bootstrap remain explicit
 integration exceptions and every referenced table is present in the physical
 ownership map.
 
+The statement validator also requires the calling application module to match
+the catalog's `consumerCapability` and checks collaboration-kind semantics.
+Argon2 password verification, OpenPyXL workbook parsing, ReportLab PDF
+rendering, Tesseract OCR, and MinIO object access are concrete integration
+adapters behind application-owned ports; application commands do not import
+those provider packages.
+
 ## Service Responsibility Matrix
 
 | Capability | Owning unit | Required evidence |
