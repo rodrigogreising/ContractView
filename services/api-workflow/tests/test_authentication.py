@@ -1,4 +1,4 @@
-from app.authentication import authenticate, resolve_session, revoke_session
+from app.authentication import authenticate, identity, resolve_session, revoke_session
 from app.authorization import Role
 from app.runtime import database
 
@@ -17,6 +17,11 @@ def test_seeded_login_creates_resolvable_opaque_session():
     with database() as connection:
         stored = connection.execute("select token_hash from sessions where user_id = %s order by created_at desc limit 1", (actor.user_id,)).fetchone()[0]
     assert stored != token
+
+
+def test_identity_preserves_the_public_organization_identifier():
+    _, actor, profile = authenticate("ngo.preparer@contractview.demo", "Demo-Prepare-2026!")
+    assert identity(actor, profile)["organizationId"] == "org-ngo"
 
 
 def test_invalid_password_creates_no_session():

@@ -5,14 +5,9 @@ from typing import Any
 from .access_scope import audit_scope
 from .authorization import Action, Actor, Role, require_permission
 from .runtime import database
+from .shared_contracts import MATERIAL_EVENT_TYPES
 
-EVENT_TYPES = {
-    "login_succeeded", "login_failed", "logout", "config_activated", "artifact_uploaded",
-    "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed",
-    "attested", "package_generated", "submitted", "returned", "revision_created",
-    "resubmitted", "approved",
-    "invoice_line_corrected", "finding_resolved",
-}
+EVENT_TYPES = MATERIAL_EVENT_TYPES
 
 
 @dataclass(frozen=True)

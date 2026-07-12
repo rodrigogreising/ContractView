@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This package will define contracts for deterministic validation rules, rule inputs, rule outputs, severity taxonomy, reason codes, and reproducible validation execution.
+This package defines versioned executable contracts for deterministic validation rules, results, reason codes, and reproducible validation runs in `contract.json`.
+
+Current contract version: `1.0.0`; it depends only on `domain-types` version references and vocabulary.
 
 ## Owned Responsibilities
 
@@ -44,7 +46,7 @@ This package will define contracts for deterministic validation rules, rule inpu
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Current tests certify:
 
 - Same rule inputs and configuration versions produce stable result shapes.
 - Rule output contracts can carry evidence references and remediation guidance.

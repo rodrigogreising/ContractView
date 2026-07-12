@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This package will define shared contracts for schemas, mappings, rules, workflows, views, templates, and configuration bundles.
+This package defines shared executable contracts for schemas, mappings, rules, workflows, views, templates, and configuration bundles in `contract.json`.
+
+Current contract version: `1.0.0`. The contract defines the full lifecycle but does not activate configuration; REC-06 implements its commands and persistence.
 
 ## Owned Responsibilities
 
@@ -45,7 +47,7 @@ This package will define shared contracts for schemas, mappings, rules, workflow
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Current tests certify:
 
 - Configuration contracts support draft, tested, approved, active, superseded, and retired states.
 - Submitted invoices can reference exact configuration bundle versions.

@@ -274,3 +274,18 @@ Any new service or package must document:
 - Deterministic behavior required.
 - Human authority boundary.
 - Prohibited responsibilities.
+
+## Executable Shared Contract Boundary (SUB-61)
+
+| Package | Owns | Allowed dependencies | Prohibited responsibilities |
+| --- | --- | --- | --- |
+| `domain-types` | Roles, resources, actions, lifecycle, artifact/field/entity/relation vocabulary, version references | Standard language/runtime only | Runtime state, persistence, workflow execution |
+| `rule-contracts` | Rule definitions/results, severity/outcome, validation-run shape and determinism contract | `domain-types` | Rule execution, activation, human decisions |
+| `event-contracts` | Material event names and versioned actor/aggregate/version envelope | `domain-types`, `configuration-contracts` | Event storage, workflow mutation |
+| `configuration-contracts` | Workflow/view/template/bundle definitions and full lifecycle vocabulary | `domain-types`, `rule-contracts` | Activation, runtime invoice state, AI authority |
+
+The dependency graph is acyclic and checked. Registries generate API/worker
+Pydantic contracts and web TypeScript types; generated files are never edited
+directly. Closed-vocabulary drift or stale consumers fail the shared-contract
+validator. These packages emit no events, own no database tables, and grant no
+human authority.

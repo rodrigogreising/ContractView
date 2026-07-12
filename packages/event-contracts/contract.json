@@ -1,0 +1,12 @@
+{
+  "package": "event-contracts",
+  "version": "1.0.0",
+  "dependsOn": {"domain-types": "^1.0.0", "configuration-contracts": "^1.0.0"},
+  "vocabularies": {
+    "eventTypes": ["login_succeeded", "login_failed", "logout", "config_activated", "artifact_uploaded", "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed", "invoice_line_corrected", "finding_resolved", "attested", "package_generated", "submitted", "returned", "revision_created", "resubmitted", "approved"]
+  },
+  "contracts": {
+    "EventEnvelope": {"required": ["eventId", "eventType", "schemaVersion", "actor", "organizationId", "contractId", "aggregate", "occurredAt", "payload", "versionReferences"], "optional": ["reasonCode"]}
+  },
+  "evolution": "Payload additions are optional within a minor version. Required-field or semantic changes require a new schemaVersion and major package version."
+}

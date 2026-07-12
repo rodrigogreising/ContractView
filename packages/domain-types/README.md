@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This package will define shared domain primitives and lifecycle vocabulary for ContractView.
+This package defines the versioned shared domain primitives and closed lifecycle vocabulary for ContractView. `contract.json` is executable source input for the generated Python and TypeScript consumers.
+
+Current contract version: `1.0.0`.
 
 ## Owned Responsibilities
 
@@ -40,12 +42,17 @@ This package will define shared domain primitives and lifecycle vocabulary for C
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Current tests certify:
 
 - Domain vocabulary matches ADR and architecture docs.
 - Lifecycle states support certified journeys.
 - Shared types do not encode stakeholder-specific invoice copies.
 - Breaking changes are explicit and reviewed through architecture governance.
+
+Run `python3 scripts/generate_shared_contracts.py --check` and
+`python3 scripts/check_shared_contracts.py`. Optional fields may be added in a
+minor version. Removals, required-field additions, type reinterpretation, and
+closed-vocabulary changes require a major version and consumer migration.
 
 ## Related Certifiable Journeys
 

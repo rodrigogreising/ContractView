@@ -3,8 +3,12 @@
 ContractView's domain model is a reimbursement provenance model. An invoice is not only a form or a list of line items; it is a graph of claims, evidence, configuration, validations, corrections, workflow decisions, generated packages, and stakeholder handoffs.
 
 The vocabulary is governed by the [modular-monolith policy](modular-monolith-policy.json).
-REC-05 implements it as executable, versioned shared contracts rather than
-free-form runtime dictionaries.
+SUB-61 implements it as executable, versioned shared contracts rather than
+free-form runtime dictionaries. Canonical inputs are the four
+`packages/*-contracts/contract.json` registries plus
+`packages/domain-types/contract.json`; generated consumers are
+`services/api-workflow/app/shared_contracts.py` and
+`apps/web-app/src/generated/contracts.ts`.
 
 ## Core Primitives
 
@@ -35,6 +39,9 @@ free-form runtime dictionaries.
   versions.
 - Domain contracts contain no FastAPI, SQL, MinIO, queue, or provider SDK
   types.
+- Contract packages use semantic versions. Minor changes are additive and
+  optional; closed-vocabulary, required-field, removal, or semantic changes
+  require a major version and coordinated consumer migration.
 
 ## Configuration Versus Runtime
 

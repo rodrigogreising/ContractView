@@ -1,0 +1,30 @@
+{
+  "package": "domain-types",
+  "version": "1.0.0",
+  "compatibility": {
+    "policy": "semver-additive",
+    "minor": "May add optional fields; may not remove or reinterpret fields or closed vocabulary values.",
+    "major": "Required for removals, renamed fields, type changes, or closed vocabulary changes.",
+    "consumerFloor": "1.0.0"
+  },
+  "vocabularies": {
+    "actorRoles": ["configuration_administrator", "ngo_preparer", "ngo_approver", "government_reviewer", "auditor"],
+    "resourceKinds": ["configuration", "invoice", "artifact", "job", "package", "government_decision", "audit"],
+    "actions": ["read", "create", "update", "activate", "attest", "submit", "return", "approve"],
+    "artifactKinds": ["original", "generated"],
+    "fieldTypes": ["string", "decimal", "integer", "boolean", "date", "datetime", "identifier", "reference"],
+    "entityTypes": ["contract", "artifact", "expense", "invoice", "invoice_line", "validation_run", "package", "submission", "decision"],
+    "relationTypes": ["supports", "derived_from", "maps_to", "validated_by", "submitted_as", "returned_as", "amends", "approved_as"],
+    "invoiceLifecycle": ["draft", "submitted", "returned", "approved"],
+    "configurationLifecycle": ["draft", "tested", "approved", "active", "superseded", "retired"],
+    "reasonCodes": ["SERVICE_PERIOD", "REQUIRED_EVIDENCE", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "POSSIBLE_DUPLICATE", "EVIDENCE_CORRECTION", "AMOUNT_CORRECTION", "CLARIFICATION", "APPROVED_AS_CORRECTED"]
+  },
+  "contracts": {
+    "VersionReference": {"required": ["kind", "id", "version"], "optional": ["sha256"]},
+    "ActorReference": {"required": ["userId", "organizationId", "role"], "optional": []},
+    "Artifact": {"required": ["id", "contractId", "organizationId", "kind", "mediaType", "byteSize", "sha256", "version"], "optional": ["submitted"]},
+    "TypedField": {"required": ["name", "fieldType", "value", "source"], "optional": ["confidence"]},
+    "Entity": {"required": ["id", "entityType", "version", "fields"], "optional": []},
+    "Relation": {"required": ["id", "relationType", "source", "target"], "optional": ["actor", "reasonCode"]}
+  }
+}

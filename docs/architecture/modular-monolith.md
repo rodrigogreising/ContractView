@@ -109,7 +109,7 @@ and ownership tests against this policy.
 
 The ontology is executable shared contract code, not documentation-only nouns
 or arbitrary dictionaries. `packages/domain-types`, `rule-contracts`,
-`event-contracts`, and `configuration-contracts` will define validated,
+`event-contracts`, and `configuration-contracts` define validated,
 versioned contracts for:
 
 - `Artifact`, `Schema`, `Field`, `Entity`, `Relation`, `Rule`, `Workflow`,
@@ -121,8 +121,10 @@ versioned contracts for:
 
 Unknown event, relation, lifecycle, actor, resource, or reason-code vocabulary
 must fail validation at an owning application boundary. Compatibility tests
-must prove API/worker/web DTOs use the same contract versions. REC-05 provides
-the runtime implementation.
+must prove API/worker/web DTOs use the same contract versions. SUB-61 provides
+the registries, generator, Pydantic models, TypeScript types, and compatibility
+fitness checks. REC-06 consumes the configuration lifecycle; REC-08 consumes
+the versioned event/relation envelopes; REC-10 completes web DTO migration.
 
 ## Configuration And Runtime Split
 
@@ -177,8 +179,9 @@ code already conforms. The measurements below are fixed to SUB-59 base SHA
   validation, package, provenance, extraction, and HTTP-adjacent paths.
 - `main.py` contains 262 lines of route and composition behavior rather than a
   thin HTTP adapter over application handlers.
-- Shared domain, rule, event, and configuration packages remain README
-  placeholders rather than executable contracts.
+- Shared domain, rule, event, and configuration packages were README
+  placeholders at the SUB-59 measurement. SUB-61 replaces that specific gap
+  with executable registries and generated API/web consumers.
 - Several command modules join and mutate tables that this policy assigns to
   different capability owners.
 

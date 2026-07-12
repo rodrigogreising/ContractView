@@ -9,6 +9,7 @@ from argon2.exceptions import VerifyMismatchError
 from .authorization import Actor, Role
 from .runtime import database
 from .provenance import append_event_tx
+from .shared_contracts import IdentityDto
 
 SESSION_COOKIE = "contractview_session"
 SESSION_TTL = timedelta(hours=8)
@@ -88,11 +89,11 @@ def revoke_session(token: str | None) -> None:
 
 
 def identity(actor: Actor, profile: dict[str, str]) -> dict[str, str]:
-    return {
-        "id": actor.user_id,
-        "displayName": profile["display_name"],
-        "email": profile["email"],
-        "organizationId": actor.organization_id,
-        "organizationName": profile["organization_name"],
-        "role": actor.role.value,
-    }
+    return IdentityDto(
+        id=actor.user_id,
+        display_name=profile["display_name"],
+        email=profile["email"],
+        organization_id=actor.organization_id,
+        organization_name=profile["organization_name"],
+        role=actor.role,
+    ).model_dump(by_alias=True)

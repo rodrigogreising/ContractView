@@ -28,6 +28,7 @@ describe("authentication shell", () => {
           id: "preparer",
           displayName: "Maya Chen",
           email: "m@demo",
+          organizationId: "org-ngo",
           organizationName: "Harbor Community Services",
           role: "ngo_preparer",
         }}
@@ -346,6 +347,7 @@ describe("authentication shell", () => {
           id: "reviewer",
           displayName: "Samira Patel",
           email: "s@demo",
+          organizationId: "org-government",
           organizationName: "Metro Public Programs Agency",
           role: "government_reviewer",
         }}

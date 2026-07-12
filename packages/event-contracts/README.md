@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This package will define event names, payload requirements, lineage references, actor references, version references, and chain-of-custody conventions for material events.
+This package defines versioned material-event names, envelope requirements, actor references, version references, and chain-of-custody conventions in `contract.json`.
+
+Current contract version: `1.0.0`; generated runtime vocabulary replaces the former duplicated Python event set.
 
 ## Owned Responsibilities
 
@@ -44,7 +46,7 @@ This package will define event names, payload requirements, lineage references, 
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Current tests certify:
 
 - Material events include actor, role, organization, contract, invoice, timestamp, and reason where applicable.
 - Field lineage can link claimed amounts to source artifacts, source locations, validations, corrections, submitted packages, and decisions.

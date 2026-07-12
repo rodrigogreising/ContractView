@@ -1,0 +1,16 @@
+{
+  "package": "rule-contracts",
+  "version": "1.0.0",
+  "dependsOn": {"domain-types": "^1.0.0"},
+  "vocabularies": {
+    "severities": ["blocker", "warning", "note"],
+    "outcomes": ["pass", "fail", "not_applicable"],
+    "ruleCodes": ["SERVICE_PERIOD", "REQUIRED_EVIDENCE", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "POSSIBLE_DUPLICATE"]
+  },
+  "contracts": {
+    "RuleDefinition": {"required": ["code", "version", "severity", "enabled", "parameters"], "optional": []},
+    "RuleResult": {"required": ["ruleCode", "ruleVersion", "severity", "reasonCode", "outcome", "normalizedInput", "message"], "optional": ["expenseKey", "remediation"]},
+    "ValidationRun": {"required": ["id", "invoiceVersion", "configurationVersion", "engineVersion", "inputHash", "outputHash", "results"], "optional": []}
+  },
+  "determinism": "Identical normalized inputs and exact version references must produce identical ordered results and hashes."
+}
