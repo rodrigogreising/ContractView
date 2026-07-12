@@ -10,6 +10,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 
 
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
@@ -40,6 +41,14 @@ def count_vitest(output: str) -> int:
     )
     if len(matches) != 1:
         raise SystemExit(f"Expected one Vitest count, found {matches}")
+    return int(matches[0])
+
+
+def count_unittest(output: str) -> int:
+    normalized = ANSI.sub("", output)
+    matches = re.findall(r"(?m)^Ran (\d+) tests? in [0-9.]+s$", normalized)
+    if len(matches) != 1:
+        raise SystemExit(f"Expected one unittest count, found {matches}")
     return int(matches[0])
 
 
@@ -160,6 +169,27 @@ def main() -> int:
                 "artifactHashes": {web_log.name: digest(web_log)},
             }
         )
+        policy_command, policy_output = run(
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "scripts.tests.test_module_boundaries",
+                "scripts.tests.test_shared_contracts",
+            ],
+            candidate,
+        )
+        policy_log = evidence / "policy-tests.log"
+        policy_log.write_text(policy_output, encoding="utf-8")
+        checks.append(
+            {
+                "command": policy_command,
+                "exitCode": 0,
+                "result": "Candidate module-boundary and shared-contract checks passed",
+                "testCount": count_unittest(policy_output),
+                "artifactHashes": {policy_log.name: digest(policy_log)},
+            }
+        )
         _, service_output = run([*compose, "ps", "--format", "json"], candidate)
         service_log = evidence / "compose-services.jsonl"
         service_log.write_text(service_output, encoding="utf-8")
@@ -204,7 +234,8 @@ def main() -> int:
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(
         f"Certified candidate: {checks[2]['testCount']} API tests and "
-        f"{checks[3]['testCount']} frontend tests passed."
+        f"{checks[3]['testCount']} frontend tests plus "
+        f"{checks[4]['testCount']} policy tests passed."
     )
     return 0
 

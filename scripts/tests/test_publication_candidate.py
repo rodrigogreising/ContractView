@@ -108,6 +108,7 @@ class PublicationCandidateTests(unittest.TestCase):
     def test_certifier_counts_colored_test_summaries(self) -> None:
         self.assertEqual(177, CERTIFIER.count_pytest("\x1b[32m177 passed in 9.2s\x1b[0m\n"))
         self.assertEqual(13, CERTIFIER.count_vitest(" Tests  13 passed (13)\n"))
+        self.assertEqual(18, CERTIFIER.count_unittest("Ran 18 tests in 0.127s\n"))
 
 
 if __name__ == "__main__":

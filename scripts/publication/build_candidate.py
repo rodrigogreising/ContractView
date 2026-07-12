@@ -274,6 +274,7 @@ def build(output: Path, source_sha: str) -> dict:
             {"name": "history-and-control-plane-exclusion", "exitCode": 0},
         ],
         "requiredCertificationCommands": [
+            "python -m unittest scripts.tests.test_module_boundaries scripts.tests.test_shared_contracts",
             "python -m pytest -q services/api-workflow/tests",
             "npm --prefix apps/web-app test",
             "npm --prefix apps/web-app run build",
