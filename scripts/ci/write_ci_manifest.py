@@ -141,6 +141,33 @@ def load_prerequisites(issue: str, base_sha: str) -> list[dict[str, object]]:
     return validate_prerequisites(issue, registry, is_merged)
 
 
+def load_evidence_coverage(issue: str) -> dict[str, object]:
+    registry_path = ROOT / "docs/sdlc/issue-evidence-coverage.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    profile = registry.get(issue) if isinstance(registry, dict) else None
+    if not isinstance(profile, dict):
+        raise SystemExit(f"Evidence coverage is missing for {issue}")
+    labels = profile.get("riskAndGateLabels")
+    coverage = profile.get("riskCoverage")
+    if (
+        not isinstance(labels, list)
+        or not labels
+        or any(not isinstance(label, str) for label in labels)
+        or len(labels) != len(set(labels))
+    ):
+        raise SystemExit(f"Evidence labels are invalid for {issue}")
+    if not isinstance(coverage, dict) or set(coverage) != set(labels):
+        raise SystemExit(f"Every risk/gate label must have exact evidence coverage for {issue}")
+    for label, evidence in coverage.items():
+        if (
+            not isinstance(evidence, list)
+            or not evidence
+            or any(not isinstance(item, str) or not item.strip() for item in evidence)
+        ):
+            raise SystemExit(f"Evidence coverage is invalid for {issue} label {label}")
+    return {"riskAndGateLabels": labels, "riskCoverage": coverage}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -166,6 +193,7 @@ def main() -> int:
     if not journey_result_path.exists():
         raise SystemExit("Journey 11 browser evidence is missing")
     journey_count = playwright_test_count(json.loads(journey_result_path.read_text()))
+    evidence_coverage = load_evidence_coverage(issue)
     static_check = {
         "command": "bash scripts/ci/run_static.sh",
         "exitCode": 0,
@@ -200,7 +228,7 @@ def main() -> int:
         "declaredScope": changed_files(args.base_sha, args.head_sha),
         "recordedAt": recorded,
         "prerequisites": load_prerequisites(issue, args.base_sha),
-        "riskAndGateLabels": ["gate:release-certification"],
+        "riskAndGateLabels": evidence_coverage["riskAndGateLabels"],
         "environment": {
             "platform": platform.platform(),
             "python": platform.python_version(),
@@ -215,13 +243,7 @@ def main() -> int:
             "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
             "requiredReviewSkills": REVIEW_SKILLS,
             "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
-            "riskCoverage": {
-                "gate:release-certification": [
-                    "Pinned format/lint/type/test/build gates",
-                    "Two isolated Compose reruns with equal reset fingerprints",
-                    "Uploaded manifest and hashed command logs",
-                ]
-            },
+            "riskCoverage": evidence_coverage["riskCoverage"],
             "cleanRuntimeRequired": True,
             "cleanRuntimeChecks": [hermetic_check],
         },

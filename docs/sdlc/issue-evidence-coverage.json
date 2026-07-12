@@ -1,0 +1,32 @@
+{
+  "SUB-26": {
+    "riskAndGateLabels": [
+      "gate:adr",
+      "gate:architecture",
+      "gate:release-certification",
+      "gate:security-privacy",
+      "risk:auditability",
+      "risk:human-authority"
+    ],
+    "riskCoverage": {
+      "gate:adr": [
+        "ADR 0002 records the external browser certification adapter and its unchanged authority boundaries"
+      ],
+      "gate:architecture": [
+        "Architecture evidence and policy tests prove Playwright uses only public web/API surfaces and adds no runtime owner"
+      ],
+      "gate:release-certification": [
+        "Pinned static, two-pass hermetic Compose, and clean Journey 11 gates retain a hashed machine manifest"
+      ],
+      "gate:security-privacy": [
+        "Normal server sessions, direct 403 assertions, isolated state, and synthetic-only retained media are certified"
+      ],
+      "risk:auditability": [
+        "Captured immutable v1 and distinct v2 hashes are matched to final read-only audit trails with retained trace and screenshots"
+      ],
+      "risk:human-authority": [
+        "Five distinct personas use normal login/logout and only their server-authorized lifecycle actions"
+      ]
+    }
+  }
+}
