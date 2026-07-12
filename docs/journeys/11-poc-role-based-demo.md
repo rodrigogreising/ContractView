@@ -16,6 +16,8 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 ## Preconditions
 
 - Docker Compose environment starts cleanly.
+- The required ContractView CI check has passed from two independent,
+  fresh-volume Compose runs and retained its schema-valid evidence manifest.
 - Synthetic users, organizations, contract, budget, ledger, and evidence fixtures are available.
 - OCR/LLM adapter credentials or an explicitly configured real compatible provider are available.
 - No active reimbursement configuration exists before the journey begins.
@@ -81,6 +83,9 @@ Certify the complete ContractView POC through one visible, recorded browser jour
   activation before downstream work begins.
 - Real ingestion, extraction, correction, validation, package generation, return, resubmission, approval, and audit paths execute.
 - Video, trace, and screenshots are retained as demo evidence.
+- The candidate merge is based on a passing required CI check whose manifest
+  identifies its immutable base/head diff, exact tools, commands, exit codes,
+  test counts, environment, and artifact hashes.
 - The auditor reconstructs both snapshot sets, all eight typed relation kinds,
   the return/correction/approval chain, and unchanged v1 snapshot/package
   hashes after v2 approval.

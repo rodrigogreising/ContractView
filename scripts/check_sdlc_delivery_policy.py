@@ -122,9 +122,52 @@ def main() -> int:
     for relative in (
         "scripts/validate_delivery_evidence.py",
         "scripts/tests/test_delivery_evidence.py",
+        "scripts/ci/capture_branch_protection.py",
+        "docs/sdlc/issue-prerequisites.json",
     ):
         if not (ROOT / relative).is_file():
             failures.append(f"{relative}: missing executable delivery-policy evidence")
+
+    ci_workflow = read(".github/workflows/contractview-ci.yml")
+    for needle in (
+        "runs-on: ubuntu-24.04",
+        "python-version-file: .python-version",
+        "node-version-file: .nvmrc",
+        "bash scripts/ci/run_static.sh",
+        "bash scripts/ci/run_hermetic.sh artifacts/ci",
+        "python3 scripts/ci/write_ci_manifest.py",
+        "retention-days: 30",
+    ):
+        require(needle=needle, text=ci_workflow, source=".github/workflows/contractview-ci.yml", failures=failures)
+    action_uses = [line.strip() for line in ci_workflow.splitlines() if "uses: actions/" in line]
+    for action_use in action_uses:
+        reference = action_use.split("@", 1)[-1].split()[0]
+        if len(reference) != 40 or any(character not in "0123456789abcdef" for character in reference):
+            failures.append(
+                ".github/workflows/contractview-ci.yml: official actions must use immutable commit SHAs"
+            )
+
+    for relative, version_expected in (
+        (".python-version", "3.12.13"),
+        (".nvmrc", "20.20.2"),
+    ):
+        if read(relative).strip() != version_expected:
+            failures.append(f"{relative}: expected exact toolchain pin {version_expected}")
+
+    for relative in (
+        "services/api-workflow/Dockerfile",
+        "apps/web-app/Dockerfile",
+        "compose.yaml",
+    ):
+        for line in read(relative).splitlines():
+            stripped = line.strip()
+            if (stripped.startswith("FROM ") or stripped.startswith("image:")) and "@sha256:" not in stripped:
+                failures.append(f"{relative}: container reference lacks sha256 digest: {stripped}")
+
+    compose_ci = read("compose.ci.yaml")
+    for service in ("postgres:", "minio:", "api:", "web:"):
+        require(compose_ci, service, "compose.ci.yaml", failures)
+    require(compose_ci, "ports: !reset []", "compose.ci.yaml", failures)
 
     if failures:
         print("SDLC delivery policy validation failed:")

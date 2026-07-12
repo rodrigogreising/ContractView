@@ -1,0 +1,68 @@
+name: ContractView CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contractview-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certification:
+    name: certification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CI_PROJECT_NAME: contractview-ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: |
+            services/api-workflow/requirements.txt
+            requirements-dev.txt
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/web-app/package-lock.json
+      - name: Install pinned dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends poppler-utils
+          python3 -m pip install --requirement services/api-workflow/requirements.txt --requirement requirements-dev.txt
+          npm ci --prefix apps/web-app
+      - name: Static, policy, unit, frontend, and build gates
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/ci
+          bash scripts/ci/run_static.sh 2>&1 | tee artifacts/ci/static.log
+      - name: Two-pass hermetic Compose certification
+        run: bash scripts/ci/run_hermetic.sh artifacts/ci
+      - name: Build schema-valid PR evidence manifest
+        if: github.event_name == 'pull_request' && success()
+        run: |
+          python3 scripts/ci/write_ci_manifest.py \
+            --output-dir artifacts/ci \
+            --branch "${{ github.head_ref }}" \
+            --base-sha "${{ github.event.pull_request.base.sha }}" \
+            --head-sha "${{ github.event.pull_request.head.sha }}" \
+            --pr-url "${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+      - name: Retain CI evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: contractview-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/ci
+          if-no-files-found: error
+          retention-days: 30

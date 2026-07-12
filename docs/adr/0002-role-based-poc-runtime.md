@@ -165,6 +165,24 @@ those snapshots and authority decisions. A government return clones lineage
 into a successor invoice; corrections append same-field successors while the
 predecessor version and its snapshots remain unchanged.
 
+### SUB-67 Implementation Note: Hermetic Certification
+
+Every pull request and `master` push runs one pinned GitHub Actions job. Python,
+Node, official Actions, and all container images are fixed to exact versions or
+content digests. Static certification covers formatting, fatal lint, Python
+types, shared-contract compatibility, persistence and module ownership,
+architecture/SDLC policy, repository tests, frontend tests, and the production
+web build.
+
+Runtime certification creates a unique Compose project twice. Each pass starts
+with new PostgreSQL and MinIO volumes, runs numbered migrations and the
+synthetic reset, executes the complete API suite, verifies API/web/worker
+health, and destroys all state. A stable fingerprint of seeded semantic data
+must match across the independent passes. CI retains schema-valid JSON evidence,
+command logs, service state, exact base/head SHAs, test counts, environment
+versions, and SHA-256 artifact hashes. This certifies a PR candidate; Journey 11
+and its Playwright artifacts remain the terminal POC release gate.
+
 ## AI Boundary
 
 - One replaceable OCR/LLM adapter extracts draft fields from one supported synthetic receipt/vendor-invoice format.

@@ -105,6 +105,27 @@ before real or hosted data is permitted.
 
 These risks are acceptable only because the environment is local, synthetic, and non-production. Any real or hosted data use reopens security/privacy review.
 
+## SUB-67 CI Evidence Security
+
+Controlling issue: `SUB-67` / REC-11. Project stage: Build.
+
+- CI accepts only repository synthetic fixtures and creates isolated database
+  and object-store volumes for each pass. It does not ingest customer or pilot
+  data.
+- Workflow permissions are read-only. Official Actions and container bases are
+  content-addressed, preventing an upstream floating tag from silently changing
+  the reviewed environment.
+- Retained evidence contains test output, Compose service state, semantic reset
+  fingerprints, versions, commands, SHAs, counts, and artifact hashes. It must
+  not contain environment secrets, session cookies, uploaded document content,
+  or database dumps.
+- GitHub retains the CI artifact for 30 days. Durable approval and completion
+  claims remain in the repository/PR/Linear evidence chain; CI logs do not
+  replace immutable application provenance.
+- Human code review is not required. Executable certification plus applicable
+  immutable-diff AI reviews are the code gate. Real release promotion and
+  runtime human-authority decisions remain separate explicit approvals.
+
 ## SUB-63 Configuration Lifecycle Recovery
 
 Controlling issue: `SUB-63` / REC-06. Project stage: Build.

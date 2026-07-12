@@ -87,7 +87,9 @@ SECRET_PATTERNS = (
     re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"AIza[0-9A-Za-z_-]{35}"),
 )
-EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+)")
+EMAIL = re.compile(
+    r"\b[A-Za-z0-9._%+-]+@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}|localhost)\b"
+)
 PRIVATE_REFERENCE_PATTERNS = (
     re.compile(r"\bSUB-[0-9]+\b"),
     re.compile(r"\bREC-[0-9]+\b"),

@@ -1,0 +1,19 @@
+{
+  "SUB-67": [
+    {
+      "issue": "SUB-57",
+      "mergeSha": "44115b270e83cc03c8266a3db6c2f357cbe8a6cc",
+      "postMergeVerified": true
+    },
+    {
+      "issue": "SUB-58",
+      "mergeSha": "08ae4ffef3f2ef386473149b596b6a5abbc147d8",
+      "postMergeVerified": true
+    },
+    {
+      "issue": "SUB-79",
+      "mergeSha": "a6deabc4a8c3496dad94a4fc8f242b2401894bf1",
+      "postMergeVerified": true
+    }
+  ]
+}

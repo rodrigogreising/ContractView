@@ -97,9 +97,11 @@ def get_draft(actor: Actor, invoice_id: str) -> dict:
         require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         lines=connection.invoices.execute(Statement.INVOICE_DRAFT_READ_INVOICE_LINES_014,(invoice_id,)
         ).fetchall()
-        config=connection.configuration.execute(Statement.INVOICE_DRAFT_READ_CONFIGURATION_VERSIONS_015,(invoice[3],)).fetchone()[0]
+        config_row=connection.configuration.execute(Statement.INVOICE_DRAFT_READ_CONFIGURATION_VERSIONS_015,(invoice[3],)).fetchone()
+        if not config_row:raise RuntimeError("Invoice configuration version is missing")
+        config=config_row[0]
         findings=connection.invoices.execute(Statement.INVOICE_DRAFT_READ_INVOICE_FINDINGS_016,(invoice_id,)).fetchall()
-    category_totals={}
+    category_totals:dict[str,Decimal]={}
     for line in lines: category_totals[line[4]]=category_totals.get(line[4],Decimal("0.00"))+line[5]
     limits={item["label"]:Decimal(str(item["limit"])) for item in config["categories"]}
     categories=[{"name":name,"claimed":f"{category_totals.get(name,Decimal('0')):.2f}","limit":f"{limit:.2f}","available":f"{limit-category_totals.get(name,Decimal('0')):.2f}"} for name,limit in limits.items()]

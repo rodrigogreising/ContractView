@@ -32,7 +32,9 @@ def approval_preview(actor:Actor,invoice_id:str)->dict:
         if not invoice:raise FileNotFoundError(invoice_id)
         require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         run=connection.validation.execute(Statement.ATTESTATION_READ_VALIDATION_RUNS_006,(invoice_id,)).fetchone()
-        evidence_count=connection.invoices.execute(Statement.ATTESTATION_READ_INVOICE_LINES_007,(invoice_id,)).fetchone()[0]
+        evidence_row=connection.invoices.execute(Statement.ATTESTATION_READ_INVOICE_LINES_007,(invoice_id,)).fetchone()
+        if not evidence_row:raise RuntimeError("Invoice evidence count is missing")
+        evidence_count=evidence_row[0]
     draft=get_draft(actor,invoice_id);findings=current_findings(actor,invoice_id)
     fresh=bool(run and run[2]==invoice[1])
     return {"invoice":draft,"validationRunId":run[0] if run else None,"validationOutputHash":run[1] if run else None,"validationFresh":fresh,"materialRevision":invoice[1],"findings":findings,"hasOpenBlockers":has_open_blockers(invoice_id),"packagePreview":{"files":["invoice.pdf","validation-summary.json","manifest.json","manifest.csv",f"evidence/{evidence_count}-supporting-files","package.zip"],"evidenceCount":evidence_count},"attestationVersion":ATTESTATION_VERSION,"attestationText":ATTESTATION_TEXT}

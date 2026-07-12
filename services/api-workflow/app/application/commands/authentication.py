@@ -70,6 +70,7 @@ def revoke_session(token: str | None) -> None:
         if row:
             connection.identity.execute(Statement.AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_008, (row[0],))
             user = connection.identity.execute(Statement.AUTHENTICATION_READ_USERS_009, (row[0],)).fetchone()
+            if not user:raise RuntimeError("Session user is missing")
             append_event_tx(connection, "logout", "session", _digest(token)[:16], actor_id=row[0], organization_id=user[0])
         connection.commit()
 
