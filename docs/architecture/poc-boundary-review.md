@@ -1,7 +1,7 @@
 # POC Boundary Review
 
-Status: SUB-62 implementation complete locally; immutable architecture,
-boundary, and implementation review pending
+Status: Evidence Review; SUB-66 recertification candidate generated, immutable
+AI review and merge verification pending
 
 SUB-59 design amendment: the runtime is governed by the
 [enforceable modular monolith](modular-monolith.md) and
@@ -205,3 +205,18 @@ predecessor edge before any correction. The correction command appends a new
 same-field successor and never overwrites the cloned record. The deterministic
 finding-resolution path resolves the expense-date predecessor by the exact
 `expenseDate` field, preventing the former claimed-amount cross-field edge.
+
+## SUB-66 Recovery Boundary Decision
+
+SUB-66 introduces no new runtime layer, capability, table owner, integration,
+or network service. Its certification record maps 37 historical Done issues to
+the current six-layer/nine-capability architecture and proves all ten recovery
+prerequisite merge SHAs are in `origin/master` with post-merge evidence.
+
+The boundary decision is `Certified with exceptions` for development
+continuation after immutable AI approval, merge, and clean verification. The
+remaining Journey 11 work may not infer new authority from this decision:
+SUB-26, SUB-50, SUB-53, and SUB-55 remain blocked, and the runtime must retain
+canonical server authorization, capability-owned statements, immutable
+snapshots, deterministic validation/package contracts, and human-only
+attestation/submission/return/approval.

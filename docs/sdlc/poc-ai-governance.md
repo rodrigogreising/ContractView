@@ -113,3 +113,18 @@ required for any future adapter change.
 - Evidence: focused real-adapter suite 3 passed; clean full API suite 53 passed; `docs/sdlc/implementation/SUB-35-ocr-extraction.md`.
 - Required downstream control: satisfied by SUB-36. The UI shows source/confidence, requires explicit accept/correct, retains the proposal, and exposes only reviewed values to deterministic consumers.
 - Release impact: AI gate remains satisfied only for the single synthetic supported class and Docker-local adapter documented here.
+
+## SUB-66 Recovery AI And Configuration Decision
+
+The 37-issue recovery audit confirms that no remediation grants runtime AI
+authority. Extraction remains draft-only; deterministic shared rule contracts
+own findings; versioned template contracts own package rendering; and canonical
+humans alone govern configuration and perform attestation, submission, return,
+and approval. Validation/package manifests retain provider, model, prompt,
+parser, schema, mapping, rule, workflow, view/template, and configuration
+versions without using AI during replay.
+
+Decision: `Certified with exceptions` for development continuation after the
+SUB-66 immutable review/merge gate. The narrow single-document-class evaluation
+is explicitly owned as an exception and blocks expansion to new document
+classes or real data until broader evaluation and privacy evidence exist.

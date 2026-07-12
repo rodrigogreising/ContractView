@@ -10,6 +10,7 @@ python3 scripts/check_persistence_statements.py
 python3 scripts/check_module_boundaries.py
 python3 scripts/check_architecture_policy.py
 python3 scripts/check_sdlc_delivery_policy.py
+python3 scripts/check_recovery_certification.py
 python3 -m pytest -q scripts/tests
 npm --prefix apps/web-app test
 npm --prefix apps/web-app run build

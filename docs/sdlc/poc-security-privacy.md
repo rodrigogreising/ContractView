@@ -242,3 +242,33 @@ Controlling issue: `SUB-79`. Project stage: Build.
 - SUB-79 does not change repository visibility or grant a reuse license. A
   separately recorded owner disclosure decision is required after the
   candidate passes clean Compose certification and immutable AI review.
+
+## SUB-66 Recovery And Current Public Visibility
+
+Controlling issue: `SUB-66` / REC-12. Project stage: Evidence Review.
+
+- GitHub reports the durable `rodrigogreising/ContractView` repository as
+  `PUBLIC`. This owner action occurred after SUB-79 certified a separate
+  allowlisted, history-free candidate.
+- The current public repository intentionally exposes Git author history,
+  owner identity, SDLC evidence, issue identifiers, and PR/Linear links that
+  SUB-79 excluded. SUB-66 invalidates any claim that the candidate's anonymity
+  or control-plane exclusions describe this repository.
+- The tracked tree contains no detected high-confidence secret shapes outside
+  the scanner and its negative test fixtures. Runtime fixture generation uses
+  positive closed synthetic catalogs, reserved-domain identities, deterministic
+  binary metadata, and hash manifests.
+- GitHub's secret-scanning API reports the repository feature disabled. The
+  current-tree scan is a compensating control, not a substitute; enabling the
+  hosted control is part of the accepted disclosure exception's resolution.
+- The visibility decision does not change tenant authorization, immutable
+  provenance, AI authority, configuration governance, or runtime data scope.
+  Real data remains prohibited.
+- The disclosure is an owner-accepted exception, not an open-source license.
+  The all-rights-reserved `LICENSE` remains controlling. Before a claim of
+  history-free/privacy-neutral publication or open-source distribution, use the
+  certified candidate or separately certify the full-history disclosure.
+
+SUB-66's security decision is `Certified with exceptions` for return to Build
+only after immutable AI review, merge, and clean post-merge verification.
+Journey 11 and any staging/production promotion remain separately blocked.

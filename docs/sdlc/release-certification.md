@@ -104,6 +104,22 @@ handled explicitly, and the default production bundle contains neither demo
 credential nor synthetic-contract literals. Demo credentials require an
 explicit demo/test build flag.
 
+### Recovery Baseline Gate
+
+SUB-66 records a candidate decision of `Certified with exceptions` for the
+development baseline only. Its machine-readable record audits all 37 historical
+Done issues, invalidates provisional legacy approvals, proves all ten recovery
+prerequisites are merged and post-merge verified, and keeps SUB-26, SUB-50,
+SUB-53, and SUB-55 blocked until the SUB-66 PR itself is approved, merged, and
+cleanly verified. This gate permits return to Build; it does not certify Journey
+11 or authorize staging/production promotion.
+
+The repository owner has made the durable repository public. That disclosure
+is broader than SUB-79's history-free allowlisted candidate and is retained as
+an explicit owner-accepted exception. It must not be described as a
+history-free, anonymous, or open-source artifact; runtime fixture and secret
+controls remain separately certified.
+
 ### Public Repository Publication
 
 Public source disclosure is a separate release decision from POC runtime

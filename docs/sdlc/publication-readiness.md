@@ -1,13 +1,16 @@
 # Public Repository Candidate Readiness
 
-Status: Candidate generation and executable certification required; public
-visibility remains an owner decision.
+Status: The repository owner changed the durable repository to public on
+2026-07-12. The certified history-free candidate remains a separate artifact
+and does not describe the currently public repository.
 
 ## Publication Boundary
 
-The public artifact is a standalone synthetic reimbursement-workflow proof of
-concept created from an explicit allowlist. It is not a visibility change to
-the private engineering repository. The candidate contains no inherited Git
+The history-free public candidate is a standalone synthetic
+reimbursement-workflow proof of concept created from an explicit allowlist.
+The now-public durable repository is a broader owner-authorized disclosure and
+intentionally contains Git history, SDLC/control-plane evidence, PR/Linear
+references, and owner metadata. The candidate contains no inherited Git
 history, private pull-request discussion, internal implementation evidence,
 control-plane URLs, personal commit metadata, caches, local artifacts, or test
 output from the private repository.
@@ -44,8 +47,10 @@ MinIO volumes with no published host ports.
 
 ## Decision
 
-Candidate certification may be AI-reviewed. Creating a repository or changing
-visibility requires explicit owner approval after inspecting the generated
-candidate. Until then the decision is `Blocked for publication`, not because of
-a code-review ceremony, but because public disclosure is an irreversible owner
-authority decision.
+The owner visibility decision has occurred. SUB-79 remains `Certified` for its
+allowlisted candidate, while SUB-66 records the full durable-repository
+disclosure as an accepted exception. The current repository must not be
+represented as history-free, anonymous, privacy-neutral, or open source. Its
+all-rights-reserved `LICENSE` remains controlling. Before broader publication
+claims or open-source licensing, either publish the certified allowlisted
+candidate or separately certify the full-history disclosure surface.
