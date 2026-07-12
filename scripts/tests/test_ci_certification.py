@@ -9,6 +9,7 @@ import unittest
 
 
 SCRIPTS = Path(__file__).resolve().parents[1]
+ROOT = SCRIPTS.parent
 
 
 def load(name: str, path: Path):
@@ -28,6 +29,13 @@ BRANCH_PROTECTION = load(
 
 
 class CiCertificationTests(unittest.TestCase):
+    def test_pr_workflow_checks_out_and_fetches_immutable_review_history(self) -> None:
+        workflow = (ROOT / ".github/workflows/contractview-ci.yml").read_text()
+        self.assertIn("github.event.pull_request.head.sha", workflow)
+        self.assertIn("git rev-parse --is-shallow-repository", workflow)
+        self.assertIn("refs/remotes/origin/${{ github.event.pull_request.base.ref }}", workflow)
+        self.assertIn("git merge-base --is-ancestor", workflow)
+
     def test_numeric_version_ignores_tool_prefix(self) -> None:
         self.assertEqual((20, 20, 2), TOOLCHAINS.numeric_version("v20.20.2"))
         self.assertEqual((3, 12, 13), TOOLCHAINS.numeric_version("Python 3.12.13"))
