@@ -215,9 +215,13 @@ describe("authentication shell", () => {
       <ValidationView
         validation={{
           id: "run",
+          invoiceVersionId: "invoice-v1",
+          configurationVersionId: "config-v1",
           engineVersion: "deterministic-validation-v1",
+          normalizedInputs: {},
           inputHash: "1234567890abcdef",
           outputHash: "abcdef1234567890",
+          status: "completed",
           results: [
             {
               ruleCode: "SERVICE_PERIOD",
@@ -226,6 +230,7 @@ describe("authentication shell", () => {
               reasonCode: "SERVICE_PERIOD:EXP-004",
               outcome: "fail",
               expenseKey: "EXP-004",
+              normalizedInput: {},
               message: "Date is outside service period",
             },
             {
@@ -235,6 +240,7 @@ describe("authentication shell", () => {
               reasonCode: "POSSIBLE_DUPLICATE:EXP-005:EXP-002",
               outcome: "fail",
               expenseKey: "EXP-005",
+              normalizedInput: {},
               message: "Possible duplicate",
             },
           ],

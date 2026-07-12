@@ -9,6 +9,7 @@ from .authorization import Action,Actor,execute_authorized,require_permission
 from .provenance import append_event_tx
 from .runtime import database
 from .budget import calculate_budget
+from .shared_contracts import RuleResult, ValidationRunDto
 
 ENGINE_VERSION="deterministic-validation-v1"
 RULE_VERSIONS={
@@ -20,7 +21,7 @@ RULE_VERSIONS={
 def _canonical(value)->str:return json.dumps(value,sort_keys=True,separators=(",",":"))
 def _hash(value)->str:return sha256(_canonical(value).encode()).hexdigest()
 def _result(rule,severity,reason,outcome,message,normalized,expense=None):
-    return {"ruleCode":rule,"ruleVersion":RULE_VERSIONS[rule],"severity":severity,"reasonCode":reason,"outcome":outcome,"expenseKey":expense,"normalizedInput":normalized,"message":message}
+    return RuleResult(rule_code=rule,rule_version=RULE_VERSIONS[rule],severity=severity,reason_code=reason,outcome=outcome,expense_key=expense,normalized_input=normalized,message=message).model_dump(by_alias=True)
 
 def execute_validation(actor:Actor,invoice_id:str)->dict:
     def command():
@@ -83,7 +84,7 @@ def get_validation(actor:Actor,run_id:str)->dict:
         if not run:raise FileNotFoundError(run_id)
         require_permission(actor,Action.READ,invoice_scope(actor,run[1]))
         rows=connection.execute("select rule_code,rule_version,severity,reason_code,outcome,expense_key,normalized_input,message from validation_results where validation_run_id=%s order by rule_code,expense_key nulls first,reason_code",(run_id,)).fetchall()
-    return {"id":run[0],"invoiceVersionId":run[1],"configurationVersionId":run[2],"engineVersion":run[3],"normalizedInputs":run[4],"inputHash":run[5],"outputHash":run[6],"status":run[7],"results":[{"ruleCode":r[0],"ruleVersion":r[1],"severity":r[2],"reasonCode":r[3],"outcome":r[4],"expenseKey":r[5],"normalizedInput":r[6],"message":r[7]} for r in rows]}
+    return ValidationRunDto(id=run[0],invoice_version_id=run[1],configuration_version_id=run[2],engine_version=run[3],normalized_inputs=run[4],input_hash=run[5],output_hash=run[6],status=run[7],results=[{"ruleCode":r[0],"ruleVersion":r[1],"severity":r[2],"reasonCode":r[3],"outcome":r[4],"expenseKey":r[5],"normalizedInput":r[6],"message":r[7]} for r in rows]).model_dump(by_alias=True)
 
 def latest_validation(actor:Actor,invoice_id:str)->dict|None:
     with database() as connection:row=connection.execute("select id from validation_runs where invoice_version_id=%s and engine_version is not null order by created_at desc,id desc limit 1",(invoice_id,)).fetchone()

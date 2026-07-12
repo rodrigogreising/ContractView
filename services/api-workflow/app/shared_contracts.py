@@ -2,9 +2,9 @@
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 
 def _camel(value: str) -> str:
@@ -15,12 +15,15 @@ def _camel(value: str) -> str:
 class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=_camel)
 
+
+
 class Role(StrEnum):
     CONFIGURATION_ADMINISTRATOR = "configuration_administrator"
     NGO_PREPARER = "ngo_preparer"
     NGO_APPROVER = "ngo_approver"
     GOVERNMENT_REVIEWER = "government_reviewer"
     AUDITOR = "auditor"
+
 
 class ResourceKind(StrEnum):
     CONFIGURATION = "configuration"
@@ -30,6 +33,7 @@ class ResourceKind(StrEnum):
     PACKAGE = "package"
     GOVERNMENT_DECISION = "government_decision"
     AUDIT = "audit"
+
 
 class Action(StrEnum):
     READ = "read"
@@ -41,9 +45,11 @@ class Action(StrEnum):
     RETURN = "return"
     APPROVE = "approve"
 
+
 class ArtifactKind(StrEnum):
     ORIGINAL = "original"
     GENERATED = "generated"
+
 
 class FieldType(StrEnum):
     STRING = "string"
@@ -54,6 +60,7 @@ class FieldType(StrEnum):
     DATETIME = "datetime"
     IDENTIFIER = "identifier"
     REFERENCE = "reference"
+
 
 class EntityType(StrEnum):
     CONTRACT = "contract"
@@ -66,6 +73,7 @@ class EntityType(StrEnum):
     SUBMISSION = "submission"
     DECISION = "decision"
 
+
 class RelationType(StrEnum):
     SUPPORTS = "supports"
     DERIVED_FROM = "derived_from"
@@ -76,11 +84,13 @@ class RelationType(StrEnum):
     AMENDS = "amends"
     APPROVED_AS = "approved_as"
 
+
 class InvoiceLifecycle(StrEnum):
     DRAFT = "draft"
     SUBMITTED = "submitted"
     RETURNED = "returned"
     APPROVED = "approved"
+
 
 class ConfigurationLifecycle(StrEnum):
     DRAFT = "draft"
@@ -90,15 +100,60 @@ class ConfigurationLifecycle(StrEnum):
     SUPERSEDED = "superseded"
     RETIRED = "retired"
 
+
+ReasonCode = Annotated[str, StringConstraints(pattern=r'^(?:SERVICE_PERIOD|IN_SERVICE_PERIOD|REQUIRED_EVIDENCE|EVIDENCE_PRESENT|BUDGET_AVAILABLE|TOTAL_RECONCILIATION|TOTAL_RECONCILED|POSSIBLE_DUPLICATE|NO_POSSIBLE_DUPLICATE|EVIDENCE_CORRECTION|AMOUNT_CORRECTION|CLARIFICATION|APPROVED_AS_CORRECTED)(?::[A-Za-z0-9_.-]+)*$')]
+
+
+class VersionReferenceKind(StrEnum):
+    CONTRACT = "contract"
+    ARTIFACT = "artifact"
+    SCHEMA = "schema"
+    MAPPING = "mapping"
+    RULE = "rule"
+    WORKFLOW = "workflow"
+    VIEW = "view"
+    TEMPLATE = "template"
+    CONFIGURATION = "configuration"
+    TEST_EVIDENCE = "test_evidence"
+    INVOICE = "invoice"
+    INVOICE_SNAPSHOT = "invoice_snapshot"
+    VALIDATION_RUN = "validation_run"
+    PACKAGE = "package"
+    PACKAGE_MANIFEST = "package_manifest"
+    EVENT = "event"
+    ENTITY = "entity"
+    SUBMISSION = "submission"
+    DECISION = "decision"
+
+
 class RuleSeverity(StrEnum):
     BLOCKER = "blocker"
     WARNING = "warning"
     NOTE = "note"
 
+
 class RuleOutcome(StrEnum):
     PASS = "pass"
     FAIL = "fail"
     NOT_APPLICABLE = "not_applicable"
+
+
+class RuleCode(StrEnum):
+    SERVICE_PERIOD = "SERVICE_PERIOD"
+    REQUIRED_EVIDENCE = "REQUIRED_EVIDENCE"
+    BUDGET_AVAILABLE = "BUDGET_AVAILABLE"
+    TOTAL_RECONCILIATION = "TOTAL_RECONCILIATION"
+    POSSIBLE_DUPLICATE = "POSSIBLE_DUPLICATE"
+
+
+class ComponentKind(StrEnum):
+    SCHEMA = "schema"
+    MAPPING = "mapping"
+    RULE = "rule"
+    WORKFLOW = "workflow"
+    VIEW = "view"
+    TEMPLATE = "template"
+
 
 class EventType(StrEnum):
     LOGIN_SUCCEEDED = "login_succeeded"
@@ -121,14 +176,37 @@ class EventType(StrEnum):
     RESUBMITTED = "resubmitted"
     APPROVED = "approved"
 
+
 MATERIAL_EVENT_TYPES = frozenset(item.value for item in EventType)
 
 
+CONTRACT_REQUIRED_FIELDS = {
+    'VersionReference': frozenset(['kind', 'id', 'version']),
+    'ActorReference': frozenset(['user_id', 'organization_id', 'role']),
+    'ArtifactContract': frozenset(['id', 'contract_id', 'organization_id', 'kind', 'media_type', 'byte_size', 'sha256', 'version']),
+    'TypedField': frozenset(['name', 'field_type', 'value', 'source']),
+    'EntityContract': frozenset(['id', 'entity_type', 'version', 'fields']),
+    'RelationContract': frozenset(['id', 'relation_type', 'source', 'target']),
+    'IdentityDto': frozenset(['id', 'display_name', 'email', 'organization_id', 'organization_name', 'role']),
+    'RuleDefinition': frozenset(['code', 'version', 'severity', 'enabled', 'parameters']),
+    'RuleResult': frozenset(['rule_code', 'rule_version', 'severity', 'reason_code', 'outcome', 'normalized_input', 'message']),
+    'ValidationRunContract': frozenset(['id', 'invoice_version', 'configuration_version', 'engine_version', 'input_hash', 'output_hash', 'results']),
+    'ValidationRunDto': frozenset(['id', 'invoice_version_id', 'configuration_version_id', 'engine_version', 'normalized_inputs', 'input_hash', 'output_hash', 'status', 'results']),
+    'WorkflowTransition': frozenset(['from_state', 'to_state', 'action', 'role']),
+    'WorkflowContract': frozenset(['id', 'version', 'states', 'transitions']),
+    'ViewContract': frozenset(['id', 'version', 'role', 'fields']),
+    'TemplateContract': frozenset(['id', 'version', 'media_type', 'content_hash']),
+    'ConfigurationBundleContract': frozenset(['id', 'version', 'lifecycle', 'scope', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates']),
+    'ActiveConfigurationDto': frozenset(['id', 'version', 'activated_at']),
+    'EventEnvelope': frozenset(['event_id', 'event_type', 'schema_version', 'actor', 'organization_id', 'contract_id', 'aggregate', 'occurred_at', 'payload', 'version_references']),
+}
+
+
 class VersionReference(ContractModel):
-    kind: str
+    kind: VersionReferenceKind
     id: str
     version: int | str
-    sha256: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    sha256: str | None = Field(default=None, pattern='^[a-f0-9]{64}$')
 
 
 class ActorReference(ContractModel):
@@ -144,7 +222,7 @@ class ArtifactContract(ContractModel):
     kind: ArtifactKind
     media_type: str
     byte_size: int = Field(ge=0)
-    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    sha256: str = Field(pattern='^[a-f0-9]{64}$')
     version: int = Field(ge=1)
     submitted: bool = False
 
@@ -170,11 +248,20 @@ class RelationContract(ContractModel):
     source: VersionReference
     target: VersionReference
     actor: ActorReference | None = None
-    reason_code: str | None = None
+    reason_code: ReasonCode | None = None
+
+
+class IdentityDto(ContractModel):
+    id: str
+    display_name: str
+    email: str
+    organization_id: str
+    organization_name: str
+    role: Role
 
 
 class RuleDefinition(ContractModel):
-    code: str
+    code: RuleCode
     version: str
     severity: RuleSeverity
     enabled: bool
@@ -182,10 +269,10 @@ class RuleDefinition(ContractModel):
 
 
 class RuleResult(ContractModel):
-    rule_code: str
+    rule_code: RuleCode
     rule_version: str
     severity: RuleSeverity
-    reason_code: str
+    reason_code: ReasonCode
     outcome: RuleOutcome
     normalized_input: dict[str, Any]
     message: str
@@ -198,16 +285,35 @@ class ValidationRunContract(ContractModel):
     invoice_version: VersionReference
     configuration_version: VersionReference
     engine_version: str
-    input_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-    output_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    input_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    output_hash: str = Field(pattern='^[a-f0-9]{64}$')
     results: list[RuleResult]
+
+
+class ValidationRunDto(ContractModel):
+    id: str
+    invoice_version_id: str
+    configuration_version_id: str
+    engine_version: str
+    normalized_inputs: dict[str, Any]
+    input_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    output_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    status: str
+    results: list[RuleResult]
+
+
+class WorkflowTransition(ContractModel):
+    from_state: InvoiceLifecycle
+    to_state: InvoiceLifecycle
+    action: Action
+    role: Role
 
 
 class WorkflowContract(ContractModel):
     id: str
     version: int = Field(ge=1)
-    states: list[str]
-    transitions: list[dict[str, Any]]
+    states: list[InvoiceLifecycle]
+    transitions: list[WorkflowTransition]
 
 
 class ViewContract(ContractModel):
@@ -221,21 +327,7 @@ class TemplateContract(ContractModel):
     id: str
     version: int = Field(ge=1)
     media_type: str
-    content_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-
-
-class EventEnvelope(ContractModel):
-    event_id: str
-    event_type: EventType
-    schema_version: int = Field(ge=1)
-    actor: ActorReference
-    organization_id: str
-    contract_id: str
-    aggregate: VersionReference
-    occurred_at: datetime
-    payload: dict[str, Any]
-    version_references: list[VersionReference]
-    reason_code: str | None = None
+    content_hash: str = Field(pattern='^[a-f0-9]{64}$')
 
 
 class ConfigurationBundleContract(ContractModel):
@@ -255,16 +347,21 @@ class ConfigurationBundleContract(ContractModel):
     rollback_target: VersionReference | None = None
 
 
-class IdentityDto(ContractModel):
-    id: str
-    display_name: str
-    email: str
-    organization_id: str
-    organization_name: str
-    role: Role
-
-
 class ActiveConfigurationDto(ContractModel):
     id: str
     version: int
     activated_at: str
+
+
+class EventEnvelope(ContractModel):
+    event_id: str
+    event_type: EventType
+    schema_version: int = Field(ge=1)
+    actor: ActorReference
+    organization_id: str
+    contract_id: str
+    aggregate: VersionReference
+    occurred_at: datetime
+    payload: dict[str, Any]
+    version_references: list[VersionReference]
+    reason_code: ReasonCode | None = None

@@ -21,7 +21,8 @@ Current contract version: `1.0.0`.
 
 ## Owned Data Or Contracts
 
-- `Artifact`, `Schema`, `Field`, `Entity`, `Relation`, `Rule`, `Workflow`, `View`, `Template`, `Event`, `ValidationRun`, and `ConfigurationBundle` vocabulary.
+- `Artifact`, typed `Field`, `Entity`, `Relation`, actor, resource, lifecycle,
+  reason-code, and immutable version-reference contracts.
 - Actor and role vocabulary.
 - Invoice and issue lifecycle vocabulary.
 - Version reference vocabulary.
@@ -51,8 +52,9 @@ Current tests certify:
 
 Run `python3 scripts/generate_shared_contracts.py --check` and
 `python3 scripts/check_shared_contracts.py`. Optional fields may be added in a
-minor version. Removals, required-field additions, type reinterpretation, and
-closed-vocabulary changes require a major version and consumer migration.
+minor version. Removals, required-field additions, type/default/constraint
+changes, and closed-vocabulary changes require a major version and consumer
+migration.
 
 ## Related Certifiable Journeys
 

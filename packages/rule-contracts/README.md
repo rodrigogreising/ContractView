@@ -31,7 +31,6 @@ Current contract version: `1.0.0`; it depends only on `domain-types` version ref
 ## Allowed Dependencies
 
 - `packages/domain-types`.
-- `packages/configuration-contracts` for version references where needed.
 - No service internals.
 
 ## Events Emitted Or Consumed

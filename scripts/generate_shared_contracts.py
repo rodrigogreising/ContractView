@@ -1,4 +1,4 @@
-"""Generate framework-light Python and TypeScript contracts from registries."""
+"""Generate Python and TypeScript contracts from canonical typed registries."""
 
 from __future__ import annotations
 
@@ -6,16 +6,34 @@ import argparse
 import json
 import re
 from pathlib import Path
+from typing import Iterator
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = {
     "domain": ROOT / "packages/domain-types/contract.json",
     "rules": ROOT / "packages/rule-contracts/contract.json",
-    "events": ROOT / "packages/event-contracts/contract.json",
     "configuration": ROOT / "packages/configuration-contracts/contract.json",
+    "events": ROOT / "packages/event-contracts/contract.json",
 }
 PYTHON_OUTPUT = ROOT / "services/api-workflow/app/shared_contracts.py"
 TYPESCRIPT_OUTPUT = ROOT / "apps/web-app/src/generated/contracts.ts"
+
+PYTHON_PRIMITIVES = {
+    "string": "str",
+    "integer": "int",
+    "number": "float",
+    "boolean": "bool",
+    "any": "Any",
+    "datetime": "datetime",
+}
+TYPESCRIPT_PRIMITIVES = {
+    "string": "string",
+    "integer": "number",
+    "number": "number",
+    "boolean": "boolean",
+    "any": "unknown",
+    "datetime": "string",
+}
 
 
 def load() -> dict[str, dict]:
@@ -26,27 +44,105 @@ def member(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", value).strip("_").upper()
 
 
+def snake(value: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()
+
+
+def vocabulary_definitions(registry: dict[str, dict]) -> Iterator[tuple[str, dict]]:
+    for package in registry.values():
+        for name, definition in package.get("vocabularies", {}).items():
+            yield name, definition
+
+
+def contract_definitions(registry: dict[str, dict]) -> Iterator[tuple[str, dict]]:
+    for package in registry.values():
+        yield from package.get("contracts", {}).items()
+
+
 def python_enum(name: str, values: list[str]) -> str:
     rows = "\n".join(f'    {member(value)} = "{value}"' for value in values)
-    return f"class {name}(StrEnum):\n{rows}\n"
+    return f"class {name}(StrEnum):\n{rows}"
 
 
-def ts_values(name: str, values: list[str]) -> str:
-    encoded = json.dumps(values, separators=(",", ":"))
-    return f"export const {name} = {encoded} as const;\nexport type {name.title().replace('_', '')[:-1]} = typeof {name}[number];"
+def python_type(type_name: str) -> str:
+    if type_name.endswith("[]"):
+        return f"list[{python_type(type_name[:-2])}]"
+    if type_name.startswith("map<string,") and type_name.endswith(">"):
+        return f"dict[str, {python_type(type_name[11:-1])}]"
+    if "|" in type_name:
+        return " | ".join(python_type(part) for part in type_name.split("|"))
+    return PYTHON_PRIMITIVES.get(type_name, type_name)
+
+
+def typescript_type(type_name: str, aliases: dict[str, str] | None = None) -> str:
+    aliases = aliases or {}
+    if type_name.endswith("[]"):
+        item = typescript_type(type_name[:-2], aliases)
+        return f"Array<{item}>" if " | " in item else f"{item}[]"
+    if type_name.startswith("map<string,") and type_name.endswith(">"):
+        return f"Record<string, {typescript_type(type_name[11:-1], aliases)}>"
+    if "|" in type_name:
+        return " | ".join(typescript_type(part, aliases) for part in type_name.split("|"))
+    return TYPESCRIPT_PRIMITIVES.get(type_name, aliases.get(type_name, type_name))
+
+
+def python_default(value: object) -> str:
+    if value is True:
+        return "True"
+    if value is False:
+        return "False"
+    if value is None:
+        return "None"
+    return repr(value)
+
+
+def python_field(field: dict) -> str:
+    required = field["required"]
+    nullable = field.get("nullable", False)
+    has_default = "default" in field
+    field_type = python_type(field["type"])
+    if nullable or (not required and not has_default):
+        field_type += " | None"
+
+    constraints: list[str] = []
+    if "pattern" in field:
+        constraints.append(f"pattern={field['pattern']!r}")
+    if "minimum" in field:
+        constraints.append(f"ge={field['minimum']!r}")
+    if "maximum" in field:
+        constraints.append(f"le={field['maximum']!r}")
+
+    if constraints:
+        if has_default:
+            constraints.insert(0, f"default={python_default(field['default'])}")
+        elif not required:
+            constraints.insert(0, "default=None")
+        assignment = f" = Field({', '.join(constraints)})"
+    elif has_default:
+        assignment = f" = {python_default(field['default'])}"
+    elif not required:
+        assignment = " = None"
+    else:
+        assignment = ""
+    return f"    {snake(field['name'])}: {field_type}{assignment}"
+
+
+def typescript_field(field: dict, aliases: dict[str, str] | None = None) -> str:
+    optional = "" if field["required"] else "?"
+    field_type = typescript_type(field["type"], aliases)
+    if field.get("nullable", False):
+        field_type += " | null"
+    return f"  {field['name']}{optional}: {field_type};"
 
 
 def render_python(registry: dict[str, dict]) -> str:
-    domain = registry["domain"]["vocabularies"]
-    rules = registry["rules"]["vocabularies"]
-    events = registry["events"]["vocabularies"]
     header = '''"""Generated by scripts/generate_shared_contracts.py; do not edit."""
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 
 def _camel(value: str) -> str:
@@ -56,228 +152,92 @@ def _camel(value: str) -> str:
 
 class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True, alias_generator=_camel)
-
 '''
-    enums = "\n".join([
-        python_enum("Role", domain["actorRoles"]),
-        python_enum("ResourceKind", domain["resourceKinds"]),
-        python_enum("Action", domain["actions"]),
-        python_enum("ArtifactKind", domain["artifactKinds"]),
-        python_enum("FieldType", domain["fieldTypes"]),
-        python_enum("EntityType", domain["entityTypes"]),
-        python_enum("RelationType", domain["relationTypes"]),
-        python_enum("InvoiceLifecycle", domain["invoiceLifecycle"]),
-        python_enum("ConfigurationLifecycle", domain["configurationLifecycle"]),
-        python_enum("RuleSeverity", rules["severities"]),
-        python_enum("RuleOutcome", rules["outcomes"]),
-        python_enum("EventType", events["eventTypes"]),
-    ])
-    models = '''
-MATERIAL_EVENT_TYPES = frozenset(item.value for item in EventType)
-
-
-class VersionReference(ContractModel):
-    kind: str
-    id: str
-    version: int | str
-    sha256: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
-
-
-class ActorReference(ContractModel):
-    user_id: str
-    organization_id: str
-    role: Role
-
-
-class ArtifactContract(ContractModel):
-    id: str
-    contract_id: str
-    organization_id: str
-    kind: ArtifactKind
-    media_type: str
-    byte_size: int = Field(ge=0)
-    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
-    version: int = Field(ge=1)
-    submitted: bool = False
-
-
-class TypedField(ContractModel):
-    name: str
-    field_type: FieldType
-    value: Any
-    source: VersionReference
-    confidence: float | None = Field(default=None, ge=0, le=1)
-
-
-class EntityContract(ContractModel):
-    id: str
-    entity_type: EntityType
-    version: int = Field(ge=1)
-    fields: list[TypedField]
-
-
-class RelationContract(ContractModel):
-    id: str
-    relation_type: RelationType
-    source: VersionReference
-    target: VersionReference
-    actor: ActorReference | None = None
-    reason_code: str | None = None
-
-
-class RuleDefinition(ContractModel):
-    code: str
-    version: str
-    severity: RuleSeverity
-    enabled: bool
-    parameters: dict[str, Any]
-
-
-class RuleResult(ContractModel):
-    rule_code: str
-    rule_version: str
-    severity: RuleSeverity
-    reason_code: str
-    outcome: RuleOutcome
-    normalized_input: dict[str, Any]
-    message: str
-    expense_key: str | None = None
-    remediation: str | None = None
-
-
-class ValidationRunContract(ContractModel):
-    id: str
-    invoice_version: VersionReference
-    configuration_version: VersionReference
-    engine_version: str
-    input_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-    output_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-    results: list[RuleResult]
-
-
-class WorkflowContract(ContractModel):
-    id: str
-    version: int = Field(ge=1)
-    states: list[str]
-    transitions: list[dict[str, Any]]
-
-
-class ViewContract(ContractModel):
-    id: str
-    version: int = Field(ge=1)
-    role: Role
-    fields: list[str]
-
-
-class TemplateContract(ContractModel):
-    id: str
-    version: int = Field(ge=1)
-    media_type: str
-    content_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-
-
-class EventEnvelope(ContractModel):
-    event_id: str
-    event_type: EventType
-    schema_version: int = Field(ge=1)
-    actor: ActorReference
-    organization_id: str
-    contract_id: str
-    aggregate: VersionReference
-    occurred_at: datetime
-    payload: dict[str, Any]
-    version_references: list[VersionReference]
-    reason_code: str | None = None
-
-
-class ConfigurationBundleContract(ContractModel):
-    id: str
-    version: int = Field(ge=1)
-    lifecycle: ConfigurationLifecycle
-    scope: dict[str, str]
-    schemas: list[VersionReference]
-    mappings: list[VersionReference]
-    rules: list[RuleDefinition]
-    workflow: WorkflowContract
-    views: list[ViewContract]
-    templates: list[TemplateContract]
-    test_evidence: VersionReference | None = None
-    approval: ActorReference | None = None
-    predecessor: VersionReference | None = None
-    rollback_target: VersionReference | None = None
-
-
-class IdentityDto(ContractModel):
-    id: str
-    display_name: str
-    email: str
-    organization_id: str
-    organization_name: str
-    role: Role
-
-
-class ActiveConfigurationDto(ContractModel):
-    id: str
-    version: int
-    activated_at: str
-'''
-    return header + enums + models
+    enums = []
+    for _, definition in vocabulary_definitions(registry):
+        if not definition.get("python"):
+            continue
+        if definition.get("parameterized"):
+            choices = "|".join(re.escape(value) for value in definition["values"])
+            enums.append(
+                f"{definition['python']} = Annotated[str, StringConstraints("
+                f"pattern=r'^(?:{choices})(?::[A-Za-z0-9_.-]+)*$')]"
+            )
+        else:
+            enums.append(python_enum(definition["python"], definition["values"]))
+    models = []
+    required_shapes = {}
+    for _, definition in contract_definitions(registry):
+        fields = "\n".join(python_field(field) for field in definition["fields"])
+        models.append(f"class {definition['model']}(ContractModel):\n{fields}")
+        required_shapes[definition["model"]] = [
+            snake(field["name"]) for field in definition["fields"] if field["required"]
+        ]
+    required_metadata = "CONTRACT_REQUIRED_FIELDS = {\n" + "\n".join(
+        f"    {model!r}: frozenset({fields!r})," for model, fields in required_shapes.items()
+    ) + "\n}"
+    return (
+        header
+        + "\n\n\n"
+        + "\n\n\n".join(enums)
+        + "\n\n\nMATERIAL_EVENT_TYPES = frozenset(item.value for item in EventType)\n\n\n"
+        + required_metadata
+        + "\n\n\n"
+        + "\n\n\n".join(models)
+        + "\n"
+    )
 
 
 def render_typescript(registry: dict[str, dict]) -> str:
-    domain = registry["domain"]["vocabularies"]
-    rules = registry["rules"]["vocabularies"]
-    events = registry["events"]["vocabularies"]
-    constants = "\n\n".join([
-        ts_values("ACTOR_ROLES", domain["actorRoles"]),
-        ts_values("RESOURCE_KINDS", domain["resourceKinds"]),
-        ts_values("ACTIONS", domain["actions"]),
-        ts_values("ARTIFACT_KINDS", domain["artifactKinds"]),
-        ts_values("FIELD_TYPES", domain["fieldTypes"]),
-        ts_values("ENTITY_TYPES", domain["entityTypes"]),
-        ts_values("RELATION_TYPES", domain["relationTypes"]),
-        ts_values("INVOICE_LIFECYCLES", domain["invoiceLifecycle"]),
-        ts_values("CONFIGURATION_LIFECYCLES", domain["configurationLifecycle"]),
-        ts_values("RULE_SEVERITIES", rules["severities"]),
-        ts_values("RULE_OUTCOMES", rules["outcomes"]),
-        ts_values("EVENT_TYPES", events["eventTypes"]),
-    ])
-    interfaces = '''
-
-export interface VersionReference { kind: string; id: string; version: number | string; sha256?: string | null }
-export interface ActorReference { userId: string; organizationId: string; role: ActorRole }
-export interface ArtifactContract { id: string; contractId: string; organizationId: string; kind: ArtifactKind; mediaType: string; byteSize: number; sha256: string; version: number; submitted: boolean }
-export interface TypedField { name: string; fieldType: FieldType; value: unknown; source: VersionReference; confidence?: number | null }
-export interface EntityContract { id: string; entityType: EntityType; version: number; fields: TypedField[] }
-export interface RelationContract { id: string; relationType: RelationType; source: VersionReference; target: VersionReference; actor?: ActorReference | null; reasonCode?: string | null }
-export interface RuleDefinition { code: string; version: string; severity: RuleSeverity; enabled: boolean; parameters: Record<string, unknown> }
-export interface RuleResultDto { ruleCode: string; ruleVersion: string; severity: RuleSeverity; reasonCode: string; outcome: RuleOutcome; normalizedInput?: Record<string, unknown>; message: string; expenseKey: string | null; remediation?: string | null }
-export interface ValidationRunDto { id: string; engineVersion: string; inputHash: string; outputHash: string; results: RuleResultDto[] }
-export interface WorkflowContract { id: string; version: number; states: string[]; transitions: Array<Record<string, unknown>> }
-export interface ViewContract { id: string; version: number; role: ActorRole; fields: string[] }
-export interface TemplateContract { id: string; version: number; mediaType: string; contentHash: string }
-export interface EventEnvelope { eventId: string; eventType: EventType; schemaVersion: number; actor: ActorReference; organizationId: string; contractId: string; aggregate: VersionReference; occurredAt: string; payload: Record<string, unknown>; versionReferences: VersionReference[]; reasonCode?: string | null }
-export interface ConfigurationBundleContract { id: string; version: number; lifecycle: ConfigurationLifecycle; scope: Record<string, string>; schemas: VersionReference[]; mappings: VersionReference[]; rules: RuleDefinition[]; workflow: WorkflowContract; views: ViewContract[]; templates: TemplateContract[]; testEvidence?: VersionReference | null; approval?: ActorReference | null; predecessor?: VersionReference | null; rollbackTarget?: VersionReference | null }
-export interface IdentityDto { id: string; displayName: string; email: string; organizationId: string; organizationName: string; role: ActorRole }
-export interface ActiveConfigurationDto { id: string; version: number; activatedAt: string }
-'''
-    aliases = '''
-export type ActorRole = typeof ACTOR_ROLES[number];
-export type ResourceKind = typeof RESOURCE_KINDS[number];
-export type Action = typeof ACTIONS[number];
-export type ArtifactKind = typeof ARTIFACT_KINDS[number];
-export type FieldType = typeof FIELD_TYPES[number];
-export type EntityType = typeof ENTITY_TYPES[number];
-export type RelationType = typeof RELATION_TYPES[number];
-export type InvoiceLifecycle = typeof INVOICE_LIFECYCLES[number];
-export type ConfigurationLifecycle = typeof CONFIGURATION_LIFECYCLES[number];
-export type RuleSeverity = typeof RULE_SEVERITIES[number];
-export type RuleOutcome = typeof RULE_OUTCOMES[number];
-export type EventType = typeof EVENT_TYPES[number];
-'''
-    # ts_values also emits convenience aliases; remove those generated alias lines.
-    constants = "\n".join(line for line in constants.splitlines() if not line.startswith("export type "))
-    return "// Generated by scripts/generate_shared_contracts.py; do not edit.\n\n" + constants + "\n" + aliases + interfaces
+    constants = []
+    aliases = []
+    for _, definition in vocabulary_definitions(registry):
+        if not definition.get("typescript"):
+            continue
+        values = json.dumps(definition["values"], separators=(",", ":"))
+        constants.append(f"export const {definition['constant']} = {values} as const;")
+        if definition.get("parameterized"):
+            aliases.append(
+                f"export type {definition['typescript']}Base = typeof "
+                f"{definition['constant']}[number];\n"
+                f"export type {definition['typescript']} = "
+                f"{definition['typescript']}Base | `${{{definition['typescript']}Base}}:${{string}}`;"
+            )
+        else:
+            aliases.append(
+                f"export type {definition['typescript']} = typeof {definition['constant']}[number];"
+            )
+    type_aliases = {
+        definition["python"]: definition["typescript"]
+        for _, definition in vocabulary_definitions(registry)
+        if definition.get("python") and definition.get("typescript")
+    }
+    interfaces = []
+    required_shapes = {}
+    for _, definition in contract_definitions(registry):
+        fields = "\n".join(
+            typescript_field(field, type_aliases) for field in definition["fields"]
+        )
+        interfaces.append(f"export interface {definition['model']} {{\n{fields}\n}}")
+        required_shapes[definition["model"]] = [
+            field["name"] for field in definition["fields"] if field["required"]
+        ]
+    required_metadata = (
+        "export const CONTRACT_REQUIRED_FIELDS = "
+        + json.dumps(required_shapes, separators=(",", ":"))
+        + " as const;"
+    )
+    return (
+        "// Generated by scripts/generate_shared_contracts.py; do not edit.\n\n"
+        + "\n".join(constants)
+        + "\n\n"
+        + "\n".join(aliases)
+        + "\n\n"
+        + required_metadata
+        + "\n\n"
+        + "\n\n".join(interfaces)
+        + "\n"
+    )
 
 
 def outputs() -> dict[Path, str]:

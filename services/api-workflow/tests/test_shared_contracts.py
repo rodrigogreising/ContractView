@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import app.shared_contracts as shared_contracts
 from app.authorization import ResourceKind, Role
 from app.shared_contracts import (
     ActorReference, ArtifactContract, ArtifactKind, ConfigurationBundleContract,
@@ -45,7 +46,7 @@ def test_artifact_field_entity_and_relation_round_trip_to_camel_case():
 
 def test_rules_workflow_views_templates_events_and_bundle_are_executable():
     actor=ActorReference(user_id="u1",organization_id="o1",role=Role.CONFIGURATION_ADMINISTRATOR)
-    workflow=WorkflowContract(id="workflow-1",version=1,states=["draft","submitted"],transitions=[{"from":"draft","to":"submitted"}])
+    workflow=WorkflowContract(id="workflow-1",version=1,states=["draft","submitted"],transitions=[{"fromState":"draft","toState":"submitted","action":"submit","role":"ngo_approver"}])
     view=ViewContract(id="view-1",version=1,role=Role.NGO_PREPARER,fields=["amount"])
     template=TemplateContract(id="template-1",version=1,media_type="application/pdf",content_hash="1"*64)
     rule=RuleDefinition(code="SERVICE_PERIOD",version="v1",severity=RuleSeverity.BLOCKER,enabled=True,parameters={})
@@ -60,3 +61,16 @@ def test_contracts_reject_unknown_fields_and_invalid_hashes():
         VersionReference(kind="artifact",id="a1",version=1,sha256="bad")
     with pytest.raises(ValidationError):
         ArtifactContract(id="a1",contract_id="c1",organization_id="o1",kind="original",media_type="x",byte_size=0,sha256="0"*64,version=1,unexpected=True)
+    with pytest.raises(ValidationError):
+        VersionReference(kind="unknown",id="a1",version=1)
+    with pytest.raises(ValidationError):
+        RuleDefinition(code="UNKNOWN_RULE",version="v1",severity="blocker",enabled=True,parameters={})
+    with pytest.raises(ValidationError):
+        RelationContract(id="r1",relation_type="supports",source=reference(),target=reference(),reason_code="UNKNOWN_REASON:EXP-1")
+
+
+def test_python_requiredness_matches_every_canonical_field_definition():
+    for model_name, required_fields in shared_contracts.CONTRACT_REQUIRED_FIELDS.items():
+        model=getattr(shared_contracts,model_name)
+        actual={name for name,field in model.model_fields.items() if field.is_required()}
+        assert actual==required_fields

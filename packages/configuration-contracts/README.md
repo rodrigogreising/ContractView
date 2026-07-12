@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This package defines shared executable contracts for schemas, mappings, rules, workflows, views, templates, and configuration bundles in `contract.json`.
+This package defines shared executable contracts for rules, workflows, views,
+templates, configuration bundles, and exact schema/mapping version references
+in `contract.json`.
 
 Current contract version: `1.0.0`. The contract defines the full lifecycle but does not activate configuration; REC-06 implements its commands and persistence.
 
@@ -10,7 +12,7 @@ Current contract version: `1.0.0`. The contract defines the full lifecycle but d
 
 - Define configuration bundle shape and version references.
 - Define lifecycle state vocabulary: draft, tested, approved, active, superseded, retired.
-- Define schema, mapping, workflow, view, and template contract vocabulary.
+- Define schema/mapping reference, workflow, view, and template contract vocabulary.
 - Define activation evidence and supersession reference shapes.
 
 ## Explicit Non-Responsibilities
@@ -23,8 +25,7 @@ Current contract version: `1.0.0`. The contract defines the full lifecycle but d
 
 ## Owned Data Or Contracts
 
-- Schema contract vocabulary.
-- Mapping contract vocabulary.
+- Schema and mapping version-reference vocabulary; REC-06 owns their complete definitions.
 - Workflow, view, and template contract vocabulary.
 - Configuration bundle and lifecycle contracts.
 - Activation approval and test evidence references.

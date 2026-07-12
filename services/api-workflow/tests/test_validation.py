@@ -1,3 +1,4 @@
+import ast
 import json
 from hashlib import sha256
 from decimal import Decimal
@@ -79,7 +80,12 @@ def test_non_preparer_cannot_create_validation_run(invoice):
 
 def test_validation_module_has_no_ai_or_extraction_dependency():
     source=Path("/app/app/validation.py").read_text()
-    assert "extraction" not in source.lower() and "model" not in source.lower() and "prompt" not in source.lower()
+    tree=ast.parse(source)
+    imports={node.module or "" for node in ast.walk(tree) if isinstance(node,ast.ImportFrom)}
+    imports.update(alias.name for node in ast.walk(tree) if isinstance(node,ast.Import) for alias in node.names)
+    forbidden=("extraction","openai","anthropic","ollama")
+    assert not any(token in module.lower() for module in imports for token in forbidden)
+    assert "prompt" not in source.lower()
 
 def test_versioned_budget_snapshot_is_visible_to_ngo_and_submitted_government(invoice):
     ngo=budget_snapshot(PREPARER,invoice["id"])

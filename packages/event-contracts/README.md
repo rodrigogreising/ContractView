@@ -11,7 +11,8 @@ Current contract version: `1.0.0`; generated runtime vocabulary replaces the for
 - Define material event naming conventions.
 - Define required actor, organization, contract, invoice, artifact, and timestamp references.
 - Define field lineage and artifact/version reference shapes.
-- Define correction, amendment, waiver, accepted-risk, attestation, return, approval, and payment-status event contracts.
+- Define material event names and the versioned actor/aggregate/reference
+  envelope; REC-08 owns typed per-event payloads.
 
 ## Explicit Non-Responsibilities
 
@@ -22,7 +23,7 @@ Current contract version: `1.0.0`; generated runtime vocabulary replaces the for
 
 ## Owned Data Or Contracts
 
-- Event payload contracts.
+- Versioned generic event envelope; typed payload contracts follow in REC-08.
 - Actor and source references.
 - Lineage reference contracts.
 - Version reference contracts.

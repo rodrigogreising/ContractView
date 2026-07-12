@@ -6,36 +6,56 @@ import re
 from copy import deepcopy
 
 try:
-    from scripts.generate_shared_contracts import SOURCES, load, outputs
+    from scripts.generate_shared_contracts import (
+        PYTHON_PRIMITIVES, SOURCES, contract_definitions, load, outputs,
+        typescript_field, vocabulary_definitions,
+    )
 except ModuleNotFoundError:  # Direct `python scripts/check_shared_contracts.py` execution.
-    from generate_shared_contracts import SOURCES, load, outputs
+    from generate_shared_contracts import (
+        PYTHON_PRIMITIVES, SOURCES, contract_definitions, load, outputs,
+        typescript_field, vocabulary_definitions,
+    )
 
 REQUIRED_CONTRACTS = {
     "VersionReference", "ActorReference", "Artifact", "TypedField", "Entity", "Relation",
     "RuleDefinition", "RuleResult", "ValidationRun", "Workflow", "View", "Template",
-    "EventEnvelope", "ConfigurationBundle",
+    "EventEnvelope", "ConfigurationBundle", "IdentityDto",
+    "ActiveConfigurationDto", "ValidationRunDto",
 }
 
 
 def breaking_changes(old: dict, new: dict) -> list[str]:
     failures: list[str] = []
-    for name, values in old.get("vocabularies", {}).items():
-        if set(new.get("vocabularies", {}).get(name, [])) != set(values):
+    for name, definition in old.get("vocabularies", {}).items():
+        candidate = new.get("vocabularies", {}).get(name)
+        if not candidate or set(candidate.get("values", [])) != set(definition["values"]):
             failures.append(f"closed vocabulary changed: {name}")
     for name, contract in old.get("contracts", {}).items():
         candidate = new.get("contracts", {}).get(name)
         if not candidate:
             failures.append(f"contract removed: {name}")
             continue
-        old_required = set(contract.get("required", []))
-        new_required = set(candidate.get("required", []))
-        if new_required - old_required:
-            failures.append(f"required fields added: {name}")
-        if old_required - new_required:
-            failures.append(f"required fields removed: {name}")
-        if set(contract.get("optional", [])) - set(candidate.get("optional", [])):
-            failures.append(f"optional fields removed: {name}")
+        old_fields = {field["name"]: field for field in contract["fields"]}
+        new_fields = {field["name"]: field for field in candidate["fields"]}
+        for field_name in old_fields.keys() - new_fields.keys():
+            failures.append(f"field removed: {name}.{field_name}")
+        for field_name in new_fields.keys() - old_fields.keys():
+            if new_fields[field_name]["required"]:
+                failures.append(f"required field added: {name}.{field_name}")
+        for field_name in old_fields.keys() & new_fields.keys():
+            old_shape = {key: value for key, value in old_fields[field_name].items() if key != "name"}
+            new_shape = {key: value for key, value in new_fields[field_name].items() if key != "name"}
+            if old_shape != new_shape:
+                failures.append(f"field contract changed: {name}.{field_name}")
     return failures
+
+
+def _base_types(type_name: str) -> set[str]:
+    if type_name.endswith("[]"):
+        return _base_types(type_name[:-2])
+    if type_name.startswith("map<string,") and type_name.endswith(">"):
+        return _base_types(type_name[11:-1])
+    return set(type_name.split("|"))
 
 
 def validate() -> list[str]:
@@ -45,14 +65,37 @@ def validate() -> list[str]:
     missing = REQUIRED_CONTRACTS - contracts
     if missing:
         failures.append("missing contracts: " + ", ".join(sorted(missing)))
-    if registry["domain"]["vocabularies"]["configurationLifecycle"] != registry["configuration"]["vocabularies"]["lifecycle"]:
+    if registry["domain"]["vocabularies"]["configurationLifecycle"]["values"] != registry["configuration"]["vocabularies"]["lifecycle"]["values"]:
         failures.append("configuration lifecycle vocabulary drift")
+    vocabulary_types = {
+        definition["python"]
+        for _, definition in vocabulary_definitions(registry)
+        if definition.get("python")
+    }
+    model_types = {definition["model"] for _, definition in contract_definitions(registry)}
+    known_types = set(PYTHON_PRIMITIVES) | vocabulary_types | model_types
     for name, item in registry.items():
         if not re.fullmatch(r"\d+\.\d+\.\d+", item["version"]):
             failures.append(f"{name} version is not semantic")
-        for vocabulary, values in item.get("vocabularies", {}).items():
+        for vocabulary, definition in item.get("vocabularies", {}).items():
+            values = definition["values"]
             if len(values) != len(set(values)):
                 failures.append(f"{name}.{vocabulary} contains duplicates")
+        for contract_name, contract in item.get("contracts", {}).items():
+            field_names = [field["name"] for field in contract.get("fields", [])]
+            if not field_names:
+                failures.append(f"{name}.{contract_name} has no typed fields")
+            if len(field_names) != len(set(field_names)):
+                failures.append(f"{name}.{contract_name} contains duplicate fields")
+            for field in contract.get("fields", []):
+                if not isinstance(field.get("required"), bool):
+                    failures.append(f"{name}.{contract_name}.{field.get('name')} lacks requiredness")
+                unknown = _base_types(field.get("type", "")) - known_types
+                if unknown:
+                    failures.append(
+                        f"{name}.{contract_name}.{field.get('name')} has unknown types: "
+                        + ", ".join(sorted(unknown))
+                    )
     graph = {item["package"]: set(item.get("dependsOn", {})) for item in registry.values()}
     visiting: set[str] = set()
     visited: set[str] = set()
@@ -72,6 +115,13 @@ def validate() -> list[str]:
         visited.add(node)
     for node in graph:
         visit(node)
+    package_versions = {item["package"]: item["version"] for item in registry.values()}
+    for item in registry.values():
+        for dependency, requirement in item.get("dependsOn", {}).items():
+            if not re.fullmatch(r"\^\d+\.\d+\.\d+", requirement):
+                failures.append(f"invalid dependency range {item['package']}->{dependency}")
+            elif dependency in package_versions and requirement[1:].split(".")[0] != package_versions[dependency].split(".")[0]:
+                failures.append(f"incompatible dependency major {item['package']}->{dependency}")
     for path, expected in outputs().items():
         if not path.exists() or path.read_text() != expected:
             failures.append(f"generated consumer is stale: {path.name}")
@@ -81,10 +131,19 @@ def validate() -> list[str]:
 def compatibility_examples() -> tuple[list[str], list[str]]:
     source = load()["domain"]
     additive = deepcopy(source)
-    additive["contracts"]["Artifact"]["optional"].append("label")
+    additive["contracts"]["Artifact"]["fields"].append(
+        {"name": "label", "type": "string", "required": False}
+    )
     breaking = deepcopy(source)
-    breaking["vocabularies"]["actorRoles"].append("superuser")
+    breaking["vocabularies"]["actorRoles"]["values"].append("superuser")
     return breaking_changes(source, additive), breaking_changes(source, breaking)
+
+
+def requiredness_examples() -> tuple[str, str]:
+    """Expose renderer output used by parity regression tests."""
+    optional = {"name": "submitted", "type": "boolean", "required": False, "default": False}
+    required = {"name": "normalizedInput", "type": "map<string,any>", "required": True}
+    return typescript_field(optional), typescript_field(required)
 
 
 def main() -> int:

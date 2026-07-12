@@ -45,10 +45,14 @@ free-form runtime dictionaries. Canonical inputs are the four
 
 ## Configuration Versus Runtime
 
-Configuration contracts are `Schema`, `Rule`, `Workflow`, `View`, `Template`,
-and `ConfigurationBundle`. Runtime contracts are `Artifact`, `Field`, `Entity`,
-`Relation`, `Event`, `ValidationRun`, `InvoiceSnapshot`, and
-`PackageManifest`.
+SUB-61 currently executes configuration contracts for `Rule`, `Workflow`,
+`View`, `Template`, and `ConfigurationBundle`, with exact schema/mapping
+version references. It executes runtime contracts for `Artifact`, typed
+`Field`, `Entity`, `Relation`, the versioned `Event` envelope, and
+`ValidationRun`. REC-06 adds executable schema/mapping definitions; REC-08 and
+REC-09 add `InvoiceSnapshot`, typed event/relation payloads, and
+`PackageManifest`. Those later contracts remain target-model requirements
+rather than SUB-61 completion claims.
 
 Configuration activation is prospective. Active versions are immutable.
 Runtime records always carry exact configuration, artifact, invoice, contract,

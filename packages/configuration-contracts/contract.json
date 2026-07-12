@@ -3,14 +3,55 @@
   "version": "1.0.0",
   "dependsOn": {"domain-types": "^1.0.0", "rule-contracts": "^1.0.0"},
   "vocabularies": {
-    "componentKinds": ["schema", "mapping", "rule", "workflow", "view", "template"],
-    "lifecycle": ["draft", "tested", "approved", "active", "superseded", "retired"]
+    "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template"]},
+    "lifecycle": {"values": ["draft", "tested", "approved", "active", "superseded", "retired"]}
   },
   "contracts": {
-    "Workflow": {"required": ["id", "version", "states", "transitions"], "optional": []},
-    "View": {"required": ["id", "version", "role", "fields"], "optional": []},
-    "Template": {"required": ["id", "version", "mediaType", "contentHash"], "optional": []},
-    "ConfigurationBundle": {"required": ["id", "version", "lifecycle", "scope", "schemas", "mappings", "rules", "workflow", "views", "templates"], "optional": ["testEvidence", "approval", "predecessor", "rollbackTarget"]}
+    "WorkflowTransition": {"model": "WorkflowTransition", "fields": [
+      {"name": "fromState", "type": "InvoiceLifecycle", "required": true},
+      {"name": "toState", "type": "InvoiceLifecycle", "required": true},
+      {"name": "action", "type": "Action", "required": true},
+      {"name": "role", "type": "Role", "required": true}
+    ]},
+    "Workflow": {"model": "WorkflowContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "states", "type": "InvoiceLifecycle[]", "required": true},
+      {"name": "transitions", "type": "WorkflowTransition[]", "required": true}
+    ]},
+    "View": {"model": "ViewContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "role", "type": "Role", "required": true},
+      {"name": "fields", "type": "string[]", "required": true}
+    ]},
+    "Template": {"model": "TemplateContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "mediaType", "type": "string", "required": true},
+      {"name": "contentHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "ConfigurationBundle": {"model": "ConfigurationBundleContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "lifecycle", "type": "ConfigurationLifecycle", "required": true},
+      {"name": "scope", "type": "map<string,string>", "required": true},
+      {"name": "schemas", "type": "VersionReference[]", "required": true},
+      {"name": "mappings", "type": "VersionReference[]", "required": true},
+      {"name": "rules", "type": "RuleDefinition[]", "required": true},
+      {"name": "workflow", "type": "WorkflowContract", "required": true},
+      {"name": "views", "type": "ViewContract[]", "required": true},
+      {"name": "templates", "type": "TemplateContract[]", "required": true},
+      {"name": "testEvidence", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "approval", "type": "ActorReference", "required": false, "nullable": true},
+      {"name": "predecessor", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "rollbackTarget", "type": "VersionReference", "required": false, "nullable": true}
+    ]},
+    "ActiveConfigurationDto": {"model": "ActiveConfigurationDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true},
+      {"name": "activatedAt", "type": "string", "required": true}
+    ]}
   },
   "activationRule": "Only an approved bundle with immutable test evidence may become active; runtime application is prospective."
 }

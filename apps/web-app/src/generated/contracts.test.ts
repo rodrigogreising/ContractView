@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  ACTOR_ROLES, CONFIGURATION_LIFECYCLES, EVENT_TYPES, RELATION_TYPES,
-  type IdentityDto,
+  ACTOR_ROLES, CONFIGURATION_LIFECYCLES, CONTRACT_REQUIRED_FIELDS, EVENT_TYPES,
+  REASON_CODES, RELATION_TYPES, type IdentityDto,
 } from "./contracts";
 
 describe("generated shared contracts", () => {
@@ -16,5 +16,12 @@ describe("generated shared contracts", () => {
     const identity: IdentityDto = {id:"user-1",displayName:"Synthetic User",email:"synthetic@example.test",organizationId:"org-1",organizationName:"Synthetic Org",role:"auditor"};
     expect(identity.organizationId).toBe("org-1");
     expect(identity.role).toBe("auditor");
+  });
+
+  it("retains canonical requiredness and closed reason vocabulary metadata", () => {
+    expect(CONTRACT_REQUIRED_FIELDS.ArtifactContract).not.toContain("submitted");
+    expect(CONTRACT_REQUIRED_FIELDS.RuleResult).toContain("normalizedInput");
+    expect(REASON_CODES).toContain("SERVICE_PERIOD");
+    expect(REASON_CODES).not.toContain("UNKNOWN_REASON");
   });
 });
