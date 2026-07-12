@@ -248,6 +248,10 @@ def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str,
             Statement.PROVENANCE_READ_INVOICE_SNAPSHOTS_012,
             (contract_id, actor.role is Role.AUDITOR),
         ).fetchall()
+        reproduction = connection.read_models.execute(
+            Statement.PROVENANCE_READ_INVOICE_VERSIONS_PACKAGE_REPRODUCTION_MANIFESTS_PACKAGES_VALIDATION_INPUT_MANIFESTS_013,
+            (contract_id, actor.role is Role.AUDITOR),
+        ).fetchall()
     event_keys = ["id","eventKey","eventType","actorId","actorRole","actorOrganizationId","organizationId","contractId","aggregateType","aggregateId","payload","schemaVersion","reasonCode","versionReferences","eventHash","occurredAt"]
     lineage_keys = ["id","fieldName","fieldValue","sourceArtifactId","sourceLocation","importerVersion",
                     "extractorProvider","extractorModel","promptVersion","parserVersion","mappingVersion",
@@ -262,4 +266,10 @@ def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str,
         "snapshots": [dict(zip(
             ["id","invoiceVersionId","invoiceVersion","materialRevision","stage","payload","snapshotHash","createdBy","actorRole","createdAt"], row
         )) for row in snapshots],
+        "reproducibility": [dict(zip(
+            ["packageId","invoiceVersionId","invoiceVersion","reproductionManifestId",
+             "validationInputManifestId","validationInputManifestHash","buildInputHash",
+             "packageManifestHash","archiveSha256","reproductionManifestHash","templateId",
+             "templateVersion","templateHash","manifest"], row
+        )) for row in reproduction],
     }

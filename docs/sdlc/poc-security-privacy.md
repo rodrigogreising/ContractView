@@ -180,6 +180,26 @@ Residual POC risk: the evidence store is local PostgreSQL/MinIO without hosted
 backup, legal hold, retention automation, or external timestamping. Those
 controls are required before real data or production use.
 
+## SUB-68 Reproducibility Evidence
+
+Controlling issue: `SUB-68` / REC-09. Project stage: Build.
+
+- Validation and package manifests are organization/contract-scoped runtime
+  evidence assembled only after canonical authorization and ownership checks.
+- Manifests retain identifiers, versions, hashes, rule inputs, findings, and
+  synthetic invoice values; they do not retain passwords, sessions, provider
+  credentials, or raw model secrets.
+- Append-only database triggers protect manifests and validation results.
+  MinIO reads recompute artifact hashes before reproduction can succeed.
+- Auditor reconstruction uses the existing assignment-scoped read model;
+  callers cannot select a foreign organization or grant themselves visibility.
+- Replay is read/compute verification. It cannot mutate invoice state, activate
+  configuration, attest, submit, return, or approve.
+
+Residual POC risk remains local evidence retention without hosted backup,
+external timestamping, legal hold, or automated deletion. All retained values
+are synthetic and non-branded; real or hosted data requires a new review.
+
 ## SUB-79 Public Disclosure Boundary
 
 Controlling issue: `SUB-79`. Project stage: Build.

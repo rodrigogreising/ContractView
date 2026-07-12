@@ -29,6 +29,7 @@
     "package_rendering.py": "packages",
     "passwords.py": "identity",
     "provenance.py": "provenance",
+    "reproducibility.py": "shared",
     "revision.py": "invoices",
     "submission.py": "workflow",
     "validation.py": "validation",
@@ -69,11 +70,13 @@
     "invoice_version_links": "invoices",
     "revision_corrections": "invoices",
     "validation_runs": "validation",
+    "validation_input_manifests": "validation",
     "validation_results": "validation",
     "validation_findings": "validation",
     "finding_resolutions": "validation",
     "packages": "packages",
     "package_artifacts": "packages",
+    "package_reproduction_manifests": "packages",
     "attestations": "workflow",
     "submissions": "workflow",
     "government_queue_items": "workflow",
@@ -85,7 +88,7 @@
     "schema_migrations": "platform"
   },
   "sqlAllowedPaths": ["app/adapters/persistence/", "app/manage.py", "app/runtime.py"],
-  "declaredReadModels": ["access_scope", "attestation", "budget", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "invoice_snapshots", "provenance", "revision", "submission"],
+  "declaredReadModels": ["access_scope", "attestation", "budget", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "invoice_snapshots", "provenance", "revision", "submission", "validation"],
   "entrypointCapabilityDependencies": {
     "platform": ["extraction"]
   },

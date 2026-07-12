@@ -8,20 +8,27 @@ from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from ...application.reproducibility import assert_template_integrity
+from ...shared_contracts import TemplateContract
+
 
 class ReportLabInvoicePdfRenderer:
-    def render(self, invoice: dict[str, Any]) -> bytes:
+    def render(self, invoice: dict[str, Any], template: TemplateContract) -> bytes:
+        assert_template_integrity(template)
+        if template.id != "reimbursement-invoice-pdf" or template.media_type != "application/pdf":
+            raise ValueError("Unsupported package template contract")
+        parameters = template.parameters or {}
         output = BytesIO()
         document = SimpleDocTemplate(
             output,
             pagesize=LETTER,
-            title=f"Invoice v{invoice['version']}",
-            author="ContractView POC",
+            title=f"{parameters['invoiceTitle']} v{invoice['version']}",
+            author="Synthetic Reimbursement POC",
             invariant=1,
         )
         styles = getSampleStyleSheet()
         story = [
-            Paragraph("Reimbursement Invoice", styles["Title"]),
+            Paragraph(parameters["invoiceTitle"], styles["Title"]),
             Paragraph(
                 f"Invoice version {invoice['version']} | "
                 f"Configuration {invoice['configurationVersionId']}",

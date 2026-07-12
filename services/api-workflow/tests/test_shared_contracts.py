@@ -10,7 +10,9 @@ from app.shared_contracts import (
     ActorReference, ArtifactContract, ArtifactKind, ConfigurationBundleContract,
     ConfigurationLifecycle, EntityContract, EntityType, EventEnvelope, EventType,
     FieldType, IdentityDto, RelationContract, RelationType, RuleDefinition, RuleSeverity,
-    TemplateContract, TypedField, VersionReference, ViewContract, WorkflowContract,
+    PackageBuildInputContract, PackageReproductionManifestContract, TemplateContract,
+    TypedField, ValidationInputManifestContract, VersionReference, ViewContract,
+    WorkflowContract,
 )
 
 
@@ -67,6 +69,19 @@ def test_contracts_reject_unknown_fields_and_invalid_hashes():
         RuleDefinition(code="UNKNOWN_RULE",version="v1",severity="blocker",enabled=True,parameters={})
     with pytest.raises(ValidationError):
         RelationContract(id="r1",relation_type="supports",source=reference(),target=reference(),reason_code="UNKNOWN_REASON:EXP-1")
+
+
+def test_reproducibility_manifests_are_executable_shared_contracts():
+    rule=RuleDefinition(code="SERVICE_PERIOD",version="v1",severity="blocker",enabled=True,parameters={"servicePeriod":{"start":"2026-01-01","end":"2026-01-31"}})
+    workflow=WorkflowContract(id="workflow-1",version=1,states=["draft"],transitions=[])
+    view=ViewContract(id="view-1",version=1,role="ngo_approver",fields=["invoice"])
+    template=TemplateContract(id="template-1",version=1,media_type="application/pdf",content_hash="1"*64,parameters={"rendererVersion":"v1"})
+    manifest=ValidationInputManifestContract(schema_version="manifest-v1",engine_version="engine-v1",normalized_inputs={"lines":[]},invoice_snapshot=reference("invoice_snapshot","snapshot-1"),artifacts=[],schemas=[reference("schema","schema-1")],mappings=[reference("mapping","mapping-1")],rules=[rule],workflow=workflow,views=[view],templates=[template],configuration_version=reference("configuration","config-1"),extraction_components=[])
+    build=PackageBuildInputContract(schema_version="build-v1",package_id="package-1",invoice_snapshot=manifest.invoice_snapshot,attestation_id="attestation-1",validation_run=reference("validation_run","run-1"),validation_input_manifest_id="input-1",validation_input_manifest_hash="2"*64,configuration_version=manifest.configuration_version,template=template,invoice_payload={},validation_summary={},claims=[],evidence=[])
+    reproduction=PackageReproductionManifestContract(schema_version="reproduction-v1",build_input_hash="3"*64,package_manifest_hash="4"*64,archive_sha256="5"*64,archive_byte_size=0,files=[],template=template,validation_input_manifest_id="input-1",validation_input_manifest_hash="2"*64,invoice_snapshot=manifest.invoice_snapshot)
+    assert manifest.model_dump(by_alias=True)["templates"][0]["parameters"]["rendererVersion"]=="v1"
+    assert build.model_dump(by_alias=True)["validationInputManifestId"]=="input-1"
+    assert reproduction.model_dump(by_alias=True)["archiveSha256"]=="5"*64
 
 
 def test_python_requiredness_matches_every_canonical_field_definition():

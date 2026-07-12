@@ -213,6 +213,39 @@ deterministic PDF-rendering port/adapter. This avoids a Packages-to-Workflow-to-
 Packages implementation cycle while keeping package data and rendering outside
 the workflow capability.
 
+## SUB-68 Reproducibility Ownership
+
+Validation owns append-only `validation_input_manifests` and the exact link
+from each v2 validation run to its input identity. Packages owns append-only
+`package_reproduction_manifests`, deterministic generated-file digests, and
+the package archive identity. Migration `023_reproducibility_manifests.sql`
+brings the physical policy to 47 single-owner tables and 173 named statements.
+
+`app/application/reproducibility.py` is a shared application-level contract
+assembler. It may compose immutable query results and shared domain contracts,
+but it owns no persistence and imports no adapter. Validation and package
+commands persist through their capability repositories; provenance reads their
+evidence only through the declared audit read model.
+
+The configuration/runtime boundary is executable:
+
+- shared `RuleDefinition`, `Workflow`, `View`, and `Template` contracts define
+  executable behavior and exact versions;
+- validation manifests retain invoice snapshot, artifact, schema, mapping,
+  configuration, rule, workflow, view/template, and extraction component
+  identities;
+- package build inputs retain the validation identity, versioned template,
+  renderer, canonical claim columns, and source inputs;
+- reproduction manifests retain file digests and final archive hash; and
+- database append-only triggers and object-store integrity checks prevent a
+  later mutable projection from redefining historical execution.
+
+The renderer receives a validated template contract rather than an unversioned
+title string. CSV column order is part of that contract. This is necessary
+because PostgreSQL JSONB canonicalizes object keys: deriving presentation order
+from dictionary insertion previously made replay depend on whether inputs came
+from process memory or persisted JSONB.
+
 ## Historical Gap And Transition
 
 The measurements below are retained as the SUB-59 baseline that SUB-61/SUB-62

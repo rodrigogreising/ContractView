@@ -1,6 +1,6 @@
 {
   "package": "configuration-contracts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependsOn": {"domain-types": "^1.0.0", "rule-contracts": "^1.0.0"},
   "vocabularies": {
     "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template"]},
@@ -29,7 +29,64 @@
       {"name": "id", "type": "string", "required": true},
       {"name": "version", "type": "integer", "required": true, "minimum": 1},
       {"name": "mediaType", "type": "string", "required": true},
-      {"name": "contentHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+      {"name": "contentHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "parameters", "type": "map<string,any>", "required": false}
+    ]},
+    "ExtractionComponentVersion": {"model": "ExtractionComponentVersionContract", "fields": [
+      {"name": "sourceArtifact", "type": "VersionReference", "required": true},
+      {"name": "rawResponseArtifact", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "provider", "type": "string", "required": true},
+      {"name": "model", "type": "string", "required": true},
+      {"name": "promptVersion", "type": "string", "required": true},
+      {"name": "parserVersion", "type": "string", "required": true},
+      {"name": "schemaVersion", "type": "string", "required": true}
+    ]},
+    "ValidationInputManifest": {"model": "ValidationInputManifestContract", "fields": [
+      {"name": "schemaVersion", "type": "string", "required": true},
+      {"name": "engineVersion", "type": "string", "required": true},
+      {"name": "normalizedInputs", "type": "map<string,any>", "required": true},
+      {"name": "invoiceSnapshot", "type": "VersionReference", "required": true},
+      {"name": "artifacts", "type": "VersionReference[]", "required": true},
+      {"name": "schemas", "type": "VersionReference[]", "required": true},
+      {"name": "mappings", "type": "VersionReference[]", "required": true},
+      {"name": "rules", "type": "RuleDefinition[]", "required": true},
+      {"name": "workflow", "type": "WorkflowContract", "required": true},
+      {"name": "views", "type": "ViewContract[]", "required": true},
+      {"name": "templates", "type": "TemplateContract[]", "required": true},
+      {"name": "configurationVersion", "type": "VersionReference", "required": true},
+      {"name": "extractionComponents", "type": "ExtractionComponentVersionContract[]", "required": true}
+    ]},
+    "PackageFileDigest": {"model": "PackageFileDigestContract", "fields": [
+      {"name": "path", "type": "string", "required": true},
+      {"name": "sha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "byteSize", "type": "integer", "required": true, "minimum": 0}
+    ]},
+    "PackageBuildInput": {"model": "PackageBuildInputContract", "fields": [
+      {"name": "schemaVersion", "type": "string", "required": true},
+      {"name": "packageId", "type": "string", "required": true},
+      {"name": "invoiceSnapshot", "type": "VersionReference", "required": true},
+      {"name": "attestationId", "type": "string", "required": true},
+      {"name": "validationRun", "type": "VersionReference", "required": true},
+      {"name": "validationInputManifestId", "type": "string", "required": true},
+      {"name": "validationInputManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "configurationVersion", "type": "VersionReference", "required": true},
+      {"name": "template", "type": "TemplateContract", "required": true},
+      {"name": "invoicePayload", "type": "map<string,any>", "required": true},
+      {"name": "validationSummary", "type": "map<string,any>", "required": true},
+      {"name": "claims", "type": "map<string,any>[]", "required": true},
+      {"name": "evidence", "type": "VersionReference[]", "required": true}
+    ]},
+    "PackageReproductionManifest": {"model": "PackageReproductionManifestContract", "fields": [
+      {"name": "schemaVersion", "type": "string", "required": true},
+      {"name": "buildInputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "packageManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "archiveSha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "archiveByteSize", "type": "integer", "required": true, "minimum": 0},
+      {"name": "files", "type": "PackageFileDigestContract[]", "required": true},
+      {"name": "template", "type": "TemplateContract", "required": true},
+      {"name": "validationInputManifestId", "type": "string", "required": true},
+      {"name": "validationInputManifestHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "invoiceSnapshot", "type": "VersionReference", "required": true}
     ]},
     "ConfigurationBundle": {"model": "ConfigurationBundleContract", "fields": [
       {"name": "id", "type": "string", "required": true},

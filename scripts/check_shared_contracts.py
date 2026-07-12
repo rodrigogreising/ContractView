@@ -21,6 +21,8 @@ REQUIRED_CONTRACTS = {
     "RuleDefinition", "RuleResult", "ValidationRun", "Workflow", "View", "Template",
     "EventEnvelope", "ConfigurationBundle", "IdentityDto",
     "ActiveConfigurationDto", "ValidationRunDto",
+    "ExtractionComponentVersion", "ValidationInputManifest", "PackageFileDigest",
+    "PackageBuildInput", "PackageReproductionManifest",
 }
 
 
