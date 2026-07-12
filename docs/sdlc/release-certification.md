@@ -120,6 +120,18 @@ an explicit owner-accepted exception. It must not be described as a
 history-free, anonymous, or open-source artifact; runtime fixture and secret
 controls remain separately certified.
 
+### Government Decision Certification
+
+SUB-49 return/approval evidence must prove more than a changed workflow status.
+A v1 return requires a return-specific reason, normalized note, and at least one
+unique affected expense key from the exact submitted invoice. Invalid evidence,
+unauthorized/system/AI actors, stale commands, duplicate return, and
+out-of-order approval must leave decision, revision, queue, and invoice state
+unchanged. Final approval requires a corrected later submission and binds the
+canonical Government actor plus exact invoice, submission, package, and
+decision versions. Passing SUB-49 unblocks correction/resubmission; it does not
+replace the final Journey 11 recording.
+
 ### Public Repository Publication
 
 Public source disclosure is a separate release decision from POC runtime

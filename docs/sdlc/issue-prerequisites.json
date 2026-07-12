@@ -56,5 +56,9 @@
     {"issue": "SUB-67", "mergeSha": "1a62ce922091a863863b2030a0f6773a87ecef1e", "postMergeVerified": true},
     {"issue": "SUB-68", "mergeSha": "7504ad34d7055d0977ddb5705ca1add43576a62c", "postMergeVerified": true},
     {"issue": "SUB-65", "mergeSha": "796f766fdaec7eedda4401b68537279f9bb9fa35", "postMergeVerified": true}
+  ],
+  "SUB-49": [
+    {"issue": "SUB-47", "mergeSha": "44115b270e83cc03c8266a3db6c2f357cbe8a6cc", "postMergeVerified": true},
+    {"issue": "SUB-66", "mergeSha": "d8f99ebd27a5d3d99a6d1ad59477e94acd142ce3", "postMergeVerified": true}
   ]
 }

@@ -30,7 +30,7 @@ Last updated: 2026-07-12
 | SUB-44 | Real immutable package generation | 1-3 | 11 | Package generation | PDF/manifest/ZIP hashes |
 | SUB-45 | Submit version to government queue | 1, 4 | 11 | Workflow | Locked version and event |
 | SUB-47 | Government review queue | 1, 4 | 11 | Web/workflow | Scoped review UI |
-| SUB-49 | Government return and approval | 1, 4 | 11 | Workflow | Human decision events |
+| SUB-49 | Exact-line government return and corrected-version approval | 1, 4 | 11 | Workflow with Invoices query port and Provenance evidence | Provisioned-human authority; decision-specific reasons; nonblank note; exact unique v1 line keys; zero-mutation denials; actor/resource organizations; invoice/submission/package/decision references; v2-only approval |
 | SUB-46 | NGO correction and resubmission | 1, 4 | 11 | Workflow/provenance | Immutable v1 and linked v2 |
 | SUB-50 | Read-only audit timeline | 1 | 11 | Provenance/web | Both packages reconstructed |
 | SUB-53 | Reproducible commands | 2, 3 | 11 | Infrastructure | Documented clean run |

@@ -54,6 +54,10 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Package reproduction manifests with versioned template/renderer contracts,
   deterministic generated-file digests, archive hashes, and replay results.
 - Return feedback, revision relation, resubmission, approval, and audit-query evidence.
+- Government return evidence contains a return-specific reason, normalized
+  comment, and unique affected expense keys proven to belong to the exact v1
+  invoice; final approval contains the corrected v2 package reference and no
+  newly introduced affected-line claim.
 - Versioned event envelopes with canonical actor role/organization, resource
   organization, reason, schema, immutable references, and event hashes.
 - Validation, attestation, package, and submission snapshots for both invoice
@@ -75,6 +79,10 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Version 1 changes after version 2 is created.
 - A material event lacks actor/version context, a relation crosses an invisible
   tenant boundary, or an invoice snapshot/validation result can be mutated.
+- A return omits affected lines, cites a duplicate/foreign line, uses an
+  approval reason, or changes queue/invoice/revision state after rejection.
+- An approval uses a return reason, introduces affected lines, targets v1, or
+  occurs without the prior return and corrected resubmission.
 - Expense-date lineage points to a claimed-amount predecessor or a v2 correction
   skips the cloned same-field predecessor.
 - Auditor cannot reconstruct the claimed amount and both packages.

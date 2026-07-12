@@ -1147,6 +1147,20 @@
     "sql": "select role,organization_id from users where id=%s",
     "writeTables": []
   },
+  "GOVERNMENT_DECISION_READ_INVOICE_LINES_009": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select expense_key from invoice_lines where invoice_version_id=%s order by expense_key",
+    "writeTables": []
+  },
   "GOVERNMENT_DECISION_WRITE_GOVERNMENT_DECISIONS_006": {
     "consumerCapability": "workflow",
     "kind": "repository",
