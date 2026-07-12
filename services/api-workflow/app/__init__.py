@@ -1,1 +1,1 @@
-"""ContractView POC modular-monolith boundary."""
+"""ContractView POC modular-monolith package."""

@@ -15,7 +15,7 @@ SOURCES = {
     "configuration": ROOT / "packages/configuration-contracts/contract.json",
     "events": ROOT / "packages/event-contracts/contract.json",
 }
-PYTHON_OUTPUT = ROOT / "services/api-workflow/app/shared_contracts.py"
+PYTHON_OUTPUT = ROOT / "services/api-workflow/app/domain/shared_contracts.py"
 TYPESCRIPT_OUTPUT = ROOT / "apps/web-app/src/generated/contracts.ts"
 
 PYTHON_PRIMITIVES = {

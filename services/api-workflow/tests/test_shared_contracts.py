@@ -21,7 +21,7 @@ def reference(kind="invoice", identifier="invoice-1", version=1):
 def test_runtime_authorization_and_events_consume_generated_vocabulary():
     assert Role.NGO_APPROVER.value == "ngo_approver"
     assert ResourceKind.GOVERNMENT_DECISION.value == "government_decision"
-    provenance_source=(Path(__file__).resolve().parent.parent/"app"/"provenance.py").read_text()
+    provenance_source=(Path(__file__).resolve().parent.parent/"app"/"application"/"commands"/"provenance.py").read_text()
     assert "EVENT_TYPES = MATERIAL_EVENT_TYPES" in provenance_source
     assert "validation_completed" in {item.value for item in EventType}
 

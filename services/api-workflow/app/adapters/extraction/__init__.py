@@ -1,0 +1,1 @@
+"""Replaceable extraction-provider adapters."""

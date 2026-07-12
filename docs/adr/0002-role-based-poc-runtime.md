@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted; amended by SUB-59 and implemented for shared contracts by SUB-61 on 2026-07-11
+Accepted; amended by SUB-59, implemented for shared contracts by SUB-61, and
+physically enforced for module/persistence boundaries by SUB-62
 
 ## Date
 
@@ -80,6 +81,30 @@ and closed-vocabulary changes require a major version and coordinated consumer
 migration. Generated-output, dependency-cycle, compatibility, runtime
 validation, and TypeScript consumer tests enforce the decision. This does not
 activate configuration or expand AI/human authority.
+
+## SUB-62 Implementation Note: Enforced Module And Persistence Ownership
+
+The logical layers now have executable package boundaries. Generated contracts
+and authorization live in `app/domain`; application commands live in
+`app/application/commands`; repository, object-store, runtime-health, and
+extraction, password verification, spreadsheet parsing, and PDF-rendering
+interfaces are application-owned ports; PostgreSQL, MinIO, Tesseract, Argon2,
+OpenPyXL, and ReportLab implementations live under `app/adapters`; FastAPI routes live under
+`app/http`; worker polling and health live under `app/worker_runtime`; and
+`app/integration` is the only composition root. `app.main`, `app.worker`, and
+`app.worker_health` are thin deployable compatibility entrypoints, so the POC
+still has one API and one worker.
+
+All application SQL is identified by an application-owned `Statement` value
+and stored in the PostgreSQL persistence adapter catalog. The catalog assigns
+each statement and each of the 39 physical tables to exactly one capability.
+The unit-of-work exposes only capability repositories plus explicitly declared
+read models; repositories reject inline SQL, foreign-owner statements, and
+read-model misuse at runtime. Cross-capability writes are separate owner
+commands coordinated by the application transaction. Boundary fitness tests
+reject forbidden layer imports, inline SQL outside persistence/integration,
+unowned migration tables, repository/table mismatches, and multi-owner write
+statements.
 
 ## Authentication And Authority
 

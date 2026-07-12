@@ -7,7 +7,7 @@ SUB-61 implements it as executable, versioned shared contracts rather than
 free-form runtime dictionaries. Canonical inputs are the four
 `packages/*-contracts/contract.json` registries plus
 `packages/domain-types/contract.json`; generated consumers are
-`services/api-workflow/app/shared_contracts.py` and
+`services/api-workflow/app/domain/shared_contracts.py` and
 `apps/web-app/src/generated/contracts.ts`.
 
 ## Core Primitives
