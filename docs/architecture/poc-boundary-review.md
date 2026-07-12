@@ -264,3 +264,19 @@ Submission consults an Invoices-owned application query port to distinguish a
 linked successor and emit `resubmitted`. Extraction review emits
 `field_corrected` for a correction and `field_reviewed` for acceptance. These
 are ontology-alignment refinements, not new ownership or cross-owner writes.
+
+## SUB-26 Playwright Certification Boundary
+
+The Journey 11 harness is an external browser client. It may drive only normal
+web controls and public HTTP behavior; it cannot import application internals,
+write persistence, switch roles, or call a test-only mutation surface. The
+supported reset command is an environment precondition and completes before
+the worker starts. Each persona receives a distinct server session and logs out
+before the next login.
+
+The isolated Compose override changes only published test ports and volume
+identity. API, worker, web, PostgreSQL, and MinIO images and authority
+boundaries remain the production-shaped POC runtime. Playwright retains media
+and results but does not become a system of record; canonical assertions query
+the user-visible server projections, including v1/v2 package hashes and the
+read-only audit trail.

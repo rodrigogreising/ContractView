@@ -10,7 +10,7 @@ Last updated: 2026-07-12
 | --- | --- | --- | --- | --- | --- |
 | SUB-24 | Canonical role-based demo contract | 1-4 | 11 | Product | Approved charter and journey |
 | SUB-25 | Synthetic fixture pack | 1, 3 | 11 | Test fixtures | Deterministic seed/reset |
-| SUB-26 | Playwright recording harness | 1-4 | 11 | Web/test | Video, trace, screenshots |
+| SUB-26 | Canonical Playwright recording harness | 1-4 | 11 | External browser certification adapter over public web/API surfaces | Isolated reset/Compose; five normal persona sessions; visible complete lifecycle; direct 403 assertions; immutable v1/distinct v2 archive hashes matched in audit; headless CI plus paced headed video, trace, screenshots, JSON, logs, and Compose state |
 | SUB-23 | Docker Compose runtime | 2, 3 | 11 | Infrastructure | Clean startup |
 | SUB-27 | Agency/NGO organization boundaries | 4 | 11 | Identity/workflow | Cross-scope denial tests |
 | SUB-28 | Seeded login/logout and RBAC UI/API | 4 | 11 | Identity/workflow | Session and permission tests |

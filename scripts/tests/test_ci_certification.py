@@ -9,6 +9,7 @@ import unittest
 
 
 SCRIPTS = Path(__file__).resolve().parents[1]
+ROOT = SCRIPTS.parent
 
 
 def load(name: str, path: Path):
@@ -28,6 +29,13 @@ BRANCH_PROTECTION = load(
 
 
 class CiCertificationTests(unittest.TestCase):
+    def test_pr_workflow_checks_out_and_fetches_immutable_review_history(self) -> None:
+        workflow = (ROOT / ".github/workflows/contractview-ci.yml").read_text()
+        self.assertIn("github.event.pull_request.head.sha", workflow)
+        self.assertIn("git rev-parse --is-shallow-repository", workflow)
+        self.assertIn("refs/remotes/origin/${{ github.event.pull_request.base.ref }}", workflow)
+        self.assertIn("git merge-base --is-ancestor", workflow)
+
     def test_numeric_version_ignores_tool_prefix(self) -> None:
         self.assertEqual((20, 20, 2), TOOLCHAINS.numeric_version("v20.20.2"))
         self.assertEqual((3, 12, 13), TOOLCHAINS.numeric_version("Python 3.12.13"))
@@ -44,6 +52,18 @@ class CiCertificationTests(unittest.TestCase):
     def test_manifest_rejects_evidence_without_passing_tests(self) -> None:
         with self.assertRaisesRegex(SystemExit, "no passing test count"):
             MANIFEST.required_test_count("Static", "1 failed in 0.2s\n")
+
+    def test_playwright_result_requires_one_clean_expected_test(self) -> None:
+        self.assertEqual(
+            1,
+            MANIFEST.playwright_test_count(
+                {"stats": {"expected": 1, "unexpected": 0, "flaky": 0}}
+            ),
+        )
+        with self.assertRaisesRegex(SystemExit, "not clean"):
+            MANIFEST.playwright_test_count(
+                {"stats": {"expected": 1, "unexpected": 1, "flaky": 0}}
+            )
 
     def test_retained_artifacts_are_hashed_and_manifest_is_excluded(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -79,6 +99,14 @@ class CiCertificationTests(unittest.TestCase):
                 lambda candidate: candidate == merge_sha,
             ),
         )
+
+    def test_issue_evidence_coverage_is_complete(self) -> None:
+        profile = MANIFEST.load_evidence_coverage("SUB-26")
+        self.assertEqual(
+            set(profile["riskAndGateLabels"]),
+            set(profile["riskCoverage"]),
+        )
+        self.assertIn("risk:human-authority", profile["riskAndGateLabels"])
 
     def test_stale_prerequisite_is_rejected(self) -> None:
         with self.assertRaisesRegex(SystemExit, "not an ancestor of the PR base"):

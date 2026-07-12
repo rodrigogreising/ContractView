@@ -20,6 +20,7 @@ REVIEW_SKILLS = [
     "cv-review-adr-architecture",
     "cv-review-boundary-review",
     "cv-review-security-privacy",
+    "cv-review-ai-governance",
     "cv-review-requirements-traceability",
     "cv-review-implementation-tests",
     "cv-review-journey-certification",
@@ -53,6 +54,16 @@ def required_test_count(label: str, content: str) -> int:
     if count <= 0:
         raise SystemExit(f"{label} evidence contains no passing test count")
     return count
+
+
+def playwright_test_count(result: dict) -> int:
+    stats = result.get("stats", {})
+    expected = stats.get("expected")
+    if not isinstance(expected, int) or expected <= 0:
+        raise SystemExit("Journey 11 evidence contains no passing browser test")
+    if stats.get("unexpected") != 0 or stats.get("flaky") != 0:
+        raise SystemExit("Journey 11 browser evidence is not clean")
+    return expected
 
 
 def file_hashes(directory: Path) -> dict[str, str]:
@@ -130,6 +141,33 @@ def load_prerequisites(issue: str, base_sha: str) -> list[dict[str, object]]:
     return validate_prerequisites(issue, registry, is_merged)
 
 
+def load_evidence_coverage(issue: str) -> dict[str, object]:
+    registry_path = ROOT / "docs/sdlc/issue-evidence-coverage.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    profile = registry.get(issue) if isinstance(registry, dict) else None
+    if not isinstance(profile, dict):
+        raise SystemExit(f"Evidence coverage is missing for {issue}")
+    labels = profile.get("riskAndGateLabels")
+    coverage = profile.get("riskCoverage")
+    if (
+        not isinstance(labels, list)
+        or not labels
+        or any(not isinstance(label, str) for label in labels)
+        or len(labels) != len(set(labels))
+    ):
+        raise SystemExit(f"Evidence labels are invalid for {issue}")
+    if not isinstance(coverage, dict) or set(coverage) != set(labels):
+        raise SystemExit(f"Every risk/gate label must have exact evidence coverage for {issue}")
+    for label, evidence in coverage.items():
+        if (
+            not isinstance(evidence, list)
+            or not evidence
+            or any(not isinstance(item, str) or not item.strip() for item in evidence)
+        ):
+            raise SystemExit(f"Evidence coverage is invalid for {issue} label {label}")
+    return {"riskAndGateLabels": labels, "riskCoverage": coverage}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -151,6 +189,11 @@ def main() -> int:
     reset_fingerprint = (args.output_dir / "reset-fingerprint.sha256").read_text().strip()
     recorded = now()
     hashes = file_hashes(args.output_dir)
+    journey_result_path = args.output_dir / "journey11" / "results.json"
+    if not journey_result_path.exists():
+        raise SystemExit("Journey 11 browser evidence is missing")
+    journey_count = playwright_test_count(json.loads(journey_result_path.read_text()))
+    evidence_coverage = load_evidence_coverage(issue)
     static_check = {
         "command": "bash scripts/ci/run_static.sh",
         "exitCode": 0,
@@ -165,7 +208,15 @@ def main() -> int:
         "result": f"Two isolated fresh-volume migration/reset/API/Compose runs passed with identical reset fingerprint {reset_fingerprint}",
         "recordedAt": recorded,
         "testCount": required_test_count("Hermetic", hermetic_logs),
-        "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log"},
+        "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log" and not name.startswith("journey11/")},
+    }
+    journey_check = {
+        "command": "bash scripts/run_journey11.sh headless artifacts/ci/journey11",
+        "exitCode": 0,
+        "result": "Clean Compose Journey 11 passed through normal five-persona login/logout with retained video, trace, screenshots, and JSON result",
+        "recordedAt": recorded,
+        "testCount": journey_count,
+        "artifactHashes": {name: digest for name, digest in hashes.items() if name.startswith("journey11/")},
     }
     manifest = {
         "issue": issue,
@@ -177,7 +228,7 @@ def main() -> int:
         "declaredScope": changed_files(args.base_sha, args.head_sha),
         "recordedAt": recorded,
         "prerequisites": load_prerequisites(issue, args.base_sha),
-        "riskAndGateLabels": ["gate:release-certification"],
+        "riskAndGateLabels": evidence_coverage["riskAndGateLabels"],
         "environment": {
             "platform": platform.platform(),
             "python": platform.python_version(),
@@ -186,19 +237,13 @@ def main() -> int:
             "docker": command_version("docker", "--version"),
             "dockerCompose": command_version("docker", "compose", "version"),
         },
-        "checks": [static_check, hermetic_check],
+        "checks": [static_check, hermetic_check, journey_check],
         "certification": {
             "behaviorChanged": True,
             "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
             "requiredReviewSkills": REVIEW_SKILLS,
-            "evidenceKinds": ["policy", "unit", "integration", "boundary", "migration", "frontend", "compose", "artifact"],
-            "riskCoverage": {
-                "gate:release-certification": [
-                    "Pinned format/lint/type/test/build gates",
-                    "Two isolated Compose reruns with equal reset fingerprints",
-                    "Uploaded manifest and hashed command logs",
-                ]
-            },
+            "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
+            "riskCoverage": evidence_coverage["riskCoverage"],
             "cleanRuntimeRequired": True,
             "cleanRuntimeChecks": [hermetic_check],
         },
