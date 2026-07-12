@@ -37,7 +37,7 @@ coordinated consumer migration.
 
 `scripts/generate_shared_contracts.py` deterministically generates:
 
-- `services/api-workflow/app/shared_contracts.py` with Pydantic contracts and
+- `services/api-workflow/app/domain/shared_contracts.py` with Pydantic contracts and
   runtime enums;
 - `apps/web-app/src/generated/contracts.ts` with matching TypeScript unions,
   interfaces, and DTOs.

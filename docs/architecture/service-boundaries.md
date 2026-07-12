@@ -31,6 +31,28 @@ Dependencies point inward. HTTP and worker cannot import persistence adapters.
 Application cannot import provider SDKs. Persistence/integration implement
 application ports and contain no authority or validation decisions.
 
+SUB-62 enforces this matrix through
+`module-ownership-policy.json`, `scripts/check_module_boundaries.py`, and the
+physical packages under `services/api-workflow/app/{domain,application,adapters,http,worker_runtime,integration}`.
+The API and worker module names remain thin composition entrypoints; they do
+not contain routes, polling behavior, SQL, or domain decisions.
+
+## Capability-Owned Persistence
+
+`app/application/ports/persistence.py` owns the repository and unit-of-work
+interfaces. `app/adapters/persistence/statements.json` is the owner adapter's
+SQL catalog. Every catalog entry declares its owner, consumer capability,
+operation, read/write tables, source owners, and whether collaboration is an
+owner repository, application query/command port, or declared read model.
+
+The PostgreSQL adapter exposes identity, configuration, artifacts, extraction,
+invoices, validation, packages, workflow, provenance, and platform
+repositories plus a read-model repository. It rejects a statement when the
+selected repository does not own it. Application, HTTP, worker, and domain
+packages contain no SQL; migrations and runtime bootstrap remain explicit
+integration exceptions and every referenced table is present in the physical
+ownership map.
+
 ## Service Responsibility Matrix
 
 | Capability | Owning unit | Required evidence |

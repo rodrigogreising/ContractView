@@ -22,11 +22,11 @@ PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 
 def test_application_scope_construction_is_centralized() -> None:
     constructors = [
-        path.name
-        for path in APP_ROOT.glob("*.py")
+        path.relative_to(APP_ROOT).as_posix()
+        for path in APP_ROOT.rglob("*.py")
         if "ResourceScope(" in path.read_text()
     ]
-    assert constructors == ["access_scope.py"]
+    assert constructors == ["application/commands/access_scope.py"]
 
 
 def _draft_payload() -> dict:

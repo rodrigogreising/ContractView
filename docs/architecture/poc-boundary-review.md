@@ -1,11 +1,13 @@
 # POC Boundary Review
 
-Status: Approved target for Build; recovery-baseline implementation is nonconforming until REC-05/REC-07
+Status: SUB-62 implementation complete locally; immutable architecture,
+boundary, and implementation review pending
 
 SUB-59 design amendment: the runtime is governed by the
 [enforceable modular monolith](modular-monolith.md) and
-`modular-monolith-policy.json`. REC-12 must recertify this document after
-REC-05/REC-07 physical enforcement lands.
+`modular-monolith-policy.json`. SUB-61 implements the shared ontology and
+SUB-62 implements physical module/persistence enforcement. REC-12 must still
+recertify the complete recovery baseline.
 
 ## Runtime Shape
 
@@ -63,9 +65,15 @@ Boundary tests must cover dependency rules, forbidden direct writes, server auth
 
 ## Implemented Authorization Contract
 
-`services/api-workflow/app/authorization.py` is the reusable server-side policy boundary. It evaluates actor, organization, persona role, resource kind, agency/NGO scope, submission visibility, publication visibility, explicit privileged assignment, canonical-scope evidence, and requested action before a command can mutate state. Session transport is deliberately separate; test-only identity injection is prohibited.
+`services/api-workflow/app/domain/authorization.py` is the reusable server-side
+policy boundary. It evaluates actor, organization, persona role, resource kind,
+agency/NGO scope, submission visibility, publication visibility, explicit
+privileged assignment, canonical-scope evidence, and requested action before a
+command can mutate state. Session transport is deliberately separate;
+test-only identity injection is prohibited. The former flat path is a
+compatibility export only.
 
-SUB-60 adds `services/api-workflow/app/access_scope.py` as the only application
+SUB-60 adds `services/api-workflow/app/application/commands/access_scope.py` as the only application
 scope-construction boundary. It resolves contract ownership, invoice state,
 artifact publication, extraction/job linkage, government queue linkage, and
 administrator/auditor assignments from PostgreSQL. Hand-built or caller-derived
@@ -77,77 +85,84 @@ auditors are contract assigned, read-only, and limited to submitted evidence.
 | Owner role | Identity/RBAC capability; security owner reviews policy evidence |
 | Responsibilities | Canonical scope resolution, explicit privileged assignment, role/resource/action decision, pre-mutation denial |
 | Data owned | `users`, sessions, and `contract_role_assignments`; contracts and resource lifecycle are read through declared authorization queries and remain owned by their capabilities |
-| Allowed dependencies | Authorization domain vocabulary, application query boundary, owner persistence adapter during REC-07 transition |
+| Allowed dependencies | Authorization domain vocabulary, application-owned query ports, and declared read-model adapters |
 | Events emitted | No new runtime event; retained machine-readable test/PR evidence proves denials and assignment behavior |
 | Configuration consumed | Seeded synthetic contract-role assignments only; no runtime AI or generic policy editor |
 | Deterministic requirements | Same canonical actor, assignment, resource state, kind, and action always return the same decision |
 | Human authority boundary | Assignments do not grant attestation, submission, return, approval, waiver, or activation beyond the existing named roles |
 | Prohibited responsibilities | Trusting request ownership, global auditor reads, client-only authorization, mutating canonical resources, deciding validation outcomes |
 
-The current flat API still executes the resolver's SQL directly. That is an
-explicit recovery transition, not target conformance: REC-07 must move these
-queries behind identity-owned application ports and persistence adapters while
-preserving the SUB-60 contract and tests. No new service, network boundary, or
-cross-capability write was introduced.
+The resolver now lives in `app/application/commands/access_scope.py` and uses
+named identity/resource query ports plus declared cross-owner read models.
+Inline SQL is absent from the application package. Repository and read-model
+selection is checked statically and enforced by the PostgreSQL adapter at
+runtime while preserving the SUB-60 contract and tests.
 
 ## Implemented Configuration Contract
 
-`services/api-workflow/app/configuration.py` owns the constrained POC configuration schema and activation command. PostgreSQL stores a mutable per-contract draft and immutable numbered activation snapshots. Invoice versions and validation runs reference the precise snapshot by foreign key; neither UI state nor runtime AI can activate or rewrite configuration.
+`services/api-workflow/app/application/commands/configuration.py` owns the constrained POC configuration schema and activation command. PostgreSQL stores a mutable per-contract draft and immutable numbered activation snapshots. Invoice versions and validation runs reference the precise snapshot by foreign key; neither UI state nor runtime AI can activate or rewrite configuration.
 
 The React administrator surface is a fixed projection over this contract: category limits, five named rule settings, workflow labels, and package labels. Later persona headers receive only the active version summary; no generic expression editor or AI configuration path exists.
 
 ## Implemented Artifact Contract
 
-`services/api-workflow/app/artifacts.py` owns immutable artifact registration and authorized retrieval. PostgreSQL owns immutable metadata and predecessor relations; MinIO owns unique original/generated byte objects. Reads authorize against metadata before object access and verify both recorded size and SHA-256 before bytes leave the service.
+`services/api-workflow/app/application/commands/artifacts.py` owns immutable artifact registration and authorized retrieval. PostgreSQL owns immutable metadata and predecessor relations; MinIO owns unique original/generated byte objects. Reads authorize against metadata before object access and verify both recorded size and SHA-256 before bytes leave the service.
 
 ## Implemented Provenance Contract
 
-`services/api-workflow/app/provenance.py` owns the typed append-only material event and field-lineage contracts plus authorized audit reads. Transaction-aware writers let canonical commands and their evidence commit atomically. PostgreSQL triggers reject historical mutation; projections are not used as audit evidence.
+`services/api-workflow/app/application/commands/provenance.py` owns the typed append-only material event and field-lineage contracts plus authorized audit reads. Transaction-aware writers let canonical commands and their evidence commit atomically. PostgreSQL triggers reject historical mutation; projections are not used as audit evidence.
 
 ## Implemented Ingestion Job Contract
 
-`services/api-workflow/app/ingestion.py` validates configured upload families, registers immutable artifacts, and creates idempotent PostgreSQL jobs. The worker exclusively claims queued rows with locking and owns running/completed/failed transitions. Browser clients only upload and poll; they cannot inject results or set job state.
+`services/api-workflow/app/application/commands/ingestion.py` validates configured upload families, registers immutable artifacts, and creates idempotent PostgreSQL jobs. The worker exclusively claims queued rows with locking and owns running/completed/failed transitions. Browser clients only upload and poll; they cannot inject results or set job state.
 
 ## Implemented Ledger Import Contract
 
-`services/api-workflow/app/ledger_import.py` deterministically normalizes the configured CSV/XLSX schema into decimal expense rows. Each row retains immutable artifact, sheet, physical row/cell coordinates, and importer/schema/mapping versions. Reconciliation to the activated configuration control total and row persistence occur atomically; failed inputs leave no partial canonical rows.
+`services/api-workflow/app/application/commands/ledger_import.py` deterministically normalizes the configured CSV/XLSX schema into decimal expense rows. Each row retains immutable artifact, sheet, physical row/cell coordinates, and importer/schema/mapping versions. Reconciliation to the activated configuration control total and row persistence occur atomically; failed inputs leave no partial canonical rows.
 
 ## Implemented OCR Extraction Contract
 
-`services/api-workflow/app/extraction.py` defines a replaceable OCR adapter and the Docker-local Tesseract implementation. The worker owns execution; MinIO retains the immutable raw response; PostgreSQL retains proposed fields, confidence, routing, versions, events, and lineage. Extraction can only produce `needs_review` or `failed` and has no dependency on validation or workflow authority modules.
+`services/api-workflow/app/application/commands/extraction.py` owns the
+extraction use case against the replaceable application port in
+`app/application/extraction_provider.py`; the Docker-local Tesseract
+implementation is isolated in `app/adapters/extraction/tesseract.py`. The
+worker owns execution; MinIO retains the immutable raw response; PostgreSQL
+retains proposed fields, confidence, routing, versions, events, and lineage.
+Extraction can only produce `needs_review` or `failed` and has no dependency
+on validation or workflow authority modules.
 
 ## Implemented Human Review Contract
 
-`services/api-workflow/app/extraction_review.py` owns explicit accept/correct commands and the reviewed-value boundary. Proposed values remain historical evidence; mutable current projections point to append-only review records and successor lineage. Only the NGO Preparer can act, and downstream deterministic code cannot read an unreviewed proposal as canonical input.
+`services/api-workflow/app/application/commands/extraction_review.py` owns explicit accept/correct commands and the reviewed-value boundary. Proposed values remain historical evidence; mutable current projections point to append-only review records and successor lineage. Only the NGO Preparer can act, and downstream deterministic code cannot read an unreviewed proposal as canonical input.
 
 ## Implemented Draft Assembly Contract
 
-`services/api-workflow/app/invoice_draft.py` owns stable invoice-draft construction from the exact ledger import and configuration snapshot. It maps categories, links ledger/evidence/extraction records, computes Decimal totals and configured availability, emits unresolved assembly findings, and appends invoice-version lineage. It cannot attest, submit, or approve.
+`services/api-workflow/app/application/commands/invoice_draft.py` owns stable invoice-draft construction from the exact ledger import and configuration snapshot. It maps categories, links ledger/evidence/extraction records, computes Decimal totals and configured availability, emits unresolved assembly findings, and appends invoice-version lineage. It cannot attest, submit, or approve.
 
 ## Implemented Validation Contract
 
-`services/api-workflow/app/validation.py` owns the five versioned deterministic rules, normalized inputs, stable input/output hashes, results, and findings. It consumes only immutable invoice/configuration snapshots and Decimal/date primitives. It has no OCR/extraction dependency and cannot perform workflow authority.
+`services/api-workflow/app/application/commands/validation.py` owns the five versioned deterministic rules, normalized inputs, stable input/output hashes, results, and findings. It consumes only immutable invoice/configuration snapshots and Decimal/date primitives. It has no OCR/extraction dependency and cannot perform workflow authority.
 
-`services/api-workflow/app/budget.py` is the shared exact-Decimal budget calculator used by both validation and role-specific snapshots. Snapshots resolve the configuration referenced by the invoice and never read a newer draft; Government visibility remains submission-gated.
+`services/api-workflow/app/application/commands/budget.py` is the shared exact-Decimal budget calculator used by both validation and role-specific snapshots. Snapshots resolve the configuration referenced by the invoice and never read a newer draft; Government visibility remains submission-gated.
 
-`services/api-workflow/app/finding_resolution.py` owns Preparer-only correction/explanation/dismissal commands and the open-blocker gate. It never rewrites prior rule results: corrections and resolution history append evidence, then a new deterministic run produces the current projection used by later attestation.
+`services/api-workflow/app/application/commands/finding_resolution.py` owns Preparer-only correction/explanation/dismissal commands and the open-blocker gate. It never rewrites prior rule results: corrections and resolution history append evidence, then a new deterministic run produces the current projection used by later attestation.
 
 ## Implemented Attestation Contract
 
-`services/api-workflow/app/attestation.py` owns NGO Approver-only attestation. Its preview presents the exact invoice version, material revision, configuration, findings, validation hash/freshness, and planned package contents. The append-only attestation binds actor, role, fixed text/version, validation run, material revision, artifact hashes, and invoice content into a SHA-256 fingerprint. Any material revision makes the previous attestation stale and requires fresh deterministic validation plus a new human attestation.
+`services/api-workflow/app/application/commands/attestation.py` owns NGO Approver-only attestation. Its preview presents the exact invoice version, material revision, configuration, findings, validation hash/freshness, and planned package contents. The append-only attestation binds actor, role, fixed text/version, validation run, material revision, artifact hashes, and invoice content into a SHA-256 fingerprint. Any material revision makes the previous attestation stale and requires fresh deterministic validation plus a new human attestation.
 
 ## Implemented Package Contract
 
-`services/api-workflow/app/package_generation.py` owns NGO Approver-only generation after a current attestation. It renders the actual invoice PDF, deterministic validation summary, claim/source manifest, evidence bundle, and ZIP. Generated bytes are stored through the immutable artifact boundary, while append-only package indexes retain every path and SHA-256. Package generation cannot attest, submit workflow state, or perform government decisions.
+`services/api-workflow/app/application/commands/package_generation.py` owns NGO Approver-only generation after a current attestation. It renders the actual invoice PDF, deterministic validation summary, claim/source manifest, evidence bundle, and ZIP. Generated bytes are stored through the immutable artifact boundary, while append-only package indexes retain every path and SHA-256. Package generation cannot attest, submit workflow state, or perform government decisions.
 
 ## Implemented Submission Contract
 
-`services/api-workflow/app/submission.py` owns the NGO Approver-only atomic handoff. It requires the current attestation and matching generated package, snapshots every package hash, creates the government queue item, publishes package artifacts one-way, transitions workflow state, and appends the submitted event in one transaction. Database triggers prevent mutation of submitted invoice-line content.
+`services/api-workflow/app/application/commands/submission.py` owns the NGO Approver-only atomic handoff. It requires the current attestation and matching generated package, snapshots every package hash, creates the government queue item, publishes package artifacts one-way, transitions workflow state, and appends the submitted event in one transaction. Database triggers prevent mutation of submitted invoice-line content.
 
 ## Implemented Government Queue Contract
 
-`services/api-workflow/app/government_review.py` owns agency-scoped submitted-package read models. It exposes the exact package/evidence hashes, deterministic validation and findings, configuration reference, and provenance summary only to the Government Reviewer organization. It does not edit NGO evidence or make decisions; return/approval commands are a separate authority boundary.
+`services/api-workflow/app/application/commands/government_review.py` owns agency-scoped submitted-package read models. It exposes the exact package/evidence hashes, deterministic validation and findings, configuration reference, and provenance summary only to the Government Reviewer organization. It does not edit NGO evidence or make decisions; return/approval commands are a separate authority boundary.
 
 ## Implemented Decision And Revision Contracts
 
-`services/api-workflow/app/government_decision.py` owns provisioned-human Government Reviewer return/approval commands and their strict state machine. Decisions are append-only and version/package bound. A return creates a successor through `revision.py`; the NGO Preparer can edit only that draft successor. V2 then traverses the same deterministic validation, separate attestation, package, and submission boundaries before approval. The predecessor remains immutable.
+`services/api-workflow/app/application/commands/government_decision.py` owns provisioned-human Government Reviewer return/approval commands and their strict state machine. Decisions are append-only and version/package bound. A return creates a successor through `revision.py`; the NGO Preparer can edit only that draft successor. V2 then traverses the same deterministic validation, separate attestation, package, and submission boundaries before approval. The predecessor remains immutable.

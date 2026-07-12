@@ -55,7 +55,7 @@ def test_cross_organization_download_is_denied_before_object_read(monkeypatch):
         nonlocal touched
         touched = True
         return object_store()
-    monkeypatch.setattr("app.artifacts.object_store", forbidden_object_store)
+    monkeypatch.setattr("app.application.commands.artifacts.artifact_object_store", forbidden_object_store)
     with pytest.raises(ForbiddenError):
         download_artifact(OTHER_NGO, artifact.id)
     assert touched is False

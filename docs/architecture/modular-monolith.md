@@ -102,8 +102,11 @@ ownership.
 - Generic helpers may implement connection, transaction, and migration
   mechanics, but cannot expose arbitrary SQL to capabilities.
 
-REC-07 implements repository boundaries, table allowlists, forbidden imports,
-and ownership tests against this policy.
+SUB-62 implements repository boundaries, table allowlists, forbidden imports,
+and ownership tests against this policy. Its physical contract is
+`module-ownership-policy.json`; its 149 named statements live in the
+PostgreSQL adapter catalog and cannot be invoked outside their owner repository
+or declared read-model port.
 
 ## Executable Ontology
 
@@ -170,15 +173,41 @@ explicit. Extraction does not permit a new service to share tables or reach
 back into monolith internals. The POC adds no distributed transactions,
 service mesh, or network deployment complexity.
 
-## Current-State Gap And Transition
+## SUB-62 Physical Enforcement
 
-This document is the approved target, not a claim that the recovery-baseline
-code already conforms. The measurements below are fixed to SUB-59 base SHA
-`27a308678fb6ce7420e491bc63eaf9beb959bdd6`.
+- `app/domain` contains generated contracts and authorization invariants.
+- Nineteen use-case modules live in `app/application/commands`; flat modules
+  are compatibility exports only.
+- Application-owned ports define the unit of work, capability repositories,
+  immutable object storage, runtime health, and replaceable extraction.
+- `app/adapters/persistence` owns PostgreSQL SQL and transaction adaptation;
+  MinIO and Tesseract are separate integration adapters.
+- `app/http` and `app/worker_runtime` contain transport/polling behavior, while
+  the three legacy executable module names are thin composition wrappers.
+- Thirty-nine physical tables have one capability owner. One hundred forty-nine
+  named statements declare owner, consumer, operation, tables, source owners,
+  and repository/query/command/read-model mechanism.
+- Multi-owner write SQL is rejected. The submitted-artifact publication query
+  was split into a declared read model plus an artifact-owned update.
 
-- `services/api-workflow/app` is currently a flat module directory rather than
-  explicit domain/application/adapter/transport packages.
-- Twenty-two application modules execute SQL directly, including workflow,
+`scripts/check_persistence_statements.py` and
+`scripts/check_module_boundaries.py` make these rules executable. Runtime tests
+also prove wrong-owner, inline-SQL, and read-model misuse is rejected before a
+database call. The persistence checker derives read and write tables from each
+SQL statement independently and rejects stale catalog metadata, so changing SQL
+cannot evade ownership checks by retaining a prior declaration.
+
+## Historical Gap And Transition
+
+The measurements below are retained as the SUB-59 baseline that SUB-61/SUB-62
+supersede. They are fixed to SHA
+`27a308678fb6ce7420e491bc63eaf9beb959bdd6` and are not current-state claims.
+
+- At the SUB-59 baseline, `services/api-workflow/app` was a flat module
+  directory rather than explicit domain/application/adapter/transport
+  packages.
+- At that baseline, twenty-two application modules executed SQL directly,
+  including workflow,
   validation, package, provenance, extraction, and HTTP-adjacent paths.
 - `main.py` contains 262 lines of route and composition behavior rather than a
   thin HTTP adapter over application handlers.
@@ -188,11 +217,12 @@ code already conforms. The measurements below are fixed to SUB-59 base SHA
 - Several command modules join and mutate tables that this policy assigns to
   different capability owners.
 
-SUB-59 does not conceal or partially refactor those gaps. REC-05 implements the
+SUB-59 did not conceal or partially refactor those gaps. REC-05 implemented the
 shared contracts. REC-07 moves SQL behind owner repositories, defines
 application ports/unit-of-work boundaries, separates HTTP and worker adapters,
-and adds import/table-ownership fitness tests. REC-12 reconciles prior
-"implemented contract" claims against the resulting code.
+and adds import/table-ownership fitness tests in the SUB-62 change. REC-12
+reconciles prior "implemented contract" claims against the merged recovery
+baseline.
 
 ## Fitness And Review Gates
 

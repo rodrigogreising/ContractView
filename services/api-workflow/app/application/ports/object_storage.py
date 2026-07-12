@@ -1,0 +1,13 @@
+"""Application-owned immutable artifact object-store port."""
+
+from typing import Protocol
+
+
+class ArtifactObjectStorePort(Protocol):
+    def put(self, object_key: str, content: bytes, media_type: str) -> None: ...
+    def remove(self, object_key: str) -> None: ...
+    def read(self, object_key: str) -> bytes: ...
+
+
+class ArtifactObjectStoreFactory(Protocol):
+    def __call__(self) -> ArtifactObjectStorePort: ...

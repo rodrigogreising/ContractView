@@ -1,0 +1,2187 @@
+{
+  "ACCESS_SCOPE_READ_ARTIFACTS_005": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "artifacts",
+    "readTables": [
+      "artifacts"
+    ],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "select contract_id, submitted from artifacts where id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_CONFIGURATION_VERSIONS_003": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select 1 from configuration_versions where contract_id=%s and status='active' limit 1",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_CONTRACTS_001": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "contracts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select agency_organization_id, ngo_organization_id from contracts where id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_CONTRACT_ROLE_ASSIGNMENTS_USERS_002": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "contract_role_assignments",
+      "users"
+    ],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "select 1\n               from contract_role_assignments a\n               join users u on u.id=a.user_id\n               where a.contract_id=%s and a.user_id=%s and a.role=%s\n                 and a.agency_organization_id=%s\n                 and u.organization_id=%s and u.role=%s and u.active=true",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_EXTRACTION_RUNS_007": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "extraction_runs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select contract_id from extraction_runs where id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_GOVERNMENT_QUEUE_ITEMS_INVOICE_VERSIONS_SUBMISSIONS_008": {
+    "consumerCapability": "shared",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "government_queue_items",
+      "invoice_versions",
+      "submissions"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select iv.contract_id, q.status\n               from government_queue_items q\n               join submissions s on s.id=q.submission_id\n               join invoice_versions iv on iv.id=s.invoice_version_id\n               where q.id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_INGESTION_JOBS_006": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "ingestion_jobs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select contract_id from ingestion_jobs where id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_INVOICE_VERSIONS_004": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select contract_id, state from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ACCESS_SCOPE_READ_INVOICE_VERSIONS_009": {
+    "consumerCapability": "shared",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select 1 from invoice_versions where contract_id=%s and state <> 'draft' limit 1",
+    "writeTables": []
+  },
+  "ARTIFACTS_READ_ARTIFACTS_002": {
+    "consumerCapability": "artifacts",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "artifacts",
+    "readTables": [
+      "artifacts"
+    ],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "select organization_id, artifact_kind from artifacts where id=%s",
+    "writeTables": []
+  },
+  "ARTIFACTS_READ_ARTIFACTS_005": {
+    "consumerCapability": "artifacts",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "artifacts",
+    "readTables": [
+      "artifacts"
+    ],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "select id, contract_id, organization_id, agency_organization_id, object_key,\n                      filename, media_type, byte_size, sha256, artifact_kind, created_by, submitted\n               from artifacts where id=%s",
+    "writeTables": []
+  },
+  "ARTIFACTS_READ_CONTRACTS_001": {
+    "consumerCapability": "artifacts",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "contracts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select agency_organization_id, ngo_organization_id from contracts where id=%s",
+    "writeTables": []
+  },
+  "ARTIFACTS_WRITE_ARTIFACTS_003": {
+    "consumerCapability": "artifacts",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "artifacts",
+    "readTables": [],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "insert into artifacts\n                       (id, contract_id, organization_id, agency_organization_id, object_key,\n                        filename, media_type, byte_size, sha256, artifact_kind, created_by)\n                       values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "artifacts"
+    ]
+  },
+  "ARTIFACTS_WRITE_ARTIFACT_RELATIONS_004": {
+    "consumerCapability": "artifacts",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "artifacts",
+    "readTables": [],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "insert into artifact_relations(predecessor_artifact_id, successor_artifact_id, relation_type) values (%s,%s,%s)",
+    "writeTables": [
+      "artifact_relations"
+    ]
+  },
+  "ATTESTATION_READ_ARTIFACTS_INVOICE_LINES_INVOICE_LINES_003": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "artifacts",
+      "invoice_lines",
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "invoices"
+    ],
+    "sql": "select a.id,a.sha256 from artifacts a where a.id in\n                                     (select ledger_artifact_id from invoice_lines where invoice_version_id=%s union select evidence_artifact_id from invoice_lines where invoice_version_id=%s) order by a.id",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_ATTESTATIONS_012": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "attestations"
+    ],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "select id,validation_run_id,material_revision,invoice_fingerprint,actor_id,actor_role,attestation_version,attestation_text,created_at\n                                  from attestations where invoice_version_id=%s order by created_at desc,id desc limit 1",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_LINES_002": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select expense_key,expense_date,budget_category,claimed_amount,ledger_artifact_id,evidence_artifact_id,extraction_status\n                                   from invoice_lines where invoice_version_id=%s order by expense_key",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_LINES_007": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select count(distinct evidence_artifact_id) from invoice_lines where invoice_version_id=%s and evidence_artifact_id is not null",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_VERSIONS_001": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select configuration_version_id,material_revision,total from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_VERSIONS_005": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,material_revision,configuration_version_id from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_VERSIONS_008": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,state,material_revision from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_VERSIONS_010": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select contract_id from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_INVOICE_VERSIONS_011": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,material_revision from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_VALIDATION_RUNS_004": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select input_hash,output_hash,material_revision from validation_runs where id=%s",
+    "writeTables": []
+  },
+  "ATTESTATION_READ_VALIDATION_RUNS_006": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id,output_hash,material_revision,created_at from validation_runs\n                                  where invoice_version_id=%s and engine_version is not null order by created_at desc,id desc limit 1",
+    "writeTables": []
+  },
+  "ATTESTATION_WRITE_ATTESTATIONS_009": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "workflow",
+    "readTables": [],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "insert into attestations(id,invoice_version_id,validation_run_id,material_revision,invoice_fingerprint,actor_id,actor_role,attestation_version,attestation_text)\n                                  values (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "attestations"
+    ]
+  },
+  "AUTHENTICATION_READ_ORGANIZATIONS_SESSIONS_USERS_006": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "organizations",
+      "sessions",
+      "users"
+    ],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "select u.id, u.organization_id, u.display_name, u.email, u.role, o.name\n               from sessions s join users u on u.id = s.user_id\n               join organizations o on o.id = u.organization_id\n               where s.token_hash = %s and s.revoked_at is null and s.expires_at > now() and u.active",
+    "writeTables": []
+  },
+  "AUTHENTICATION_READ_ORGANIZATIONS_USERS_001": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "organizations",
+      "users"
+    ],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "select u.id, u.organization_id, u.display_name, u.email, u.role,\n                      u.password_hash, o.name\n               from users u join organizations o on o.id = u.organization_id\n               where lower(u.email) = lower(%s) and u.active",
+    "writeTables": []
+  },
+  "AUTHENTICATION_READ_USERS_009": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "users"
+    ],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "select organization_id from users where id=%s",
+    "writeTables": []
+  },
+  "AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_002": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "insert into authentication_events(user_id, event_type) values (null, 'login_failed')",
+    "writeTables": [
+      "authentication_events"
+    ]
+  },
+  "AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_003": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "insert into authentication_events(user_id, event_type) values (%s, 'login_failed')",
+    "writeTables": [
+      "authentication_events"
+    ]
+  },
+  "AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_005": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "insert into authentication_events(user_id, event_type) values (%s, 'login_succeeded')",
+    "writeTables": [
+      "authentication_events"
+    ]
+  },
+  "AUTHENTICATION_WRITE_AUTHENTICATION_EVENTS_008": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "insert into authentication_events(user_id, event_type) values (%s, 'logout')",
+    "writeTables": [
+      "authentication_events"
+    ]
+  },
+  "AUTHENTICATION_WRITE_SESSIONS_004": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "insert into sessions(id, token_hash, user_id, expires_at) values (%s, %s, %s, %s)",
+    "writeTables": [
+      "sessions"
+    ]
+  },
+  "AUTHENTICATION_WRITE_SESSIONS_007": {
+    "consumerCapability": "identity",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "identity",
+    "readTables": [],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "update sessions set revoked_at = now() where token_hash = %s and revoked_at is null returning user_id",
+    "writeTables": [
+      "sessions"
+    ]
+  },
+  "BUDGET_READ_CONFIGURATION_VERSIONS_002": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select version,payload from configuration_versions where id=%s",
+    "writeTables": []
+  },
+  "BUDGET_READ_CONTRACTS_INVOICE_VERSIONS_001": {
+    "consumerCapability": "validation",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "contracts",
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "configuration",
+      "invoices"
+    ],
+    "sql": "select i.configuration_version_id,i.organization_id,i.state,c.agency_organization_id,c.ngo_organization_id\n                                      from invoice_versions i join contracts c on c.id=i.contract_id where i.id=%s",
+    "writeTables": []
+  },
+  "BUDGET_READ_INVOICE_LINES_003": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select budget_category,sum(claimed_amount) from invoice_lines where invoice_version_id=%s group by budget_category",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_DRAFTS_002": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_drafts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload from configuration_drafts where contract_id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_VERSIONS_003": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select coalesce(max(version), 0) + 1 from configuration_versions where contract_id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_VERSIONS_006": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select id,version,activated_at from configuration_versions where contract_id=%s order by version desc limit 1",
+    "writeTables": []
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_DRAFTS_001": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_drafts(contract_id, payload, updated_by)\n                   values (%s, %s, %s)\n                   on conflict (contract_id) do update set payload=excluded.payload,\n                   updated_by=excluded.updated_by, updated_at=now()",
+    "writeTables": [
+      "configuration_drafts"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_VERSIONS_004": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_versions\n                   (id, contract_id, version, status, payload, activated_by, activated_at)\n                   values (%s,%s,%s,'active',%s,%s,now())",
+    "writeTables": [
+      "configuration_versions"
+    ]
+  },
+  "EXTRACTION_REVIEW_READ_ARTIFACTS_EXTRACTION_FIELDS_EXTRACTION_RUNS_001": {
+    "consumerCapability": "extraction",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "artifacts",
+      "extraction_fields",
+      "extraction_runs"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "extraction"
+    ],
+    "sql": "select r.id,r.source_artifact_id,a.filename,r.provider,r.model,r.status,r.routing_reason,\n                      f.id,f.field_name,f.proposed_value,f.reviewed_value,f.confidence,f.source_location,f.review_status\n               from extraction_runs r join artifacts a on a.id=r.source_artifact_id\n               join extraction_fields f on f.extraction_run_id=r.id\n               where r.contract_id=%s and r.status='needs_review' order by r.created_at,f.field_name",
+    "writeTables": []
+  },
+  "EXTRACTION_REVIEW_READ_EXTRACTION_FIELDS_006": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "extraction_fields"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select reviewed_value,review_status from extraction_fields where id=%s",
+    "writeTables": []
+  },
+  "EXTRACTION_REVIEW_READ_EXTRACTION_FIELDS_EXTRACTION_RUNS_002": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "extraction_fields",
+      "extraction_runs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select f.proposed_value,f.review_status,f.source_location,f.proposed_lineage_id,f.field_name,\n                          r.id,r.source_artifact_id,r.contract_id,r.organization_id,r.provider,r.model,r.prompt_version,r.parser_version\n                   from extraction_fields f join extraction_runs r on r.id=f.extraction_run_id\n                   where f.id=%s for update",
+    "writeTables": []
+  },
+  "EXTRACTION_REVIEW_READ_EXTRACTION_FIELDS_EXTRACTION_RUNS_005": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "extraction_fields",
+      "extraction_runs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select r.id from extraction_fields f join extraction_runs r on r.id=f.extraction_run_id where f.id=%s",
+    "writeTables": []
+  },
+  "EXTRACTION_REVIEW_WRITE_EXTRACTION_FIELDS_004": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "update extraction_fields set reviewed_value=%s,reviewed_by=%s,reviewed_at=now(),review_status=%s where id=%s",
+    "writeTables": [
+      "extraction_fields"
+    ]
+  },
+  "EXTRACTION_REVIEW_WRITE_EXTRACTION_FIELD_REVIEWS_003": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into extraction_field_reviews\n                   (id,extraction_field_id,decision,proposed_value,reviewed_value,actor_id,reason,source_artifact_id,source_location,predecessor_lineage_id,reviewed_lineage_id)\n                   values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "extraction_field_reviews"
+    ]
+  },
+  "EXTRACTION_WRITE_EXTRACTION_FIELDS_003": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into extraction_fields(id,extraction_run_id,field_name,proposed_value,confidence,source_location,proposed_lineage_id) values (%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "extraction_fields"
+    ]
+  },
+  "EXTRACTION_WRITE_EXTRACTION_RUNS_001": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into extraction_runs\n               (id,job_id,source_artifact_id,contract_id,organization_id,provider,model,prompt_version,parser_version,schema_version,source_location,status,routing_reason,error_message)\n               values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'page=1','failed','PROVIDER_OR_RESPONSE_FAILURE',%s)",
+    "writeTables": [
+      "extraction_runs"
+    ]
+  },
+  "EXTRACTION_WRITE_EXTRACTION_RUNS_002": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into extraction_runs\n               (id,job_id,source_artifact_id,raw_response_artifact_id,contract_id,organization_id,provider,model,prompt_version,parser_version,schema_version,source_location,confidence,status,routing_reason)\n               values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'needs_review',%s)",
+    "writeTables": [
+      "extraction_runs"
+    ]
+  },
+  "FINDING_RESOLUTION_READ_FIELD_LINEAGE_006": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "field_lineage"
+    ],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "select id from field_lineage where invoice_version_id=%s and field_name=%s order by id desc limit 1",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_INVOICE_LINES_005": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select id,expense_date,ledger_artifact_id,ledger_source_location from invoice_lines where invoice_version_id=%s and expense_key=%s for update",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_INVOICE_LINES_VALIDATION_FINDINGS_VALIDATION_RESULTS_001": {
+    "consumerCapability": "validation",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "invoice_lines",
+      "validation_findings",
+      "validation_results"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "validation"
+    ],
+    "sql": "select f.id,f.expense_key,f.code,f.severity,f.message,f.status,r.normalized_input,l.evidence_artifact_id\n                                   from validation_findings f join validation_results r on r.id=f.validation_result_id\n                                   left join invoice_lines l on l.invoice_version_id=f.invoice_version_id and l.expense_key=f.expense_key\n                                   where f.validation_run_id=%s order by f.severity,f.code",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_INVOICE_VERSIONS_007": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select contract_id from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_INVOICE_VERSIONS_VALIDATION_FINDINGS_004": {
+    "consumerCapability": "validation",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "invoice_versions",
+      "validation_findings"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "validation"
+    ],
+    "sql": "select f.invoice_version_id,f.expense_key,f.code,f.severity,f.status,i.organization_id\n                                      from validation_findings f join invoice_versions i on i.id=f.invoice_version_id where f.id=%s",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_VALIDATION_FINDINGS_003": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_findings"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select exists(select 1 from validation_findings where validation_run_id=%s and severity='blocker' and status='open')",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_READ_VALIDATION_RUNS_002": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id from validation_runs where invoice_version_id=%s and engine_version is not null order by created_at desc,id desc limit 1",
+    "writeTables": []
+  },
+  "FINDING_RESOLUTION_WRITE_FINDING_RESOLUTIONS_014": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "insert into finding_resolutions(id,prior_finding_id,invoice_version_id,action,actor_id,reason,new_validation_run_id) values (%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "finding_resolutions"
+    ]
+  },
+  "FINDING_RESOLUTION_WRITE_INVOICE_LINES_009": {
+    "consumerCapability": "validation",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_lines set expense_date=%s where id=%s",
+    "writeTables": [
+      "invoice_lines"
+    ]
+  },
+  "FINDING_RESOLUTION_WRITE_INVOICE_LINE_CORRECTIONS_008": {
+    "consumerCapability": "validation",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_line_corrections(id,invoice_version_id,invoice_line_id,field_name,prior_value,corrected_value,actor_id,reason) values (%s,%s,%s,'expense_date',%s,%s,%s,%s)",
+    "writeTables": [
+      "invoice_line_corrections"
+    ]
+  },
+  "FINDING_RESOLUTION_WRITE_INVOICE_VERSIONS_010": {
+    "consumerCapability": "validation",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_versions set material_revision=material_revision+1 where id=%s",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "FINDING_RESOLUTION_WRITE_VALIDATION_FINDINGS_012": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "update validation_findings set status='dismissed' where validation_run_id=%s and code=%s",
+    "writeTables": [
+      "validation_findings"
+    ]
+  },
+  "FINDING_RESOLUTION_WRITE_VALIDATION_FINDINGS_013": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "update validation_findings set status=%s where id=%s",
+    "writeTables": [
+      "validation_findings"
+    ]
+  },
+  "GOVERNMENT_DECISION_READ_GOVERNMENT_DECISIONS_INVOICE_VERSIONS_SUBMISSIONS_004": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "government_decisions",
+      "invoice_versions",
+      "submissions"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select 1 from government_decisions d join submissions s on s.id=d.submission_id join invoice_versions i on i.id=s.invoice_version_id where i.contract_id=%s and d.decision='returned'",
+    "writeTables": []
+  },
+  "GOVERNMENT_DECISION_READ_GOVERNMENT_DECISIONS_INVOICE_VERSIONS_SUBMISSIONS_005": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "government_decisions",
+      "invoice_versions",
+      "submissions"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select 1 from government_decisions d join submissions s on s.id=d.submission_id join invoice_versions i on i.id=s.invoice_version_id\n                    where i.contract_id=%s and d.decision='returned' and i.version < %s",
+    "writeTables": []
+  },
+  "GOVERNMENT_DECISION_READ_GOVERNMENT_QUEUE_ITEMS_003": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "government_queue_items"
+    ],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "select status from government_queue_items where id=%s for update",
+    "writeTables": []
+  },
+  "GOVERNMENT_DECISION_READ_GOVERNMENT_QUEUE_ITEMS_INVOICE_VERSIONS_SUBMISSIONS_001": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "government_queue_items",
+      "invoice_versions",
+      "submissions"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select q.status,q.agency_organization_id,q.ngo_organization_id,s.id,s.invoice_version_id,s.package_id,iv.version,iv.contract_id\n          from government_queue_items q join submissions s on s.id=q.submission_id join invoice_versions iv on iv.id=s.invoice_version_id where q.id=%s",
+    "writeTables": []
+  },
+  "GOVERNMENT_DECISION_READ_USERS_002": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "identity",
+    "readTables": [
+      "users"
+    ],
+    "sourceOwners": [
+      "identity"
+    ],
+    "sql": "select role,organization_id from users where id=%s",
+    "writeTables": []
+  },
+  "GOVERNMENT_DECISION_WRITE_GOVERNMENT_DECISIONS_006": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "workflow",
+    "readTables": [],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "insert into government_decisions(id,queue_item_id,submission_id,invoice_version_id,package_id,decision,reason_code,note,line_keys,actor_id,actor_role) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "government_decisions"
+    ]
+  },
+  "GOVERNMENT_DECISION_WRITE_GOVERNMENT_QUEUE_ITEMS_007": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "workflow",
+    "readTables": [],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "update government_queue_items set status=%s where id=%s",
+    "writeTables": [
+      "government_queue_items"
+    ]
+  },
+  "GOVERNMENT_DECISION_WRITE_INVOICE_VERSIONS_008": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_versions set state=%s where id=%s",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "GOVERNMENT_REVIEW_READ_ARTIFACTS_PACKAGE_ARTIFACTS_005": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "artifacts",
+      "package_artifacts"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "packages"
+    ],
+    "sql": "select pa.path,pa.artifact_id,pa.sha256,a.media_type from package_artifacts pa join artifacts a on a.id=pa.artifact_id where pa.package_id=%s order by pa.path",
+    "writeTables": []
+  },
+  "GOVERNMENT_REVIEW_READ_CONFIGURATION_VERSIONS_CONTRACTS_GOVERNMENT_QUEUE_ITEMS_INVOICE_VERSIONS_001": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "configuration_versions",
+      "contracts",
+      "government_queue_items",
+      "invoice_versions",
+      "organizations",
+      "packages",
+      "submissions",
+      "validation_findings"
+    ],
+    "sourceOwners": [
+      "configuration",
+      "identity",
+      "invoices",
+      "packages",
+      "validation",
+      "workflow"
+    ],
+    "sql": "select q.id,q.status,o.name,c.name,iv.version,iv.total,s.submitted_at,s.id,p.id,p.zip_artifact_id,\n                 cv.payload->'servicePeriod',count(vf.id) filter(where vf.status='open')\n          from government_queue_items q join submissions s on s.id=q.submission_id join invoice_versions iv on iv.id=s.invoice_version_id\n          join contracts c on c.id=iv.contract_id join organizations o on o.id=q.ngo_organization_id join packages p on p.id=s.package_id\n          join configuration_versions cv on cv.id=iv.configuration_version_id\n          left join validation_findings vf on vf.invoice_version_id=iv.id\n          where q.agency_organization_id=%s group by q.id,o.name,c.name,iv.version,iv.total,s.submitted_at,s.id,p.id,p.zip_artifact_id,cv.payload order by s.submitted_at",
+    "writeTables": []
+  },
+  "GOVERNMENT_REVIEW_READ_CONTRACTS_GOVERNMENT_QUEUE_ITEMS_INVOICE_VERSIONS_ORGANIZATIONS_002": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "contracts",
+      "government_queue_items",
+      "invoice_versions",
+      "organizations",
+      "packages",
+      "submissions"
+    ],
+    "sourceOwners": [
+      "configuration",
+      "identity",
+      "invoices",
+      "packages",
+      "workflow"
+    ],
+    "sql": "select q.status,s.invoice_version_id,s.package_id,p.zip_artifact_id,s.package_hashes,iv.configuration_version_id,iv.version,iv.total,o.name,c.name,s.submitted_at\n          from government_queue_items q join submissions s on s.id=q.submission_id join packages p on p.id=s.package_id join invoice_versions iv on iv.id=s.invoice_version_id join organizations o on o.id=q.ngo_organization_id join contracts c on c.id=iv.contract_id\n          where q.id=%s and q.agency_organization_id=%s",
+    "writeTables": []
+  },
+  "GOVERNMENT_REVIEW_READ_DOMAIN_EVENTS_006": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "domain_events"
+    ],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "select event_type,actor_id,occurred_at,payload from domain_events where aggregate_id in (%s,%s,%s) order by occurred_at,id",
+    "writeTables": []
+  },
+  "GOVERNMENT_REVIEW_READ_VALIDATION_FINDINGS_004": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_findings"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select code,severity,message,status,expense_key from validation_findings where validation_run_id=%s order by code",
+    "writeTables": []
+  },
+  "GOVERNMENT_REVIEW_READ_VALIDATION_RUNS_003": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id,engine_version,input_hash,output_hash from validation_runs where invoice_version_id=%s order by created_at desc limit 1",
+    "writeTables": []
+  },
+  "INGESTION_READ_ARTIFACTS_INGESTION_JOBS_001": {
+    "consumerCapability": "extraction",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "artifacts",
+      "ingestion_jobs"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "extraction"
+    ],
+    "sql": "select j.id,j.artifact_id,j.contract_id,j.organization_id,j.job_type,j.status,\n                          j.attempt_count,j.error_code,j.error_message\n                   from ingestion_jobs j join artifacts a on a.id=j.artifact_id\n                   where j.contract_id=%s and j.organization_id=%s and a.sha256=%s and a.filename=%s and j.job_type=%s",
+    "writeTables": []
+  },
+  "INGESTION_READ_INGESTION_JOBS_003": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "ingestion_jobs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select id,artifact_id,contract_id,organization_id,job_type,status,attempt_count,error_code,error_message\n               from ingestion_jobs where contract_id=%s order by created_at",
+    "writeTables": []
+  },
+  "INGESTION_WRITE_INGESTION_JOBS_002": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into ingestion_jobs(id,artifact_id,contract_id,organization_id,job_type,status,created_by)\n                   values (%s,%s,%s,%s,%s,'queued',%s)\n                   returning id,artifact_id,contract_id,organization_id,job_type,status,attempt_count,error_code,error_message",
+    "writeTables": [
+      "ingestion_jobs"
+    ]
+  },
+  "INGESTION_WRITE_INGESTION_JOBS_004": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [
+      "ingestion_jobs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "with next as (\n                 select id from ingestion_jobs where status='queued' order by created_at for update skip locked limit 1\n               ) update ingestion_jobs j set status='running', started_at=now(), attempt_count=attempt_count+1\n               from next where j.id=next.id\n               returning j.id,j.artifact_id,j.contract_id,j.organization_id,j.job_type,j.status,\n                         j.attempt_count,j.error_code,j.error_message",
+    "writeTables": [
+      "ingestion_jobs"
+    ]
+  },
+  "INGESTION_WRITE_INGESTION_JOBS_005": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "update ingestion_jobs set status='completed', completed_at=now(), error_code=null, error_message=null where id=%s and status='running'",
+    "writeTables": [
+      "ingestion_jobs"
+    ]
+  },
+  "INGESTION_WRITE_INGESTION_JOBS_006": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "update ingestion_jobs set status='failed', completed_at=now(), error_code='PROCESSING_FAILED', error_message=%s where id=%s and status='running'",
+    "writeTables": [
+      "ingestion_jobs"
+    ]
+  },
+  "INVOICE_DRAFT_READ_ARTIFACTS_008": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "artifacts",
+    "readTables": [
+      "artifacts"
+    ],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "select id from artifacts where contract_id=%s and organization_id=%s and filename=%s\n                       order by created_at desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_CONFIGURATION_VERSIONS_002": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select id,payload from configuration_versions where contract_id=%s order by version desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_CONFIGURATION_VERSIONS_015": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload from configuration_versions where id=%s",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_DRAFT_ASSEMBLIES_003": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "draft_assemblies"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select invoice_version_id from draft_assemblies where ledger_import_id=%s and configuration_version_id=%s",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_EXPENSE_ROWS_004": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "expense_rows"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select id,expense_key,expense_date,vendor,description,budget_category,amount,evidence_filename,\n                          source_artifact_id,source_sheet,source_cells->>'amount',mapping_version\n                   from expense_rows where ledger_import_id=%s order by source_row",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_EXTRACTION_FIELDS_EXTRACTION_RUNS_009": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "extraction_fields",
+      "extraction_runs"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select f.id,f.proposed_value,f.reviewed_value,f.review_status\n                           from extraction_fields f join extraction_runs r on r.id=f.extraction_run_id\n                           where r.source_artifact_id=%s and f.field_name='amount' order by r.created_at desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_FIELD_LINEAGE_011": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "field_lineage"
+    ],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "select id from field_lineage where field_name=%s and source_artifact_id=%s order by id desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_INVOICE_FINDINGS_016": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_findings"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select expense_key,code,message,status from invoice_findings where invoice_version_id=%s order by code,expense_key",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_INVOICE_LINES_014": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select expense_key,expense_date,vendor,description,budget_category,claimed_amount,ledger_artifact_id,\n                      ledger_source_location,evidence_artifact_id,extraction_status from invoice_lines where invoice_version_id=%s order by expense_key",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_INVOICE_VERSIONS_005": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select coalesce(max(version),0)+1 from invoice_versions where contract_id=%s",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_INVOICE_VERSIONS_013": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select id,contract_id,version,configuration_version_id,state,organization_id,total from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_INVOICE_VERSIONS_017": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select id from invoice_versions where contract_id=%s and state='draft' order by version desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_READ_LEDGER_IMPORTS_001": {
+    "consumerCapability": "invoices",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "ledger_imports"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select id from ledger_imports where contract_id=%s and organization_id=%s order by created_at desc limit 1",
+    "writeTables": []
+  },
+  "INVOICE_DRAFT_WRITE_DRAFT_ASSEMBLIES_007": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into draft_assemblies(invoice_version_id,ledger_import_id,configuration_version_id) values (%s,%s,%s)",
+    "writeTables": [
+      "draft_assemblies"
+    ]
+  },
+  "INVOICE_DRAFT_WRITE_INVOICE_FINDINGS_012": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_findings(id,invoice_version_id,expense_key,code,message) values (%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "invoice_findings"
+    ]
+  },
+  "INVOICE_DRAFT_WRITE_INVOICE_LINES_010": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_lines\n                       (id,invoice_version_id,expense_row_id,expense_key,expense_date,vendor,description,budget_category,claimed_amount,\n                        ledger_artifact_id,ledger_source_location,evidence_artifact_id,extraction_field_id,extraction_status,mapping_version)\n                       values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "invoice_lines"
+    ]
+  },
+  "INVOICE_DRAFT_WRITE_INVOICE_VERSIONS_006": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_versions(id,contract_id,version,configuration_version_id,state,organization_id,created_by,total)\n                   values (%s,%s,%s,%s,'draft',%s,%s,%s)",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "LEDGER_IMPORT_READ_CONFIGURATION_VERSIONS_002": {
+    "consumerCapability": "extraction",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload from configuration_versions where contract_id=%s order by version desc limit 1",
+    "writeTables": []
+  },
+  "LEDGER_IMPORT_READ_LEDGER_IMPORTS_001": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": [
+      "ledger_imports"
+    ],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "select id,row_count,control_total,imported_total from ledger_imports where artifact_id=%s",
+    "writeTables": []
+  },
+  "LEDGER_IMPORT_WRITE_EXPENSE_ROWS_004": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into expense_rows\n                   (id,ledger_import_id,contract_id,organization_id,expense_key,expense_date,vendor,description,budget_category,amount,invoice_number,evidence_filename,\n                    source_artifact_id,source_sheet,source_row,source_cells,importer_version,schema_version,mapping_version)\n                   values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "expense_rows"
+    ]
+  },
+  "LEDGER_IMPORT_WRITE_LEDGER_IMPORTS_003": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": [
+      "extraction"
+    ],
+    "sql": "insert into ledger_imports\n               (id,job_id,artifact_id,contract_id,organization_id,source_sheet,importer_version,schema_version,mapping_version,control_total,imported_total,row_count)\n               values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "ledger_imports"
+    ]
+  },
+  "PACKAGE_GENERATION_READ_INVOICE_VERSIONS_001": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,contract_id,version from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "PACKAGE_GENERATION_READ_VALIDATION_RUNS_002": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id,engine_version,input_hash,output_hash from validation_runs where id=%s",
+    "writeTables": []
+  },
+  "PACKAGE_GENERATION_WRITE_PACKAGES_003": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "packages",
+    "readTables": [],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "insert into packages(id,invoice_version_id,attestation_id,version,zip_artifact_id,manifest,created_by) values (%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "packages"
+    ]
+  },
+  "PACKAGE_GENERATION_WRITE_PACKAGE_ARTIFACTS_004": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "packages",
+    "readTables": [],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "insert into package_artifacts values (%s,%s,%s,%s)",
+    "writeTables": [
+      "package_artifacts"
+    ]
+  },
+  "PROVENANCE_READ_ARTIFACTS_ARTIFACTS_ARTIFACTS_DOMAIN_EVENTS_004": {
+    "consumerCapability": "provenance",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "artifacts",
+      "artifacts",
+      "artifacts",
+      "domain_events",
+      "extraction_fields",
+      "extraction_runs",
+      "extraction_runs",
+      "invoice_lines",
+      "invoice_versions",
+      "invoice_versions",
+      "invoice_versions",
+      "invoice_versions",
+      "invoice_versions",
+      "invoice_versions",
+      "packages",
+      "validation_findings",
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "extraction",
+      "invoices",
+      "packages",
+      "provenance",
+      "validation"
+    ],
+    "sql": "select e.id,e.event_type,e.actor_id,e.organization_id,e.aggregate_type,\n                          e.aggregate_id,e.payload,e.occurred_at\n                   from domain_events e\n                   where e.contract_id=%s and (\n                     (e.aggregate_type='artifact' and exists(\n                       select 1 from artifacts a where a.id=e.aggregate_id and a.submitted=true))\n                     or (e.aggregate_type='configuration_version' and exists(\n                       select 1 from invoice_versions i\n                       where i.configuration_version_id=e.aggregate_id and i.state<>'draft'))\n                     or (e.aggregate_type='extraction_run' and exists(\n                       select 1 from extraction_runs x join artifacts a on a.id=x.source_artifact_id\n                       where x.id=e.aggregate_id and a.submitted=true))\n                     or (e.aggregate_type='extraction_field' and exists(\n                       select 1 from extraction_fields f join extraction_runs x on x.id=f.extraction_run_id\n                       join artifacts a on a.id=x.source_artifact_id\n                       where f.id=e.aggregate_id and a.submitted=true))\n                     or (e.aggregate_type='validation_run' and exists(\n                       select 1 from validation_runs v join invoice_versions i on i.id=v.invoice_version_id\n                       where v.id=e.aggregate_id and i.state<>'draft'))\n                     or (e.aggregate_type='invoice_line' and exists(\n                       select 1 from invoice_lines l join invoice_versions i on i.id=l.invoice_version_id\n                       where l.id=e.aggregate_id and i.state<>'draft'))\n                     or (e.aggregate_type='validation_finding' and exists(\n                       select 1 from validation_findings f join invoice_versions i on i.id=f.invoice_version_id\n                       where f.id=e.aggregate_id and i.state<>'draft'))\n                     or (e.aggregate_type='invoice_version' and exists(\n                       select 1 from invoice_versions i where i.id=e.aggregate_id and i.state<>'draft'))\n                     or (e.aggregate_type='package' and exists(\n                       select 1 from packages p join invoice_versions i on i.id=p.invoice_version_id\n                       where p.id=e.aggregate_id and i.state<>'draft'))\n                   ) order by e.id",
+    "writeTables": []
+  },
+  "PROVENANCE_READ_ARTIFACTS_FIELD_LINEAGE_INVOICE_VERSIONS_005": {
+    "consumerCapability": "provenance",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "artifacts",
+      "field_lineage",
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "artifacts",
+      "invoices",
+      "provenance"
+    ],
+    "sql": "select l.id,l.field_name,l.field_value,l.source_artifact_id,l.source_location,\n                          l.importer_version,l.extractor_provider,l.extractor_model,l.prompt_version,\n                          l.parser_version,l.mapping_version,l.correction_actor_id,l.correction_reason,\n                          l.validation_run_id,l.invoice_version_id,l.package_artifact_id,\n                          l.predecessor_lineage_id,l.recorded_at\n                   from field_lineage l where l.contract_id=%s and (\n                     (l.invoice_version_id is not null and exists(\n                       select 1 from invoice_versions i\n                       where i.id=l.invoice_version_id and i.state<>'draft'))\n                     or (l.invoice_version_id is null and l.source_artifact_id is not null and exists(\n                       select 1 from artifacts a where a.id=l.source_artifact_id and a.submitted=true))\n                   ) order by l.id",
+    "writeTables": []
+  },
+  "PROVENANCE_READ_CONTRACTS_003": {
+    "consumerCapability": "provenance",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "contracts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select ngo_organization_id, agency_organization_id from contracts where id=%s",
+    "writeTables": []
+  },
+  "PROVENANCE_READ_DOMAIN_EVENTS_006": {
+    "consumerCapability": "provenance",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "domain_events"
+    ],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "select id, event_type, actor_id, organization_id, aggregate_type, aggregate_id, payload, occurred_at\n                   from domain_events\n                   where contract_id=%s or (contract_id is null and organization_id in (%s,%s)) order by id",
+    "writeTables": []
+  },
+  "PROVENANCE_READ_FIELD_LINEAGE_007": {
+    "consumerCapability": "provenance",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "field_lineage"
+    ],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "select id, field_name, field_value, source_artifact_id, source_location,\n                          importer_version, extractor_provider, extractor_model, prompt_version,\n                          parser_version, mapping_version, correction_actor_id, correction_reason,\n                          validation_run_id, invoice_version_id, package_artifact_id,\n                          predecessor_lineage_id, recorded_at\n                   from field_lineage where contract_id=%s order by id",
+    "writeTables": []
+  },
+  "PROVENANCE_WRITE_DOMAIN_EVENTS_001": {
+    "consumerCapability": "provenance",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "provenance",
+    "readTables": [],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "insert into domain_events\n           (event_type, actor_id, organization_id, contract_id, aggregate_type, aggregate_id, payload)\n           values (%s,%s,%s,%s,%s,%s,%s) returning id",
+    "writeTables": [
+      "domain_events"
+    ]
+  },
+  "PROVENANCE_WRITE_FIELD_LINEAGE_002": {
+    "consumerCapability": "provenance",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "provenance",
+    "readTables": [],
+    "sourceOwners": [
+      "provenance"
+    ],
+    "sql": "insert into field_lineage\n           (contract_id,organization_id,field_name,field_value,source_artifact_id,\n            source_location,importer_version,extractor_provider,extractor_model,\n            prompt_version,parser_version,mapping_version,correction_actor_id,\n            correction_reason,validation_run_id,invoice_version_id,\n            package_artifact_id,predecessor_lineage_id)\n           values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)\n           returning id",
+    "writeTables": [
+      "field_lineage"
+    ]
+  },
+  "REVISION_READ_GOVERNMENT_DECISIONS_INVOICE_VERSION_LINKS_INVOICE_VERSIONS_006": {
+    "consumerCapability": "invoices",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "government_decisions",
+      "invoice_version_links",
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select l.successor_invoice_version_id,l.predecessor_invoice_version_id,d.id,d.reason_code,d.note,d.line_keys\n          from invoice_version_links l join government_decisions d on d.id=l.government_decision_id join invoice_versions i on i.id=l.successor_invoice_version_id where i.contract_id=%s and i.state='draft' order by i.version desc limit 1",
+    "writeTables": []
+  },
+  "REVISION_READ_INVOICE_LINES_009": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select description from invoice_lines where invoice_version_id=%s and expense_key=%s",
+    "writeTables": []
+  },
+  "REVISION_READ_INVOICE_VERSIONS_002": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select version,configuration_version_id,organization_id,total from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "REVISION_READ_INVOICE_VERSIONS_007": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "REVISION_READ_INVOICE_VERSIONS_008": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,contract_id,state from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "REVISION_READ_INVOICE_VERSION_LINKS_001": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_version_links"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select successor_invoice_version_id from invoice_version_links where predecessor_invoice_version_id=%s",
+    "writeTables": []
+  },
+  "REVISION_WRITE_INVOICE_LINES_004": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_lines(id,invoice_version_id,expense_row_id,expense_key,expense_date,vendor,description,budget_category,claimed_amount,ledger_artifact_id,ledger_source_location,evidence_artifact_id,extraction_field_id,extraction_status,mapping_version)\n      select 'line-'||md5(random()::text||id),%s,expense_row_id,expense_key,expense_date,vendor,description,budget_category,claimed_amount,ledger_artifact_id,ledger_source_location,evidence_artifact_id,extraction_field_id,extraction_status,mapping_version from invoice_lines where invoice_version_id=%s",
+    "writeTables": [
+      "invoice_lines"
+    ]
+  },
+  "REVISION_WRITE_INVOICE_LINES_010": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_lines set description=%s where invoice_version_id=%s and expense_key=%s",
+    "writeTables": [
+      "invoice_lines"
+    ]
+  },
+  "REVISION_WRITE_INVOICE_VERSIONS_003": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_versions(id,contract_id,version,configuration_version_id,state,organization_id,created_by,total,material_revision) values (%s,%s,%s,%s,'draft',%s,%s,%s,1)",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "REVISION_WRITE_INVOICE_VERSIONS_011": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_versions set material_revision=material_revision+1 where id=%s",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "REVISION_WRITE_INVOICE_VERSION_LINKS_005": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into invoice_version_links values (%s,%s,'corrects_return',%s,now())",
+    "writeTables": [
+      "invoice_version_links"
+    ]
+  },
+  "REVISION_WRITE_REVISION_CORRECTIONS_012": {
+    "consumerCapability": "invoices",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "insert into revision_corrections values (%s,%s,%s,'description',%s,%s,%s,%s,now())",
+    "writeTables": [
+      "revision_corrections"
+    ]
+  },
+  "SUBMISSION_READ_CONTRACTS_004": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "contracts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select agency_organization_id,ngo_organization_id from contracts where id=%s",
+    "writeTables": []
+  },
+  "SUBMISSION_READ_EXTRACTION_FIELDS_EXTRACTION_FIELDS_EXTRACTION_RUNS_EXTRACTION_RUNS_008": {
+    "consumerCapability": "workflow",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "workflow",
+    "readTables": [
+      "extraction_fields",
+      "extraction_fields",
+      "extraction_runs",
+      "extraction_runs",
+      "invoice_lines",
+      "invoice_lines",
+      "invoice_lines",
+      "invoice_lines",
+      "package_artifacts"
+    ],
+    "sourceOwners": [
+      "extraction",
+      "invoices",
+      "packages"
+    ],
+    "sql": "select artifact_id from package_artifacts where package_id=%s\n                union select ledger_artifact_id from invoice_lines where invoice_version_id=%s\n                union select evidence_artifact_id from invoice_lines where invoice_version_id=%s and evidence_artifact_id is not null\n                union select x.source_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id\n                  join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s\n                union select x.raw_response_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id\n                  join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s and x.raw_response_artifact_id is not null",
+    "writeTables": []
+  },
+  "SUBMISSION_READ_INVOICE_VERSIONS_001": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select organization_id,contract_id,configuration_version_id,version,state from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "SUBMISSION_READ_PACKAGES_002": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "packages",
+    "readTables": [
+      "packages"
+    ],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "select id,zip_artifact_id from packages where invoice_version_id=%s and attestation_id=%s",
+    "writeTables": []
+  },
+  "SUBMISSION_READ_PACKAGE_ARTIFACTS_003": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "packages",
+    "readTables": [
+      "package_artifacts"
+    ],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "select path,sha256 from package_artifacts where package_id=%s order by path",
+    "writeTables": []
+  },
+  "SUBMISSION_WRITE_ARTIFACTS_009": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "artifacts",
+    "readTables": [],
+    "sourceOwners": [
+      "artifacts"
+    ],
+    "sql": "update artifacts set submitted=true\n                  where submitted=false and id = any(%s)",
+    "writeTables": [
+      "artifacts"
+    ]
+  },
+  "SUBMISSION_WRITE_GOVERNMENT_QUEUE_ITEMS_006": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "workflow",
+    "readTables": [],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "insert into government_queue_items(id,submission_id,agency_organization_id,ngo_organization_id) values (%s,%s,%s,%s)",
+    "writeTables": [
+      "government_queue_items"
+    ]
+  },
+  "SUBMISSION_WRITE_INVOICE_VERSIONS_007": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "invoices",
+    "readTables": [],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "update invoice_versions set state='submitted' where id=%s",
+    "writeTables": [
+      "invoice_versions"
+    ]
+  },
+  "SUBMISSION_WRITE_SUBMISSIONS_005": {
+    "consumerCapability": "workflow",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "workflow",
+    "readTables": [],
+    "sourceOwners": [
+      "workflow"
+    ],
+    "sql": "insert into submissions(id,invoice_version_id,package_id,actor_id,actor_role,configuration_version_id,invoice_version,package_hashes) values (%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "submissions"
+    ]
+  },
+  "VALIDATION_READ_CONFIGURATION_VERSIONS_002": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload from configuration_versions where id=%s",
+    "writeTables": []
+  },
+  "VALIDATION_READ_INVOICE_LINES_003": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_lines"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select expense_key,expense_date,vendor,budget_category,claimed_amount,evidence_artifact_id,ledger_source_location\n                                        from invoice_lines where invoice_version_id=%s order by expense_key",
+    "writeTables": []
+  },
+  "VALIDATION_READ_INVOICE_VERSIONS_001": {
+    "consumerCapability": "validation",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "invoice_versions"
+    ],
+    "sourceOwners": [
+      "invoices"
+    ],
+    "sql": "select contract_id,configuration_version_id,organization_id,total,material_revision from invoice_versions where id=%s",
+    "writeTables": []
+  },
+  "VALIDATION_READ_VALIDATION_RESULTS_008": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_results"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select rule_code,rule_version,severity,reason_code,outcome,expense_key,normalized_input,message from validation_results where validation_run_id=%s order by rule_code,expense_key nulls first,reason_code",
+    "writeTables": []
+  },
+  "VALIDATION_READ_VALIDATION_RUNS_007": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,status from validation_runs where id=%s",
+    "writeTables": []
+  },
+  "VALIDATION_READ_VALIDATION_RUNS_009": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id from validation_runs where invoice_version_id=%s and engine_version is not null order by created_at desc,id desc limit 1",
+    "writeTables": []
+  },
+  "VALIDATION_WRITE_VALIDATION_FINDINGS_006": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "insert into validation_findings(id,validation_result_id,invoice_version_id,validation_run_id,expense_key,code,severity,message)\n                                                               values (%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "validation_findings"
+    ]
+  },
+  "VALIDATION_WRITE_VALIDATION_RESULTS_005": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "insert into validation_results(id,validation_run_id,rule_code,rule_version,severity,reason_code,outcome,expense_key,normalized_input,message)\n                                      values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "validation_results"
+    ]
+  },
+  "VALIDATION_WRITE_VALIDATION_RUNS_004": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "insert into validation_runs(id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,created_by,status,material_revision)\n                                  values (%s,%s,%s,%s,%s,%s,%s,%s,'completed',%s)",
+    "writeTables": [
+      "validation_runs"
+    ]
+  },
+  "WORKER_HEALTH_READ_WORKER_HEARTBEAT_001": {
+    "consumerCapability": "platform",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "platform",
+    "readTables": [
+      "worker_heartbeat"
+    ],
+    "sourceOwners": [
+      "platform"
+    ],
+    "sql": "select last_seen_at from worker_heartbeat where worker_name = 'default'",
+    "writeTables": []
+  },
+  "WORKER_WRITE_WORKER_HEARTBEAT_001": {
+    "consumerCapability": "platform",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "platform",
+    "readTables": [],
+    "sourceOwners": [
+      "platform"
+    ],
+    "sql": "insert into worker_heartbeat(worker_name, last_seen_at) values ('default', %s) on conflict (worker_name) do update set last_seen_at = excluded.last_seen_at",
+    "writeTables": [
+      "worker_heartbeat"
+    ]
+  }
+}
