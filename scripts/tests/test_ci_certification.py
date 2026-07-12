@@ -22,6 +22,9 @@ def load(name: str, path: Path):
 
 TOOLCHAINS = load("check_toolchain_versions", SCRIPTS / "check_toolchain_versions.py")
 MANIFEST = load("write_ci_manifest", SCRIPTS / "ci" / "write_ci_manifest.py")
+BRANCH_PROTECTION = load(
+    "capture_branch_protection", SCRIPTS / "ci" / "capture_branch_protection.py"
+)
 
 
 class CiCertificationTests(unittest.TestCase):
@@ -50,6 +53,80 @@ class CiCertificationTests(unittest.TestCase):
             self.assertEqual(
                 {"static.log": sha256(b"passed\n").hexdigest()},
                 MANIFEST.file_hashes(root),
+            )
+
+    def test_prerequisites_are_machine_validated(self) -> None:
+        merge_sha = "a" * 40
+        self.assertEqual(
+            [
+                {
+                    "issue": "SUB-57",
+                    "mergeSha": merge_sha,
+                    "postMergeVerified": True,
+                }
+            ],
+            MANIFEST.validate_prerequisites(
+                "SUB-67",
+                {
+                    "SUB-67": [
+                        {
+                            "issue": "SUB-57",
+                            "mergeSha": merge_sha,
+                            "postMergeVerified": True,
+                        }
+                    ]
+                },
+                lambda candidate: candidate == merge_sha,
+            ),
+        )
+
+    def test_stale_prerequisite_is_rejected(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "not an ancestor of the PR base"):
+            MANIFEST.validate_prerequisites(
+                "SUB-67",
+                {
+                    "SUB-67": [
+                        {
+                            "issue": "SUB-57",
+                            "mergeSha": "a" * 40,
+                            "postMergeVerified": True,
+                        }
+                    ]
+                },
+                lambda _candidate: False,
+            )
+
+    def test_branch_protection_is_sanitized_and_validated(self) -> None:
+        record = BRANCH_PROTECTION.sanitize_and_validate(
+            {
+                "url": "https://api.github.test/private-detail",
+                "required_status_checks": {
+                    "strict": True,
+                    "contexts": ["certification"],
+                },
+                "enforce_admins": {"enabled": True},
+                "allow_force_pushes": {"enabled": False},
+                "allow_deletions": {"enabled": False},
+            },
+            "owner/repository",
+            "master",
+            "certification",
+        )
+        self.assertNotIn("url", record)
+        self.assertEqual(["certification"], record["requiredStatusChecks"]["contexts"])
+
+    def test_missing_required_check_is_rejected(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "does not require"):
+            BRANCH_PROTECTION.sanitize_and_validate(
+                {
+                    "required_status_checks": {"strict": True, "contexts": []},
+                    "enforce_admins": {"enabled": True},
+                    "allow_force_pushes": {"enabled": False},
+                    "allow_deletions": {"enabled": False},
+                },
+                "owner/repository",
+                "master",
+                "certification",
             )
 
 

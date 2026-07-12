@@ -10,6 +10,7 @@ from pathlib import Path
 import platform
 import re
 import subprocess
+from typing import Callable
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -25,6 +26,7 @@ REVIEW_SKILLS = [
     "cv-review-release-readiness",
 ]
 ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+SHA = re.compile(r"^[a-f0-9]{40}$")
 
 
 def now() -> str:
@@ -75,6 +77,59 @@ def changed_files(base_sha: str, head_sha: str) -> list[str]:
     return paths
 
 
+def validate_prerequisites(
+    issue: str,
+    registry: object,
+    prerequisite_is_merged: Callable[[str], bool],
+) -> list[dict[str, object]]:
+    if not isinstance(registry, dict):
+        raise SystemExit("Issue prerequisite registry must be an object")
+    prerequisites = registry.get(issue, [])
+    if not isinstance(prerequisites, list):
+        raise SystemExit(f"Prerequisites for {issue} must be a list")
+    validated: list[dict[str, object]] = []
+    for prerequisite in prerequisites:
+        if not isinstance(prerequisite, dict):
+            raise SystemExit(f"Prerequisites for {issue} must contain objects")
+        blocker = prerequisite.get("issue")
+        merge_sha = prerequisite.get("mergeSha")
+        if not isinstance(blocker, str) or not re.fullmatch(r"SUB-[0-9]+", blocker):
+            raise SystemExit(f"Prerequisite for {issue} has an invalid issue identifier")
+        if not isinstance(merge_sha, str) or not SHA.fullmatch(merge_sha):
+            raise SystemExit(f"Prerequisite {blocker} has an invalid merge SHA")
+        if prerequisite.get("postMergeVerified") is not True:
+            raise SystemExit(f"Prerequisite {blocker} lacks post-merge verification")
+        if not prerequisite_is_merged(merge_sha):
+            raise SystemExit(
+                f"Prerequisite {blocker} merge {merge_sha} is not an ancestor of the PR base"
+            )
+        validated.append(
+            {
+                "issue": blocker,
+                "mergeSha": merge_sha,
+                "postMergeVerified": True,
+            }
+        )
+    return validated
+
+
+def load_prerequisites(issue: str, base_sha: str) -> list[dict[str, object]]:
+    registry_path = ROOT / "docs/sdlc/issue-prerequisites.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+
+    def is_merged(merge_sha: str) -> bool:
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", merge_sha, base_sha],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        return result.returncode == 0
+
+    return validate_prerequisites(issue, registry, is_merged)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -121,7 +176,7 @@ def main() -> int:
         "pullRequestUrl": args.pr_url,
         "declaredScope": changed_files(args.base_sha, args.head_sha),
         "recordedAt": recorded,
-        "prerequisites": [],
+        "prerequisites": load_prerequisites(issue, args.base_sha),
         "riskAndGateLabels": ["gate:release-certification"],
         "environment": {
             "platform": platform.platform(),

@@ -122,6 +122,8 @@ def main() -> int:
     for relative in (
         "scripts/validate_delivery_evidence.py",
         "scripts/tests/test_delivery_evidence.py",
+        "scripts/ci/capture_branch_protection.py",
+        "docs/sdlc/issue-prerequisites.json",
     ):
         if not (ROOT / relative).is_file():
             failures.append(f"{relative}: missing executable delivery-policy evidence")
