@@ -75,6 +75,10 @@ class OperatorCommandTests(unittest.TestCase):
             "trace",
             "screenshots",
             "runtime logs",
+            "Owner role",
+            "Trigger",
+            "Detection",
+            "Corrective action",
         ):
             self.assertIn(evidence, runbook)
 

@@ -22,6 +22,22 @@ secrets, and must never be reused outside this isolated POC:
 | Session signing value | `local-synthetic-poc-only` |
 | Persona credentials | `packages/test-fixtures/scenario.json` |
 
+## Operating Responsibility
+
+| Field | POC decision |
+| --- | --- |
+| Owner role | POC developer or release operator executing the clean local certification. |
+| Trigger | Clean-checkout startup, deterministic reset, Journey 11 certification/recording, or investigation of a failed health/journey command. |
+| Detection | Nonzero command exit, failed API/worker/web health, failed browser result, or unhealthy Compose state. |
+| Immediate mitigation | Stop the isolated project when safety is uncertain; preserve generated evidence; correct prerequisites or code through an issue branch. |
+| Supported recovery | Restart through `make start`, restore synthetic fixture state through `make reset`, verify with `make health`, and rerun the failed certification command. |
+| Evidence | Command output, reset fingerprint, Compose state/logs, JSON result, video, trace, screenshots, HTML, and the PR evidence manifest. |
+| Corrective action | Link retained evidence to the controlling Linear issue; make code/runbook/test changes in a separate issue-scoped PR; never repair state with SQL or role switching. |
+
+This local POC has no production on-call, backup/restore, legal-hold, support
+impersonation, or external-integration runbook. Those production capabilities
+are explicitly out of scope rather than silently implied by these commands.
+
 ## Prerequisites
 
 - Docker Engine or Docker Desktop with Docker Compose v2 and support for

@@ -8,7 +8,9 @@ SUB-53 provides one fail-fast operator contract at `scripts/poc.sh`, with Make
 and npm aliases and a synthetic-only runbook. It covers prerequisites,
 start/stop, migrations, idempotent seed, safe deterministic reset, independent
 API/worker/web startup, health/status/logs, headless certification, and paced
-headed recording.
+headed recording. The runbook names the POC developer/release operator, command
+triggers, detection signals, mitigation, supported recovery, evidence, and
+Linear corrective-action handoff.
 
 No ADR is required. The script is an operations adapter over the existing
 Compose topology and supported `app.manage` commands. It owns no domain data,
