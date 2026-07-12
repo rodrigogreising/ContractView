@@ -19,6 +19,7 @@ def budget_snapshot(actor:Actor,invoice_id:str)->dict:
         if not invoice:raise FileNotFoundError(invoice_id)
         require_permission(actor,Action.READ,invoice_scope(actor,invoice_id))
         config=connection.configuration.execute(Statement.BUDGET_READ_CONFIGURATION_VERSIONS_002,(invoice[0],)).fetchone()
+        if not config:raise RuntimeError("Invoice configuration version is missing")
         amounts=dict(connection.invoices.execute(Statement.BUDGET_READ_INVOICE_LINES_003,(invoice_id,)).fetchall())
     calculated=calculate_budget(amounts,config[1]["categories"])
     def encode(row):return {**row,"requested":f"{row['requested']:.2f}","budgeted":f"{row['budgeted']:.2f}","remaining":f"{row['remaining']:.2f}"}

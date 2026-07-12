@@ -110,7 +110,8 @@ def validate_policy(policy: dict[str, object]) -> list[str]:
     failures: list[str] = []
     if policy.get("deploymentModel") != "modular-monolith":
         failures.append("deploymentModel must be modular-monolith")
-    processes = set(policy.get("processes", []))
+    raw_processes = policy.get("processes")
+    processes = set(raw_processes) if isinstance(raw_processes, list) else set()
     if processes != REQUIRED_PROCESSES:
         failures.append(
             f"processes mismatch; missing={sorted(REQUIRED_PROCESSES - processes)}, "
@@ -200,7 +201,8 @@ def validate_policy(policy: dict[str, object]) -> list[str]:
             if persistence.get(key) != value:
                 failures.append(f"persistence rule {key} must be {value!r}")
 
-    collaboration = set(policy.get("collaborationMechanisms", []))
+    raw_collaboration = policy.get("collaborationMechanisms")
+    collaboration = set(raw_collaboration) if isinstance(raw_collaboration, list) else set()
     if collaboration != REQUIRED_COLLABORATION:
         failures.append("capability collaboration mechanisms are incomplete")
 

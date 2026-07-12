@@ -17,6 +17,7 @@ def review_context(actor:Actor,queue_id:str)->dict:
         row=connection.read_models.execute(Statement.GOVERNMENT_REVIEW_READ_CONTRACTS_GOVERNMENT_QUEUE_ITEMS_INVOICE_VERSIONS_ORGANIZATIONS_002,(queue_id,actor.organization_id)).fetchone()
         if not row:raise FileNotFoundError(queue_id)
         run=connection.validation.execute(Statement.GOVERNMENT_REVIEW_READ_VALIDATION_RUNS_003,(row[1],)).fetchone()
+        if not run:raise RuntimeError("Submitted invoice is missing validation evidence")
         findings=connection.validation.execute(Statement.GOVERNMENT_REVIEW_READ_VALIDATION_FINDINGS_004,(run[0],)).fetchall()
         artifacts=connection.read_models.execute(Statement.GOVERNMENT_REVIEW_READ_ARTIFACTS_PACKAGE_ARTIFACTS_005,(row[2],)).fetchall()
         events=connection.provenance.execute(Statement.GOVERNMENT_REVIEW_READ_DOMAIN_EVENTS_006,(row[1],row[2],queue_id)).fetchall()

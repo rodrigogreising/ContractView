@@ -46,7 +46,6 @@ def revision_feedback(actor:Actor,contract_id:str)->dict|None:
     with database() as connection:
         row=connection.read_models.execute(Statement.REVISION_READ_GOVERNMENT_DECISIONS_INVOICE_VERSION_LINKS_INVOICE_VERSIONS_006,(contract_id,)).fetchone()
         if not row:return None
-        org=connection.invoices.execute(Statement.REVISION_READ_INVOICE_VERSIONS_007,(row[0],)).fetchone()[0]
     scope=invoice_scope(actor,row[0])
     def command():return {"invoiceVersionId":row[0],"predecessorInvoiceVersionId":row[1],"decisionId":row[2],"reasonCode":row[3],"note":row[4],"lineKeys":row[5]}
     return execute_authorized(actor,Action.READ,scope,command)

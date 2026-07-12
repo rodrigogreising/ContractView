@@ -276,3 +276,17 @@ The boundary distinguishes mutable workflow projections from durable evidence:
 Migration `022_provenance_snapshots.sql` brings the current policy to 45
 single-owner tables and 167 named persistence statements. The ownership and
 statement fitness checks reject undeclared cross-capability SQL.
+
+## SUB-67 Hermetic Boundary Enforcement
+
+`.github/workflows/contractview-ci.yml` is the executable architecture gate.
+It invokes repository-wide checks rather than duplicating their rules in CI.
+The layer, capability, statement, table-owner, ontology, and delivery-policy
+validators therefore fail the same way locally and on GitHub.
+
+The runtime remains one API deployment and one worker. CI adds no service
+boundary: `compose.ci.yaml` only removes host ports and gives each run a unique
+Compose project and fresh PostgreSQL/MinIO volumes. Two successful passes with
+the same semantic reset fingerprint prove that tests do not depend on retained
+database or object-store state. Logs and the evidence manifest are outputs of
+the certification adapter, not application audit records.

@@ -106,6 +106,7 @@ def validate_manifest(
                 failures.append(f"stale prerequisite proof for {issue}: merge is not in origin/master")
 
     checks = manifest["checks"]
+    typed_checks = checks if isinstance(checks, list) else []
     if not isinstance(checks, list) or not checks:
         failures.append("checks must contain machine-readable command results")
     elif any(
@@ -117,7 +118,8 @@ def validate_manifest(
     elif any(check.get("exitCode") != 0 for check in checks):
         failures.append("certification checks must pass; non-zero exitCode recorded")
 
-    labels = set(str(label) for label in manifest["riskAndGateLabels"])
+    raw_labels = manifest["riskAndGateLabels"]
+    labels = set(str(label) for label in raw_labels) if isinstance(raw_labels, list) else set()
     certification = manifest["certification"]
     required_review_skills: list[str] = []
     if not isinstance(certification, dict):
@@ -153,12 +155,12 @@ def validate_manifest(
         }
         if test_evidence.intersection(str(kind) for kind in evidence_kinds) and not any(
             isinstance(check, dict) and isinstance(check.get("testCount"), int)
-            for check in checks
+            for check in typed_checks
         ):
             failures.append("test evidence must record an exact testCount")
         if "artifact" in evidence_kinds and not any(
             isinstance(check, dict) and bool(check.get("artifactHashes"))
-            for check in checks
+            for check in typed_checks
         ):
             failures.append("artifact evidence must record artifact hashes")
         risk_coverage = certification.get("riskCoverage")

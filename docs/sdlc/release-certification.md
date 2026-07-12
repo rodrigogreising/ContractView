@@ -65,6 +65,21 @@ Evidence must be:
 - Specific enough to identify actors, timestamps, configuration versions, artifact versions, validation runs, and package hashes.
 - Stored in a location covered by retention policy.
 
+### Automated Candidate Certification
+
+Every candidate first passes the required `ContractView CI / certification`
+check. The check uses exact tool and container pins, runs static/architecture/
+boundary/test/build gates, executes the full runtime twice with separately
+created PostgreSQL and MinIO volumes, and retains a schema-valid manifest with
+base/head SHAs, commands, exit codes, versions, exact test counts, timestamps,
+and artifact hashes. Applicable `cv-review-*` skills then review that immutable
+diff and its executable evidence. Human code review is not a default gate.
+
+This automated candidate decision does not impersonate an NGO Approver,
+Government Reviewer, Configuration Administrator, or a human decision to
+promote a real release. Journey 11 and release-scope authority evidence remain
+required where those actions are explicitly in scope.
+
 ## Non-Negotiable Blockers
 
 The release is blocked if any in-scope journey depends on:

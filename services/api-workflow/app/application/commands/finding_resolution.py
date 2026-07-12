@@ -29,7 +29,9 @@ def has_open_blockers(invoice_id:str)->bool:
     with database() as connection:
         run=connection.validation.execute(Statement.FINDING_RESOLUTION_READ_VALIDATION_RUNS_002,(invoice_id,)).fetchone()
         if not run:return True
-        return connection.validation.execute(Statement.FINDING_RESOLUTION_READ_VALIDATION_FINDINGS_003,(run[0],)).fetchone()[0]
+        result=connection.validation.execute(Statement.FINDING_RESOLUTION_READ_VALIDATION_FINDINGS_003,(run[0],)).fetchone()
+        if not result:raise RuntimeError("Validation blocker count is missing")
+        return result[0]
 
 def resolve_finding(actor:Actor,finding_id:str,action:str,reason:str,correction_value:str|None=None)->dict:
     if action not in {"correct","explain","dismiss"} or not reason.strip():raise InvalidResolution("Resolution action and reason are required")

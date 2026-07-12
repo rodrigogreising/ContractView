@@ -1,7 +1,7 @@
 name: contractview
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:97ff59a4e30e08d1c11bdcd9455e7832368c0572b576c9092cde2df4ae5552a3
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-contractview}
       POSTGRES_USER: ${POSTGRES_USER:-contractview}
@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 20
   minio:
-    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-contractview}

@@ -1897,20 +1897,6 @@
     "sql": "select version,configuration_version_id,organization_id,total from invoice_versions where id=%s",
     "writeTables": []
   },
-  "REVISION_READ_INVOICE_VERSIONS_007": {
-    "consumerCapability": "invoices",
-    "kind": "repository",
-    "operation": "read",
-    "owner": "invoices",
-    "readTables": [
-      "invoice_versions"
-    ],
-    "sourceOwners": [
-      "invoices"
-    ],
-    "sql": "select organization_id from invoice_versions where id=%s",
-    "writeTables": []
-  },
   "REVISION_READ_INVOICE_VERSIONS_008": {
     "consumerCapability": "invoices",
     "kind": "repository",

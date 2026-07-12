@@ -3,6 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 import json
+from typing import cast
 import uuid
 
 from .artifacts import Artifact, read_and_verify_artifact
@@ -45,7 +46,7 @@ def parse_ledger(filename: str, content: bytes) -> tuple[str, list[tuple[int, di
     if filename.lower().endswith(".csv"):
         try: reader = csv.reader(StringIO(content.decode("utf-8-sig")))
         except UnicodeDecodeError as error: raise LedgerImportError("CSV must be UTF-8") from error
-        rows = list(reader)
+        rows = cast(list[list[object]], list(reader))
         sheet = "CSV"
         header_index = 0
     elif filename.lower().endswith(".xlsx"):

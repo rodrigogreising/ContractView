@@ -1,4 +1,5 @@
 import argparse
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -78,11 +79,31 @@ def reset() -> None:
     migrate()
     seed()
 
+
+def fingerprint() -> None:
+    """Print a stable fingerprint of the synthetic reset state."""
+    queries = {
+        "migrations": "select version from schema_migrations order by version",
+        "organizations": "select id,name,kind from organizations order by id",
+        "users": "select id,organization_id,email,role from users order by id",
+        "contracts": "select id,agency_organization_id,ngo_organization_id,contract_start,contract_end,service_period_start,service_period_end,currency from contracts order by id",
+        "assignments": "select contract_id,user_id,role,agency_organization_id from contract_role_assignments order by contract_id,user_id,role",
+        "budgets": "select id,contract_id,name,budget_limit::text from budget_categories order by id",
+        "configuration": "select contract_id,payload from configuration_drafts order by contract_id",
+    }
+    with database() as connection:
+        state = {
+            name: [list(row) for row in connection.execute(query).fetchall()]
+            for name, query in queries.items()
+        }
+    canonical = json.dumps(state, sort_keys=True, separators=(",", ":"), default=str)
+    print(sha256(canonical.encode()).hexdigest())
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="ContractView POC database management")
-    parser.add_argument("command", choices=("migrate", "seed", "reset"))
+    parser.add_argument("command", choices=("migrate", "seed", "reset", "fingerprint"))
     command = parser.parse_args().command
-    {"migrate": migrate, "seed": seed, "reset": reset}[command]()
+    {"migrate": migrate, "seed": seed, "reset": reset, "fingerprint": fingerprint}[command]()
 
 if __name__ == "__main__":
     main()
