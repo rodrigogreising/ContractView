@@ -5,12 +5,14 @@ import uuid
 
 import psycopg
 import pytest
+from fastapi.testclient import TestClient
 
 from app.artifacts import store_artifact
 from app.authentication import authenticate, revoke_session
 from app.authorization import Actor, ForbiddenError, Role
 from configuration_helpers import ensure_active_configuration
 from app.provenance import EVENT_TYPES, LineageInput, append_event, append_lineage, append_relation_tx, audit_query
+from app.http.api import app
 from app.application.transaction import transaction as application_database
 from app.runtime import database
 
@@ -199,3 +201,41 @@ def test_provenance_is_append_only_and_audit_query_is_authorized_read_only():
     assert audit_query(GOVERNMENT, CONTRACT, submitted=False)["events"]
     with pytest.raises(ForbiddenError):
         audit_query(OTHER_NGO, CONTRACT, submitted=True)
+
+
+def test_auditor_http_timeline_is_read_only_and_mutations_leave_no_trace():
+    _ensure_submitted_contract()
+    with database() as connection:
+        invoice_id = connection.execute(
+            "select id from invoice_versions where contract_id=%s and state='submitted' order by created_at desc limit 1",
+            (CONTRACT,),
+        ).fetchone()[0]
+    with TestClient(app) as client:
+        login = client.post("/auth/login", json={
+            "email": "auditor@example.test", "password": "Demo-Audit-2026!",
+        })
+        assert login.status_code == 200
+        protected_tables = (
+            "configuration_versions", "configuration_test_evidence", "configuration_approvals",
+            "configuration_lifecycle_events", "artifacts", "invoice_versions", "invoice_snapshots",
+            "validation_runs", "attestations", "packages", "package_artifacts", "submissions",
+            "government_queue_items", "government_decisions", "revision_corrections",
+            "provenance_relations", "field_lineage", "domain_events",
+        )
+        with database() as connection:
+            before = tuple(connection.execute(f"select count(*) from {table}").fetchone()[0] for table in protected_tables)
+        timeline = client.get(f"/audit/timeline?contractId={CONTRACT}")
+        assert timeline.status_code == 200
+        assert timeline.json()["contractId"] == CONTRACT
+        denied = (
+            client.post(f"/configuration/test?contractId={CONTRACT}", json={"rationale":"forbidden"}),
+            client.post(f"/invoices/draft?contractId={CONTRACT}"),
+            client.post(f"/invoices/{invoice_id}/validation"),
+            client.post(f"/invoices/{invoice_id}/attest", json={"text":"forbidden"}),
+            client.post(f"/invoices/{invoice_id}/package"),
+            client.post(f"/invoices/{invoice_id}/submit"),
+        )
+        assert all(response.status_code == 403 for response in denied)
+    with database() as connection:
+        after = tuple(connection.execute(f"select count(*) from {table}").fetchone()[0] for table in protected_tables)
+    assert after == before

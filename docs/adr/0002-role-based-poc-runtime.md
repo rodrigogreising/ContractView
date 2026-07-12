@@ -277,3 +277,17 @@ capability ownership.
 ## Deferred
 
 Multi-tenant production operations, identity administration, MFA/SSO, customer data, external procurement integration, payment, notifications, support access, retention automation, production SLOs, broad extraction, and hosted deployment.
+
+### SUB-50 Implementation Note: Typed Read-Only Audit Projection
+
+No new ADR is required. Provenance assembles a GET-only `AuditTimelineDto` from
+submitted material events, typed relations, field lineage, immutable invoice
+snapshots, and package reproduction/build manifests. `event-contracts` owns the
+additive DTOs and generates both API and web consumers.
+
+The projection resolves canonical actors and constructs an explicit claimed-
+amount traversal from source artifact/location through validation and invoice
+snapshot to each immutable package. Extraction corrections and second-version
+submissions use the closed `field_corrected` and `resubmitted` event values.
+This makes the executable ontology observable without adding a write path,
+database owner, deployable, or AI/human authority.

@@ -249,3 +249,18 @@ and human-authority commands; a distinct NGO Approver session is required.
 Provenance appends the correction/decision link. No service split, shared table
 ownership, cross-capability write, AI authority, or client-side authorization
 exception is introduced.
+
+## SUB-50 Audit Projection Boundary
+
+Provenance owns audit reconstruction and reads only declared capability ports.
+The new `/audit/timeline` route is GET-only and returns the generated
+`AuditTimelineDto`; the Audit web feature owns transport/rendering and contains
+no command callback. Canonical contract assignment and submitted state control
+visibility. The projection enriches retained evidence with canonical actor
+references and explicit claim-to-package trails but never writes or infers
+authority from a client identifier.
+
+Submission consults an Invoices-owned application query port to distinguish a
+linked successor and emit `resubmitted`. Extraction review emits
+`field_corrected` for a correction and `field_reviewed` for acceptance. These
+are ontology-alignment refinements, not new ownership or cross-owner writes.

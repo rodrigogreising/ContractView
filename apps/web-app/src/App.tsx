@@ -1,6 +1,7 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import type {
   ActiveConfigurationDto as ActiveConfiguration,
+  AuditTimelineDto,
   ContractContextDto,
   GovernedConfigurationVersionDto as GovernedConfigurationVersion,
   IdentityDto as User,
@@ -18,6 +19,7 @@ import { findings as loadFindings, latestValidation, resolveFinding as resolveFi
 import { approvalPreview as loadApprovalPreview, attestInvoice, generateInvoicePackage, submitInvoice as submitInvoiceRequest } from "./features/approval/api";
 import { decideGovernmentQueue, governmentQueue, inspectGovernmentQueue } from "./features/government/api";
 import { correctRevision, revisionFeedback as loadRevisionFeedback } from "./features/revision/api";
+import { auditTimeline as loadAuditTimeline } from "./features/audit/api";
 
 const errorText = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
@@ -45,6 +47,7 @@ export function App() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [reviewContext, setReviewContext] = useState<ReviewContext | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState<RevisionFeedback | null>(null);
+  const [auditTimeline, setAuditTimeline] = useState<AuditTimelineDto | null>(null);
 
   const establishContext = useCallback(async (resolvedUser: User) => {
     const contexts = (await authorizedContracts()).contracts;
@@ -92,6 +95,13 @@ export function App() {
   useEffect(() => { if (user?.role === "ngo_approver" && draft) refreshApproval(draft.id); }, [user, draft]);
   useEffect(() => { if (user?.role === "government_reviewer") governmentQueue().then(({ items }) => setQueue(items)).catch((e) => setMessage(errorText(e, "Queue load failed"))); }, [user]);
   useEffect(() => {
+    if (user?.role !== "auditor" || !contractId) return;
+    const requested = contractId;
+    loadAuditTimeline(requested).then((timeline) => {
+      if (currentContract.current === requested) setAuditTimeline(timeline);
+    }).catch((e) => setMessage(errorText(e, "Audit reconstruction failed")));
+  }, [user, contractId]);
+  useEffect(() => {
     if (user?.role !== "ngo_preparer" || !contractId) return;
     refreshJobs(); refreshExtractions(); refreshDraft();
     const requested = contractId;
@@ -109,7 +119,7 @@ export function App() {
     try { await logoutSession(); } finally {
       currentContract.current = null; setUser(null); setContractId(null); setContractContexts([]); setEmail(""); setPassword(""); setDraft(null);
       setValidation(null); setFindings([]); setApprovalPreview(null); setAttestation(null);
-      setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]);
+      setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]); setAuditTimeline(null);
       setMessage(demoMode ? "Signed out. Choose a persona to continue." : "Signed out.");
     }
   }
@@ -177,11 +187,11 @@ export function App() {
     setJobs([]); setExtractions([]); setConfiguration(null); setActiveConfiguration(null); setConfigurationLifecycle([]);
     setDraft(null); setValidation(null); setFindings([]);
     setApprovalPreview(null); setAttestation(null); setGeneratedPackage(null); setSubmission(null);
-    setReviewContext(null); setQueue([]); setRevisionFeedback(null); setMessage("");
+    setReviewContext(null); setQueue([]); setRevisionFeedback(null); setAuditTimeline(null); setMessage("");
   }
 
   if (user?.role === "government_reviewer") return <GovernmentWorkspace user={user} activeConfiguration={activeConfiguration} queue={queue} review={reviewContext} onInspect={inspectQueue} onDecision={decideQueue} message={message} onLogout={logout} />;
-  if (user) return <AuthenticatedWorkspace user={user} contractContexts={contractContexts} contractId={contractId || ""} onSelectContract={selectContract} jobs={jobs} extractions={extractions} draft={draft} configuration={configuration} activeConfiguration={activeConfiguration} configurationLifecycle={configurationLifecycle} validation={validation} findings={findings} revisionFeedback={revisionFeedback} approvalPreview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onLogout={logout} onUpload={upload} onReview={review} onAssemble={assemble} onValidate={validate} onResolveFinding={resolveFinding} onCorrectRevision={correctReturnedRevision} onAttest={submitAttestation} onGeneratePackage={generatePackage} onSubmitInvoice={submitInvoice} onSaveConfiguration={saveConfiguration} onTestConfiguration={testConfiguration} onApproveConfiguration={approveConfiguration} onActivateConfiguration={activateConfiguration} onSupersedeConfiguration={supersedeConfiguration} onRetireConfiguration={retireConfiguration} onRollbackConfiguration={rollbackConfiguration} />;
+  if (user) return <AuthenticatedWorkspace user={user} contractContexts={contractContexts} contractId={contractId || ""} onSelectContract={selectContract} jobs={jobs} extractions={extractions} draft={draft} configuration={configuration} activeConfiguration={activeConfiguration} configurationLifecycle={configurationLifecycle} validation={validation} findings={findings} revisionFeedback={revisionFeedback} auditTimeline={auditTimeline} approvalPreview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onLogout={logout} onUpload={upload} onReview={review} onAssemble={assemble} onValidate={validate} onResolveFinding={resolveFinding} onCorrectRevision={correctReturnedRevision} onAttest={submitAttestation} onGeneratePackage={generatePackage} onSubmitInvoice={submitInvoice} onSaveConfiguration={saveConfiguration} onTestConfiguration={testConfiguration} onApproveConfiguration={approveConfiguration} onActivateConfiguration={activateConfiguration} onSupersedeConfiguration={supersedeConfiguration} onRetireConfiguration={retireConfiguration} onRollbackConfiguration={rollbackConfiguration} />;
   return <main>
     <p className="eyebrow">Synthetic role-based POC</p><h1>Sign in</h1>
     <p className="summary">{demoMode ? "Select a seeded persona. The card fills credentials; the normal server login still runs." : "Use your assigned account. Contract context is resolved by the authenticated server session."}</p>

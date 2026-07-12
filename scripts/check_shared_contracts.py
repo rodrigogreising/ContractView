@@ -23,6 +23,8 @@ REQUIRED_CONTRACTS = {
     "ActiveConfigurationDto", "ValidationRunDto",
     "ExtractionComponentVersion", "ValidationInputManifest", "PackageFileDigest",
     "PackageBuildInput", "PackageReproductionManifest",
+    "AuditEventDto", "AuditLineageDto", "AuditRelationDto", "AuditSnapshotDto",
+    "AuditPackageDto", "ClaimedAmountTrailDto", "AuditTimelineDto",
 }
 
 

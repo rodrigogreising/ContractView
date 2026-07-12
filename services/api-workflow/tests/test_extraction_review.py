@@ -63,7 +63,7 @@ def test_preparer_corrects_amount_and_accepts_other_fields_with_complete_history
         ).fetchone()
     assert review[:8] == ("correct","1820.00","1280.00",PREPARER.user_id,"Approved claim total on source",extraction["sourceArtifactId"],"page=1",True)
     assert lineages == [("1820.00",None),("1280.00",review[8])]
-    assert event == ("field_reviewed","correct","1820.00","1280.00")
+    assert event == ("field_corrected","correct","1820.00","1280.00")
 
 
 def test_authority_and_single_review_guards_create_no_extra_history():

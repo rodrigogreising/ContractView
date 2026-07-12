@@ -56,7 +56,7 @@ def review_field(actor: Actor, field_id: str, decision: str, value: str | None =
             connection.extraction.execute(Statement.EXTRACTION_REVIEW_WRITE_EXTRACTION_FIELDS_004,
                 (reviewed,actor.user_id,"accepted" if decision == "accept" else "corrected",field_id),
             )
-            append_event_tx(connection,"field_reviewed","extraction_field",field_id,actor_id=actor.user_id,
+            append_event_tx(connection,"field_corrected" if decision == "correct" else "field_reviewed","extraction_field",field_id,actor_id=actor.user_id,
                             organization_id=row[8],contract_id=row[7],payload={"decision":decision,"fieldName":row[4],"proposedValue":row[0],"reviewedValue":reviewed,"reviewId":review_id})
             connection.commit()
         return {"id":field_id,"decision":decision,"proposedValue":row[0],"reviewedValue":reviewed,"reviewId":review_id}

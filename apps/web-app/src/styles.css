@@ -133,6 +133,38 @@ input {
   font-size: 2rem;
   margin-top: 0;
 }
+.audit-summary,
+.audit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.audit-summary > div,
+.audit-card {
+  padding: 16px;
+  border-radius: 10px;
+  background: #f3f5f0;
+}
+.audit-summary > div { display: flex; flex-direction: column; }
+.audit-summary b { font-size: 1.7rem; }
+.audit-section { margin-top: 32px; }
+.audit-path,
+.audit-timeline,
+.audit-records { padding-left: 22px; }
+.audit-path li { margin: 8px 0; }
+.audit-path small,
+.audit-records small { display: block; color: #657267; }
+.audit-timeline { display: grid; gap: 14px; }
+.audit-timeline li { padding-left: 8px; }
+.audit-timeline li > div { display: flex; justify-content: space-between; gap: 14px; }
+.audit-timeline p { margin: 4px 0; }
+.hashes { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; }
+.hashes dd { margin: 0; font-family: ui-monospace, monospace; }
+.hashes code,
+.audit-records code,
+.audit-timeline code { overflow-wrap: anywhere; }
+.audit-card code,
+.audit-timeline code { overflow-wrap: anywhere; }
 .jobs {
   list-style: none;
   padding: 0;

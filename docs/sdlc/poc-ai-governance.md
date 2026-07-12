@@ -148,3 +148,11 @@ a provisioned NGO Approver separately revalidates, attests, packages, and
 resubmits. The correction event references the immutable decision and preserves
 the original extraction/lineage chain. AI/system actors gain no correction,
 validation, attestation, submission, return, or approval authority.
+
+## SUB-50 Audit Projection Authority
+
+SUB-50 invokes no model, prompt, parser, or confidence decision. The timeline
+reads retained extraction provider/model/prompt/parser identifiers as evidence
+only. Deterministic validation owns findings; canonical humans own corrections,
+attestation, submission, return, and approval. The projection cannot create or
+reinterpret those decisions, and replay does not call live AI.

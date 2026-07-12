@@ -132,3 +132,19 @@ and proves exact equality after final v2 approval. V2 must link to v1 and have
 distinct validation/build/archive identities. This issue certifies the journey
 segment; SUB-55 still owns the paced Playwright video, trace, screenshots, and
 clean end-to-end release decision.
+
+## SUB-50 Read-Only Audit Reconstruction Certification
+
+The normal Auditor login selects only a server-authorized contract and loads a
+GET-only typed timeline. Certification requires the visible sequence from
+configuration activation and source processing through correction, validation,
+attestation, initial package/submission, return, revision, resubmission, second
+package, and approval. Every event shows canonical user, organization, role,
+time, aggregate/version references, and hash.
+
+For the returned expense, the UI renders a source artifact/location, validation
+run, immutable snapshot/version, and package path for both versions. V1 and v2
+package/archive identities differ while captured v1 evidence remains unchanged.
+The workspace has no mutation control; direct API mutation attempts are denied
+with no durable state change. SUB-55 still owns browser pacing, screenshots,
+trace, video, and the final clean-environment release decision.

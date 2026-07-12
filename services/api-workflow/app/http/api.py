@@ -30,6 +30,8 @@ from ..submission import SubmissionError,submit
 from ..government_review import list_queue,review_context
 from ..government_decision import DecisionError,decide
 from ..revision import RevisionError,correct_revision,revision_feedback
+from ..provenance import audit_timeline
+from ..shared_contracts import AuditTimelineDto
 from ..application.runtime_health import ensure_runtime_ready, runtime_readiness
 from ..access_scope import contract_contexts
 
@@ -118,6 +120,16 @@ def me(resolved=Depends(current_identity)):
 def authorized_contracts(resolved=Depends(current_identity)):
     actor, _ = resolved
     return {"contracts": contract_contexts(actor)}
+
+@app.get("/audit/timeline", response_model=AuditTimelineDto)
+def read_audit_timeline(contractId: str, resolved=Depends(current_identity)):
+    actor, _ = resolved
+    try:
+        return audit_timeline(actor, contractId)
+    except ForbiddenError as error:
+        raise HTTPException(status_code=403, detail="Permission denied") from error
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail="Contract not found") from error
 
 @app.post("/ingestion/uploads", status_code=202)
 async def upload_evidence(contractId: str = Form(...), file: UploadFile = File(...), resolved=Depends(current_identity)):
