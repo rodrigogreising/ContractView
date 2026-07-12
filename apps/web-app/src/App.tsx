@@ -1,11 +1,9 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-type User = {
-  id: string;
-  displayName: string;
-  email: string;
-  organizationName: string;
-  role: string;
-};
+import type {
+  ActiveConfigurationDto as ActiveConfiguration,
+  IdentityDto as User,
+  ValidationRunDto as ValidationRun,
+} from "./generated/contracts";
 type Job = {
   id: string;
   artifact_id: string;
@@ -82,22 +80,6 @@ type Configuration = {
     includeManifest: boolean;
   };
   [key: string]: unknown;
-};
-type ActiveConfiguration = { id: string; version: number; activatedAt: string };
-type ValidationRun = {
-  id: string;
-  engineVersion: string;
-  inputHash: string;
-  outputHash: string;
-  results: Array<{
-    ruleCode: string;
-    ruleVersion: string;
-    severity: string;
-    reasonCode: string;
-    outcome: string;
-    expenseKey: string | null;
-    message: string;
-  }>;
 };
 type Finding = {
   id: string;

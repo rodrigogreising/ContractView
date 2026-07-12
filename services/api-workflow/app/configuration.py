@@ -6,6 +6,7 @@ from .access_scope import configuration_scope
 from .authorization import Action, Actor, execute_authorized, require_permission
 from .runtime import database
 from .provenance import append_event_tx
+from .shared_contracts import ActiveConfigurationDto
 
 REQUIRED_RULES = {"SERVICE_PERIOD", "REQUIRED_EVIDENCE", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "POSSIBLE_DUPLICATE"}
 REQUIRED_WORKFLOW_LABELS = {"draft", "submitted", "returned", "approved"}
@@ -97,4 +98,4 @@ def active_summary(actor: Actor, contract_id: str) -> dict | None:
     require_permission(actor,Action.READ,configuration_scope(actor,contract_id,active_only=True))
     with database() as connection:
         row=connection.execute("select id,version,activated_at from configuration_versions where contract_id=%s order by version desc limit 1",(contract_id,)).fetchone()
-    return {"id":row[0],"version":row[1],"activatedAt":row[2].isoformat()} if row else None
+    return ActiveConfigurationDto(id=row[0],version=row[1],activated_at=row[2].isoformat()).model_dump(by_alias=True) if row else None

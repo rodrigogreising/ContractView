@@ -1,0 +1,76 @@
+{
+  "package": "domain-types",
+  "version": "1.0.0",
+  "compatibility": {
+    "policy": "semver-additive",
+    "minor": "May add optional fields; may not remove or reinterpret fields or closed vocabulary values.",
+    "major": "Required for removals, renamed fields, type/default/constraint changes, or closed vocabulary changes.",
+    "consumerFloor": "1.0.0"
+  },
+  "vocabularies": {
+    "actorRoles": {"python": "Role", "typescript": "ActorRole", "constant": "ACTOR_ROLES", "values": ["configuration_administrator", "ngo_preparer", "ngo_approver", "government_reviewer", "auditor"]},
+    "resourceKinds": {"python": "ResourceKind", "typescript": "ResourceKind", "constant": "RESOURCE_KINDS", "values": ["configuration", "invoice", "artifact", "job", "package", "government_decision", "audit"]},
+    "actions": {"python": "Action", "typescript": "Action", "constant": "ACTIONS", "values": ["read", "create", "update", "activate", "attest", "submit", "return", "approve"]},
+    "artifactKinds": {"python": "ArtifactKind", "typescript": "ArtifactKind", "constant": "ARTIFACT_KINDS", "values": ["original", "generated"]},
+    "fieldTypes": {"python": "FieldType", "typescript": "FieldType", "constant": "FIELD_TYPES", "values": ["string", "decimal", "integer", "boolean", "date", "datetime", "identifier", "reference"]},
+    "entityTypes": {"python": "EntityType", "typescript": "EntityType", "constant": "ENTITY_TYPES", "values": ["contract", "artifact", "expense", "invoice", "invoice_line", "validation_run", "package", "submission", "decision"]},
+    "relationTypes": {"python": "RelationType", "typescript": "RelationType", "constant": "RELATION_TYPES", "values": ["supports", "derived_from", "maps_to", "validated_by", "submitted_as", "returned_as", "amends", "approved_as"]},
+    "invoiceLifecycle": {"python": "InvoiceLifecycle", "typescript": "InvoiceLifecycle", "constant": "INVOICE_LIFECYCLES", "values": ["draft", "submitted", "returned", "approved"]},
+    "configurationLifecycle": {"python": "ConfigurationLifecycle", "typescript": "ConfigurationLifecycle", "constant": "CONFIGURATION_LIFECYCLES", "values": ["draft", "tested", "approved", "active", "superseded", "retired"]},
+    "reasonCodes": {"python": "ReasonCode", "typescript": "ReasonCode", "constant": "REASON_CODES", "parameterized": true, "values": ["SERVICE_PERIOD", "IN_SERVICE_PERIOD", "REQUIRED_EVIDENCE", "EVIDENCE_PRESENT", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "TOTAL_RECONCILED", "POSSIBLE_DUPLICATE", "NO_POSSIBLE_DUPLICATE", "EVIDENCE_CORRECTION", "AMOUNT_CORRECTION", "CLARIFICATION", "APPROVED_AS_CORRECTED"]},
+    "versionReferenceKinds": {"python": "VersionReferenceKind", "typescript": "VersionReferenceKind", "constant": "VERSION_REFERENCE_KINDS", "values": ["contract", "artifact", "schema", "mapping", "rule", "workflow", "view", "template", "configuration", "test_evidence", "invoice", "invoice_snapshot", "validation_run", "package", "package_manifest", "event", "entity", "submission", "decision"]}
+  },
+  "contracts": {
+    "VersionReference": {"model": "VersionReference", "fields": [
+      {"name": "kind", "type": "VersionReferenceKind", "required": true},
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer|string", "required": true},
+      {"name": "sha256", "type": "string", "required": false, "nullable": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "ActorReference": {"model": "ActorReference", "fields": [
+      {"name": "userId", "type": "string", "required": true},
+      {"name": "organizationId", "type": "string", "required": true},
+      {"name": "role", "type": "Role", "required": true}
+    ]},
+    "Artifact": {"model": "ArtifactContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "organizationId", "type": "string", "required": true},
+      {"name": "kind", "type": "ArtifactKind", "required": true},
+      {"name": "mediaType", "type": "string", "required": true},
+      {"name": "byteSize", "type": "integer", "required": true, "minimum": 0},
+      {"name": "sha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "submitted", "type": "boolean", "required": false, "default": false}
+    ]},
+    "TypedField": {"model": "TypedField", "fields": [
+      {"name": "name", "type": "string", "required": true},
+      {"name": "fieldType", "type": "FieldType", "required": true},
+      {"name": "value", "type": "any", "required": true},
+      {"name": "source", "type": "VersionReference", "required": true},
+      {"name": "confidence", "type": "number", "required": false, "nullable": true, "minimum": 0, "maximum": 1}
+    ]},
+    "Entity": {"model": "EntityContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "entityType", "type": "EntityType", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "fields", "type": "TypedField[]", "required": true}
+    ]},
+    "Relation": {"model": "RelationContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "relationType", "type": "RelationType", "required": true},
+      {"name": "source", "type": "VersionReference", "required": true},
+      {"name": "target", "type": "VersionReference", "required": true},
+      {"name": "actor", "type": "ActorReference", "required": false, "nullable": true},
+      {"name": "reasonCode", "type": "ReasonCode", "required": false, "nullable": true}
+    ]},
+    "IdentityDto": {"model": "IdentityDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "displayName", "type": "string", "required": true},
+      {"name": "email", "type": "string", "required": true},
+      {"name": "organizationId", "type": "string", "required": true},
+      {"name": "organizationName", "type": "string", "required": true},
+      {"name": "role", "type": "Role", "required": true}
+    ]}
+  }
+}

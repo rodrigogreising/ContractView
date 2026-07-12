@@ -1,0 +1,51 @@
+{
+  "package": "rule-contracts",
+  "version": "1.0.0",
+  "dependsOn": {"domain-types": "^1.0.0"},
+  "vocabularies": {
+    "severities": {"python": "RuleSeverity", "typescript": "RuleSeverity", "constant": "RULE_SEVERITIES", "values": ["blocker", "warning", "note"]},
+    "outcomes": {"python": "RuleOutcome", "typescript": "RuleOutcome", "constant": "RULE_OUTCOMES", "values": ["pass", "fail", "not_applicable"]},
+    "ruleCodes": {"python": "RuleCode", "typescript": "RuleCode", "constant": "RULE_CODES", "values": ["SERVICE_PERIOD", "REQUIRED_EVIDENCE", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "POSSIBLE_DUPLICATE"]}
+  },
+  "contracts": {
+    "RuleDefinition": {"model": "RuleDefinition", "fields": [
+      {"name": "code", "type": "RuleCode", "required": true},
+      {"name": "version", "type": "string", "required": true},
+      {"name": "severity", "type": "RuleSeverity", "required": true},
+      {"name": "enabled", "type": "boolean", "required": true},
+      {"name": "parameters", "type": "map<string,any>", "required": true}
+    ]},
+    "RuleResult": {"model": "RuleResult", "fields": [
+      {"name": "ruleCode", "type": "RuleCode", "required": true},
+      {"name": "ruleVersion", "type": "string", "required": true},
+      {"name": "severity", "type": "RuleSeverity", "required": true},
+      {"name": "reasonCode", "type": "ReasonCode", "required": true},
+      {"name": "outcome", "type": "RuleOutcome", "required": true},
+      {"name": "normalizedInput", "type": "map<string,any>", "required": true},
+      {"name": "message", "type": "string", "required": true},
+      {"name": "expenseKey", "type": "string", "required": false, "nullable": true},
+      {"name": "remediation", "type": "string", "required": false, "nullable": true}
+    ]},
+    "ValidationRun": {"model": "ValidationRunContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "invoiceVersion", "type": "VersionReference", "required": true},
+      {"name": "configurationVersion", "type": "VersionReference", "required": true},
+      {"name": "engineVersion", "type": "string", "required": true},
+      {"name": "inputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "outputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "results", "type": "RuleResult[]", "required": true}
+    ]},
+    "ValidationRunDto": {"model": "ValidationRunDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "invoiceVersionId", "type": "string", "required": true},
+      {"name": "configurationVersionId", "type": "string", "required": true},
+      {"name": "engineVersion", "type": "string", "required": true},
+      {"name": "normalizedInputs", "type": "map<string,any>", "required": true},
+      {"name": "inputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "outputHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "results", "type": "RuleResult[]", "required": true}
+    ]}
+  },
+  "determinism": "Identical normalized inputs and exact version references must produce identical ordered results and hashes."
+}

@@ -1,10 +1,10 @@
 # Packages
 
-This directory contains README-only placeholders for future shared packages. Shared packages define contracts and fixtures; they must not hide service behavior or create implicit runtime coupling.
+This directory contains executable shared contract registries, generated-contract inputs, fixtures, and the remaining infrastructure/persistence boundary packages. Shared packages define contracts and fixtures; they must not hide service behavior or create implicit runtime coupling.
 
 The [modular-monolith architecture](../docs/architecture/modular-monolith.md)
-requires shared packages to remain inward, framework-free contracts. REC-05
-replaces ontology placeholders with executable contracts; shared packages do
+requires shared packages to remain inward, framework-light contracts. SUB-61
+replaces ontology placeholders with versioned registries and generated Python/TypeScript consumers; shared packages do
 not become runtime capability owners.
 
 Reference docs:

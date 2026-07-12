@@ -1,35 +1,7 @@
 from dataclasses import dataclass
-from enum import StrEnum
 from typing import Callable, TypeVar
 
-
-class Role(StrEnum):
-    CONFIGURATION_ADMINISTRATOR = "configuration_administrator"
-    NGO_PREPARER = "ngo_preparer"
-    NGO_APPROVER = "ngo_approver"
-    GOVERNMENT_REVIEWER = "government_reviewer"
-    AUDITOR = "auditor"
-
-
-class ResourceKind(StrEnum):
-    CONFIGURATION = "configuration"
-    INVOICE = "invoice"
-    ARTIFACT = "artifact"
-    JOB = "job"
-    PACKAGE = "package"
-    GOVERNMENT_DECISION = "government_decision"
-    AUDIT = "audit"
-
-
-class Action(StrEnum):
-    READ = "read"
-    CREATE = "create"
-    UPDATE = "update"
-    ACTIVATE = "activate"
-    ATTEST = "attest"
-    SUBMIT = "submit"
-    RETURN = "return"
-    APPROVE = "approve"
+from .shared_contracts import Action, ResourceKind, Role
 
 
 @dataclass(frozen=True)

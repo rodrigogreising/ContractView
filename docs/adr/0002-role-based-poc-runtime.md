@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted; amended by SUB-59 on 2026-07-11
+Accepted; amended by SUB-59 and implemented for shared contracts by SUB-61 on 2026-07-11
 
 ## Date
 
@@ -64,6 +64,22 @@ records reference exact versions.
 This amendment adds no network services or distributed transactions. REC-05
 implements shared contracts; REC-07 implements repository boundaries,
 forbidden-import rules, table ownership, and CI fitness tests.
+
+## SUB-61 Implementation Note: Versioned Shared Contracts
+
+The four shared contract packages now contain semantic-versioned executable
+registries. A deterministic generator produces framework-light Pydantic
+contracts for the API/worker and TypeScript contracts for the web consumer.
+Authorization roles, resource kinds, actions, and material event names consume
+the generated vocabulary. Identity, active-configuration, and validation DTOs
+are generated for React use rather than re-declared in the application file.
+
+The compatibility rule is additive within a minor version: optional fields may
+be added, while removals, required-field changes, semantic reinterpretation,
+and closed-vocabulary changes require a major version and coordinated consumer
+migration. Generated-output, dependency-cycle, compatibility, runtime
+validation, and TypeScript consumer tests enforce the decision. This does not
+activate configuration or expand AI/human authority.
 
 ## Authentication And Authority
 

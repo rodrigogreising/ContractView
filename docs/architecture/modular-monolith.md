@@ -108,21 +108,26 @@ and ownership tests against this policy.
 ## Executable Ontology
 
 The ontology is executable shared contract code, not documentation-only nouns
-or arbitrary dictionaries. `packages/domain-types`, `rule-contracts`,
-`event-contracts`, and `configuration-contracts` will define validated,
-versioned contracts for:
+or arbitrary dictionaries. SUB-61 makes `packages/domain-types`,
+`rule-contracts`, `event-contracts`, and `configuration-contracts` the typed
+canonical definitions for:
 
-- `Artifact`, `Schema`, `Field`, `Entity`, `Relation`, `Rule`, `Workflow`,
-  `View`, `Template`, and `Event`;
-- `ValidationRun`, `ConfigurationBundle`, `InvoiceSnapshot`, and
-  `PackageManifest`;
+- `Artifact`, typed `Field`, `Entity`, `Relation`, `Rule`, `Workflow`, `View`,
+  `Template`, and the versioned `Event` envelope;
+- `ValidationRun`, `ConfigurationBundle`, and current API DTOs consumed by both
+  Python and TypeScript;
 - lifecycle states, actor roles, resource kinds, reason codes, event names,
   relation kinds, and immutable version references.
 
 Unknown event, relation, lifecycle, actor, resource, or reason-code vocabulary
 must fail validation at an owning application boundary. Compatibility tests
-must prove API/worker/web DTOs use the same contract versions. REC-05 provides
-the runtime implementation.
+must prove API/worker/web DTOs use the same contract versions. SUB-61 provides
+the registries, generator, Pydantic models, TypeScript types, and compatibility
+fitness checks. Schema/mapping definitions are added with REC-06;
+`InvoiceSnapshot`, typed relation/event payloads, and `PackageManifest` are
+added with REC-08/REC-09. REC-10 completes web DTO migration. Until those
+issues merge, their names below describe the approved target model, not
+already-executable SUB-61 contracts.
 
 ## Configuration And Runtime Split
 
@@ -177,8 +182,9 @@ code already conforms. The measurements below are fixed to SUB-59 base SHA
   validation, package, provenance, extraction, and HTTP-adjacent paths.
 - `main.py` contains 262 lines of route and composition behavior rather than a
   thin HTTP adapter over application handlers.
-- Shared domain, rule, event, and configuration packages remain README
-  placeholders rather than executable contracts.
+- Shared domain, rule, event, and configuration packages were README
+  placeholders at the SUB-59 measurement. SUB-61 replaces that specific gap
+  with executable registries and generated API/web consumers.
 - Several command modules join and mutate tables that this policy assigns to
   different capability owners.
 

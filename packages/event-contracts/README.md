@@ -2,14 +2,17 @@
 
 ## Purpose
 
-This package will define event names, payload requirements, lineage references, actor references, version references, and chain-of-custody conventions for material events.
+This package defines versioned material-event names, envelope requirements, actor references, version references, and chain-of-custody conventions in `contract.json`.
+
+Current contract version: `1.0.0`; generated runtime vocabulary replaces the former duplicated Python event set.
 
 ## Owned Responsibilities
 
 - Define material event naming conventions.
 - Define required actor, organization, contract, invoice, artifact, and timestamp references.
 - Define field lineage and artifact/version reference shapes.
-- Define correction, amendment, waiver, accepted-risk, attestation, return, approval, and payment-status event contracts.
+- Define material event names and the versioned actor/aggregate/reference
+  envelope; REC-08 owns typed per-event payloads.
 
 ## Explicit Non-Responsibilities
 
@@ -20,7 +23,7 @@ This package will define event names, payload requirements, lineage references, 
 
 ## Owned Data Or Contracts
 
-- Event payload contracts.
+- Versioned generic event envelope; typed payload contracts follow in REC-08.
 - Actor and source references.
 - Lineage reference contracts.
 - Version reference contracts.
@@ -44,7 +47,7 @@ This package will define event names, payload requirements, lineage references, 
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Current tests certify:
 
 - Material events include actor, role, organization, contract, invoice, timestamp, and reason where applicable.
 - Field lineage can link claimed amounts to source artifacts, source locations, validations, corrections, submitted packages, and decisions.
