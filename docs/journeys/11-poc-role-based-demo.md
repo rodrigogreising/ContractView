@@ -18,6 +18,8 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Docker Compose environment starts cleanly.
 - The required ContractView CI check has passed from two independent,
   fresh-volume Compose runs and retained its schema-valid evidence manifest.
+- SUB-66 has reconciled all historical Done claims, received the applicable
+  immutable-diff AI approvals, merged, and passed clean post-merge verification.
 - Synthetic users, organizations, contract, budget, ledger, and evidence fixtures are available.
 - OCR/LLM adapter credentials or an explicitly configured real compatible provider are available.
 - No active reimbursement configuration exists before the journey begins.

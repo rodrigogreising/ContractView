@@ -44,5 +44,17 @@
     {"issue": "SUB-62", "mergeSha": "be38a4a176dcca129bf053eebdc12dfc6d51be67", "postMergeVerified": true},
     {"issue": "SUB-63", "mergeSha": "a15d93637c0f998de5dc07374f6a6c975586f876", "postMergeVerified": true},
     {"issue": "SUB-68", "mergeSha": "7504ad34d7055d0977ddb5705ca1add43576a62c", "postMergeVerified": true}
+  ],
+  "SUB-66": [
+    {"issue": "SUB-58", "mergeSha": "08ae4ffef3f2ef386473149b596b6a5abbc147d8", "postMergeVerified": true},
+    {"issue": "SUB-59", "mergeSha": "5894d61e9eafe176ec17459739ff3f1c10eeaa8c", "postMergeVerified": true},
+    {"issue": "SUB-60", "mergeSha": "8e7ad3644f847985833f3a524988b97451d391fe", "postMergeVerified": true},
+    {"issue": "SUB-61", "mergeSha": "1cc5d9a78060a0c40bb67cb8770d0c7de2f53639", "postMergeVerified": true},
+    {"issue": "SUB-62", "mergeSha": "be38a4a176dcca129bf053eebdc12dfc6d51be67", "postMergeVerified": true},
+    {"issue": "SUB-63", "mergeSha": "a15d93637c0f998de5dc07374f6a6c975586f876", "postMergeVerified": true},
+    {"issue": "SUB-64", "mergeSha": "45964570a986f7f87b772ba73d46b17c233c915e", "postMergeVerified": true},
+    {"issue": "SUB-67", "mergeSha": "1a62ce922091a863863b2030a0f6773a87ecef1e", "postMergeVerified": true},
+    {"issue": "SUB-68", "mergeSha": "7504ad34d7055d0977ddb5705ca1add43576a62c", "postMergeVerified": true},
+    {"issue": "SUB-65", "mergeSha": "796f766fdaec7eedda4401b68537279f9bb9fa35", "postMergeVerified": true}
   ]
 }

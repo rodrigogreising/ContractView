@@ -1,6 +1,6 @@
 # POC Requirements Traceability
 
-Status: Design Review recovery; prior Build trace retained pending SUB-59 approval
+Status: Evidence Review; SUB-66 recovery recertification in progress
 
 Last updated: 2026-07-12
 
@@ -44,6 +44,7 @@ Last updated: 2026-07-12
 | SUB-68 | Content-addressed validation inputs and reproducible package bytes | 1-4 | 11 | Validation/packages/provenance | Immutable snapshot/config/version manifests, shared rule/template execution, deterministic result/file/archive replay, changed-input trace |
 | SUB-65 | Feature-owned web modules, server contract context, and demo credential boundary | 1-4 | 11 | Web/identity/all role projections | Generated ContractContext DTO, feature API/render modules, five role workspaces, API-error/visibility/accessibility tests, production-bundle scan |
 | SUB-79 | Brand-neutral, privacy-safe public repository candidate | 1-4 synthetic POC boundary | 11 reference; no new runtime journey | Publication boundary and fixture generation | Reserved-domain identities, deterministic binary fixtures, history-free allowlisted export, content/metadata/secret scans, clean candidate regression, immutable AI review |
+| SUB-66 | Reconcile all historical Done claims and recertify the merged recovery baseline | 1-4 | 11 clean-runtime precursor | Cross-cutting SDLC/release evidence | Exact 37-issue audit, ten merged prerequisite proofs, invalidated-claim register, owned exceptions, fail-closed continuation gate, clean static/Compose/hosted evidence |
 
 ## Recovery Architecture Trace
 
