@@ -6,6 +6,7 @@ from .access_scope import invoice_scope
 from ...authorization import Action,Actor,execute_authorized,require_permission
 from .finding_resolution import current_findings,has_open_blockers
 from .invoice_draft import get_draft
+from .invoice_snapshots import create_invoice_snapshot_tx
 from .provenance import append_event_tx
 
 from ..ports.statements import Statement
@@ -48,9 +49,14 @@ def attest(actor:Actor,invoice_id:str,text:str)->dict:
         if preview["hasOpenBlockers"]:raise AttestationError("Resolve all blockers before attestation")
         fingerprint=invoice_fingerprint(invoice_id,preview["validationRunId"]);attestation_id=f"attestation-{uuid.uuid4().hex}"
         with database() as connection:
-            connection.workflow.execute(Statement.ATTESTATION_WRITE_ATTESTATIONS_009,(attestation_id,invoice_id,preview["validationRunId"],preview["materialRevision"],fingerprint,actor.user_id,actor.role.value,ATTESTATION_VERSION,text))
+            snapshot=create_invoice_snapshot_tx(connection,actor,invoice_id,"attestation")
+            connection.workflow.execute(Statement.ATTESTATION_WRITE_ATTESTATIONS_009,(attestation_id,invoice_id,preview["validationRunId"],preview["materialRevision"],fingerprint,actor.user_id,actor.role.value,ATTESTATION_VERSION,text,snapshot["id"]))
             contract=connection.invoices.execute(Statement.ATTESTATION_READ_INVOICE_VERSIONS_010,(invoice_id,)).fetchone()[0]
-            append_event_tx(connection,"attested","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=contract,payload={"attestationId":attestation_id,"validationRunId":preview["validationRunId"],"materialRevision":preview["materialRevision"],"fingerprint":fingerprint,"attestationVersion":ATTESTATION_VERSION})
+            append_event_tx(connection,"attested","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=contract,payload={"attestationId":attestation_id,"validationRunId":preview["validationRunId"],"materialRevision":preview["materialRevision"],"fingerprint":fingerprint,"attestationVersion":ATTESTATION_VERSION,"invoiceSnapshotId":snapshot["id"]},version_references=[
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":preview["materialRevision"],"sha256":snapshot["sha256"]},
+                {"kind":"invoice","id":invoice_id,"version":snapshot["payload"]["invoiceVersion"]},
+                {"kind":"validation_run","id":preview["validationRunId"],"version":1},
+            ])
             connection.commit()
         return current_attestation(actor,invoice_id)
     return execute_authorized(actor,Action.ATTEST,invoice_scope(actor,invoice_id),command)

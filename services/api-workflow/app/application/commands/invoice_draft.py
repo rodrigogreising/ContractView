@@ -3,7 +3,7 @@ import uuid
 
 from .access_scope import contract_scope, invoice_scope
 from ...authorization import Action, Actor, ResourceKind, execute_authorized, require_permission
-from .provenance import LineageInput, append_lineage_tx
+from .provenance import LineageInput, append_lineage_tx, append_relation_tx
 
 
 from ..ports.statements import Statement
@@ -56,15 +56,29 @@ def assemble_draft(actor: Actor, contract_id: str) -> dict:
                 source_location=f"{row[9]}!{row[10]}"
                 connection.invoices.execute(Statement.INVOICE_DRAFT_WRITE_INVOICE_LINES_010,
                     (line_id,invoice_id,row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[8],source_location,
-                     evidence[0] if evidence else None,extraction_field,extraction_status,row[11]),
+                     evidence[0] if evidence else None,extraction_field,extraction_status,row[13]),
                 )
-                predecessor=connection.provenance.execute(Statement.INVOICE_DRAFT_READ_FIELD_LINEAGE_011,(f"{row[1]}.amount",row[8])
-                ).fetchone()
-                append_lineage_tx(connection,LineageInput(
-                    contract_id,actor.organization_id,f"{row[1]}.claimedAmount",str(row[6]),row[8],source_location,
-                    importer_version="ledger-importer-v1",mapping_version=row[11],invoice_version_id=invoice_id,
-                    predecessor_lineage_id=predecessor[0] if predecessor else None,
-                ))
+                invoice_ref={"kind":"invoice","id":invoice_id,"version":version}
+                append_relation_tx(connection,contract_id,actor.organization_id,"maps_to",
+                    {"kind":"entity","id":row[0],"version":row[13]},invoice_ref,actor=actor)
+                append_relation_tx(connection,contract_id,actor.organization_id,"supports",
+                    {"kind":"artifact","id":row[8],"version":1},invoice_ref,actor=actor)
+                if evidence:
+                    append_relation_tx(connection,contract_id,actor.organization_id,"supports",
+                        {"kind":"artifact","id":evidence[0],"version":1},invoice_ref,actor=actor)
+                mapped_fields = (
+                    ("claimedAmount", "amount", str(row[6]), row[10]),
+                    ("expenseDate", "expense_date", row[2].isoformat(), row[11]),
+                    ("description", "description", row[4], row[12]),
+                )
+                for invoice_field, source_field, value, cell in mapped_fields:
+                    predecessor=connection.provenance.execute(Statement.INVOICE_DRAFT_READ_FIELD_LINEAGE_011,(f"{row[1]}.{source_field}",row[8])
+                    ).fetchone()
+                    append_lineage_tx(connection,LineageInput(
+                        contract_id,actor.organization_id,f"{row[1]}.{invoice_field}",value,row[8],f"{row[9]}!{cell}",
+                        importer_version="ledger-importer-v1",mapping_version=row[13],invoice_version_id=invoice_id,
+                        predecessor_lineage_id=predecessor[0] if predecessor else None,
+                    ))
             connection.commit()
         return get_draft(actor,invoice_id)
     scope = contract_scope(actor, contract_id, f"draft:{contract_id}", ResourceKind.INVOICE)

@@ -146,6 +146,25 @@ AI/system actors receive no configuration authority. Existing invoice,
 validation, package, and submission records keep exact historical configuration
 foreign keys when the active projection changes.
 
+### SUB-64 Implementation Note: Versioned Provenance And Invoice Snapshots
+
+Material domain events use a versioned envelope that records the canonical
+actor, actor role and organization, resource organization, contract, aggregate,
+reason code when applicable, immutable version references, and a deterministic
+SHA-256 hash. PostgreSQL rejects incomplete material envelopes and preserves
+events, field lineage, typed relations, validation runs/results, and invoice
+snapshots as append-only evidence.
+
+Editable invoice state is not audit evidence. Validation, attestation, package,
+and submission commands capture capability-owned immutable invoice snapshots
+containing the exact invoice version, material revision, configuration,
+line-item values, source artifact hashes, mapping versions, and lifecycle
+state. Typed `supports`, `derived_from`, `maps_to`, `validated_by`,
+`submitted_as`, `returned_as`, `amends`, and `approved_as` relations connect
+those snapshots and authority decisions. A government return clones lineage
+into a successor invoice; corrections append same-field successors while the
+predecessor version and its snapshots remain unchanged.
+
 ## AI Boundary
 
 - One replaceable OCR/LLM adapter extracts draft fields from one supported synthetic receipt/vendor-invoice format.

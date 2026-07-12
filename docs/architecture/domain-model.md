@@ -29,6 +29,24 @@ free-form runtime dictionaries. Canonical inputs are the four
 | `InvoiceSnapshot` | Immutable invoice content and material-revision identity used by validation, attestation, package, submission, return, and approval evidence. | Distinct from an editable draft aggregate. |
 | `PackageManifest` | Deterministic package inputs, paths, hashes, template/configuration versions, and reproduction metadata. | Immutable; owned by package generation. |
 
+### Typed Relation Direction
+
+Relation direction is semantic and therefore part of the executable ontology:
+
+| Relation | Source -> target |
+| --- | --- |
+| `supports` | Source artifact/entity -> supported invoice |
+| `derived_from` | Derived package/artifact -> immutable source snapshot/artifact |
+| `maps_to` | Imported expense/entity -> canonical invoice |
+| `validated_by` | Invoice snapshot -> validation run |
+| `submitted_as` | Submission-stage invoice snapshot -> submission |
+| `returned_as` | Returned predecessor invoice -> editable successor invoice |
+| `amends` | Corrected successor invoice -> predecessor invoice |
+| `approved_as` | Reviewed submission -> government decision |
+
+Tests must verify source and target kinds/versions, not only the presence of a
+relation-type string.
+
 ## Executable Contract Rules
 
 - Core primitives, lifecycle states, actor roles, resource kinds, relation

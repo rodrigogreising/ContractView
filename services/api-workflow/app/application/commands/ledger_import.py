@@ -101,7 +101,7 @@ def import_ledger(job: IngestionJob, artifact: Artifact) -> dict:
                  row["budget_category"],row["amount"],row["invoice_number"],row["evidence_file"],artifact.id,sheet,row_number,json.dumps(cells),
                  IMPORTER_VERSION,SCHEMA_VERSION,MAPPING_VERSION),
             )
-            for field in ("expense_date","vendor","budget_category","amount","invoice_number","evidence_file"):
+            for field in ("expense_date","vendor","description","budget_category","amount","invoice_number","evidence_file"):
                 append_lineage_tx(connection, LineageInput(
                     job.contract_id, job.organization_id, f"{row['expense_id']}.{field}",
                     str(row[field]), artifact.id, f"{sheet}!{cells[field]}", IMPORTER_VERSION,

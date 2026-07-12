@@ -1,7 +1,7 @@
 import json,uuid
 from .access_scope import government_decision_scope
 from ...authorization import Action,Actor,execute_authorized
-from .provenance import append_event_tx
+from .provenance import append_event_tx, append_relation_tx
 from .revision import create_return_revision_tx
 
 from ..ports.statements import Statement
@@ -31,7 +31,15 @@ def decide(actor:Actor,queue_id:str,decision:str,reason_code:str,note:str,line_k
             connection.workflow.execute(Statement.GOVERNMENT_DECISION_WRITE_GOVERNMENT_DECISIONS_006,(decision_id,queue_id,row[3],row[4],row[5],decision,reason_code,note,json.dumps(line_keys),actor.user_id,actor.role.value))
             connection.workflow.execute(Statement.GOVERNMENT_DECISION_WRITE_GOVERNMENT_QUEUE_ITEMS_007,(decision,queue_id));connection.invoices.execute(Statement.GOVERNMENT_DECISION_WRITE_INVOICE_VERSIONS_008,(decision,row[4]))
             successor=None
-            if decision=="returned":successor=create_return_revision_tx(connection,row[4],decision_id,actor.user_id,row[2],row[7])
-            append_event_tx(connection,decision,"invoice_version",row[4],actor_id=actor.user_id,organization_id=row[1],contract_id=row[7],payload={"decisionId":decision_id,"queueItemId":queue_id,"submissionId":row[3],"packageId":row[5],"invoiceVersion":row[6],"reasonCode":reason_code,"note":note,"lineKeys":line_keys});connection.commit()
+            if decision=="returned":successor=create_return_revision_tx(connection,row[4],decision_id,actor.user_id,row[2],row[7],actor.organization_id)
+            if decision=="approved":append_relation_tx(connection,row[7],row[2],"approved_as",
+                {"kind":"submission","id":row[3],"version":row[6]},
+                {"kind":"decision","id":decision_id,"version":1},actor=actor,reason_code=reason_code)
+            append_event_tx(connection,decision,"invoice_version",row[4],actor_id=actor.user_id,organization_id=row[1],contract_id=row[7],payload={"decisionId":decision_id,"queueItemId":queue_id,"submissionId":row[3],"packageId":row[5],"invoiceVersion":row[6],"reasonCode":reason_code,"note":note,"lineKeys":line_keys},reason_code=reason_code,version_references=[
+                {"kind":"invoice","id":row[4],"version":row[6]},
+                {"kind":"submission","id":row[3],"version":row[6]},
+                {"kind":"package","id":row[5],"version":row[6]},
+                {"kind":"decision","id":decision_id,"version":1},
+            ]);connection.commit()
         return {"id":decision_id,"queueItemId":queue_id,"submissionId":row[3],"invoiceVersionId":row[4],"successorInvoiceVersionId":successor,"packageId":row[5],"invoiceVersion":row[6],"decision":decision,"reasonCode":reason_code,"note":note,"lineKeys":line_keys,"actorId":actor.user_id,"actorRole":actor.role.value}
     return execute_authorized(actor,action,scope,command)

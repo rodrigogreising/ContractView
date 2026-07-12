@@ -8,7 +8,8 @@ from .attestation import current_attestation
 from .access_scope import invoice_scope
 from ...authorization import Action, Actor, ResourceKind, execute_authorized
 from .invoice_draft import get_draft
-from .provenance import append_event_tx
+from .invoice_snapshots import create_invoice_snapshot_tx
+from .provenance import append_event_tx, append_relation_tx
 
 from ..package_rendering import render_invoice_pdf
 from ..ports.statements import Statement
@@ -44,9 +45,17 @@ def generate_package(actor:Actor,invoice_id:str)->dict:
             for path,content in sorted(files.items()):info=zipfile.ZipInfo(path,(1980,1,1,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,content)
         zip_art=store_artifact(actor,row[1],f"invoice-v{invoice['version']}-package.zip","application/zip",zip_out.getvalue(),artifact_kind="generated")
         with database() as connection:
-            connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGES_003,(package_id,invoice_id,att["id"],invoice["version"],zip_art.id,json.dumps(manifest),actor.user_id))
+            snapshot=create_invoice_snapshot_tx(connection,actor,invoice_id,"package")
+            connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGES_003,(package_id,invoice_id,att["id"],invoice["version"],zip_art.id,json.dumps(manifest),actor.user_id,snapshot["id"]))
+            append_relation_tx(connection,row[1],row[0],"derived_from",
+                {"kind":"package","id":package_id,"version":invoice["version"]},
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":snapshot["payload"]["materialRevision"],"sha256":snapshot["sha256"]},actor=actor)
             for path,artifact in stored.items():connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGE_ARTIFACTS_004,(package_id,artifact.id,path,artifact.sha256))
             connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGE_ARTIFACTS_004,(package_id,zip_art.id,"package.zip",zip_art.sha256))
-            append_event_tx(connection,"package_generated","package",package_id,actor_id=actor.user_id,organization_id=row[0],contract_id=row[1],payload={"invoiceVersionId":invoice_id,"zipArtifactId":zip_art.id,"zipSha256":zip_art.sha256});connection.commit()
+            append_event_tx(connection,"package_generated","package",package_id,actor_id=actor.user_id,organization_id=row[0],contract_id=row[1],payload={"invoiceVersionId":invoice_id,"zipArtifactId":zip_art.id,"zipSha256":zip_art.sha256,"invoiceSnapshotId":snapshot["id"]},version_references=[
+                {"kind":"package","id":package_id,"version":invoice["version"]},
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":snapshot["payload"]["materialRevision"],"sha256":snapshot["sha256"]},
+                {"kind":"artifact","id":zip_art.id,"version":1,"sha256":zip_art.sha256},
+            ]);connection.commit()
         return {"id":package_id,"invoiceVersionId":invoice_id,"manifest":manifest,"artifacts":{p:{"id":a.id,"sha256":a.sha256} for p,a in stored.items()},"zip":{"id":zip_art.id,"sha256":zip_art.sha256}}
     return execute_authorized(actor,Action.SUBMIT,scope,command)

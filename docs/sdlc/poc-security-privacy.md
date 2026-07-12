@@ -134,3 +134,27 @@ Required immutable-diff AI reviews are security/privacy, AI/config governance,
 architecture, boundary, traceability, journey, and implementation. Human code
 review is not required; human participation is retained only where the runtime
 business action itself is explicitly human authority.
+
+## SUB-64 Provenance And Immutable Snapshot Recovery
+
+Controlling issue: `SUB-64` / REC-08. Project stage: Build.
+
+- Material events derive actor role and actor organization from the canonical
+  user record; the separately recorded resource organization preserves tenant
+  scope. Incomplete envelopes are rejected at the database boundary.
+- Invoice snapshots bind the exact contract, NGO organization, invoice version,
+  material revision, configuration, line data, artifact hashes, and mapping
+  versions. Append-only triggers protect snapshots, relations, validation runs,
+  and validation results from update or deletion.
+- Auditor queries ignore the compatibility `submitted` argument and derive
+  visibility from canonical invoice state and assignment policy. Draft-only
+  snapshots, events, and relations remain unavailable to the Auditor.
+- Government relations retain the government reviewer as actor while the
+  related invoice remains owned by the NGO organization. This prevents actor
+  context from being confused with resource tenancy.
+- Denial and immutability tests prove zero mutation, v1 preservation, and
+  reconstruction of corrected v2. All fixtures remain synthetic and local.
+
+Residual POC risk: the evidence store is local PostgreSQL/MinIO without hosted
+backup, legal hold, retention automation, or external timestamping. Those
+controls are required before real data or production use.
