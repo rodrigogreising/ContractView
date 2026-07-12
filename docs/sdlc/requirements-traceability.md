@@ -38,7 +38,7 @@ Last updated: 2026-07-12
 | SUB-59 | Enforceable modular-monolith layers, ownership, ontology split, and persistence rules | 1-4 | 11 and 01-10 reference | Architecture | ADR 0002 amendment, `modular-monolith.md`, machine policy and tests |
 | SUB-61 | Executable ontology, closed vocabulary, compatibility rules, and generated API/web contracts | 1-4 | 01-11 reference | Shared contract packages | Four versioned registries, two generated consumers, compatibility/drift/consumer tests |
 | SUB-62 | Physical module layers, capability repositories, table ownership, and explicit transactions | 1-4 | 01-11 reference | API/worker modular monolith | 39 table owners, 149 named statements, forbidden-import/ownership/transaction tests, clean Compose regression |
-| SUB-63 | Complete configuration lifecycle, immutable test evidence, human approval, supersession, retirement, and rollback | 2-4 | 11 | Configuration/web | 43 table owners, 157 named statements, lifecycle/API/UI/authorization/immutability tests, clean Compose regression |
+| SUB-63 | Complete configuration lifecycle, immutable test evidence, human approval, supersession, retirement, and rollback | 2-4 | 11 | Configuration/web | Generated lifecycle DTOs, 43 table owners, 157 named statements, semantic/hash/lifecycle/API/UI/authorization/immutability tests, clean Compose regression |
 
 ## Recovery Architecture Trace
 

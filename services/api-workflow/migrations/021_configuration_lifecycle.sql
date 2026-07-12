@@ -65,6 +65,7 @@ create table configuration_lifecycle_events (
     rollback_target_version_id text references configuration_versions(id),
     event_hash text not null check (event_hash ~ '^[a-f0-9]{64}$'),
     occurred_at timestamptz not null default now(),
+    unique (configuration_version_id, state),
     foreign key (configuration_version_id, contract_id)
         references configuration_versions(id, contract_id),
     foreign key (contract_id, actor_id, actor_role)

@@ -40,7 +40,9 @@ The API preserves existing paths where practical and adds explicit test,
 approve, supersede, retire, rollback, and lifecycle-history endpoints. The
 React administrator workspace exposes only valid state-specific actions,
 requires a rationale, and renders retained evidence and relationship hashes.
-The former direct activation control is removed.
+The former direct activation control is removed. Lifecycle event, governed
+version, and response DTOs are generated from `configuration-contracts` for
+both Python runtime validation and TypeScript consumption.
 
 ## Persistence And Ownership
 
@@ -63,6 +65,12 @@ vocabularies generate matching Python and TypeScript consumers.
   rollback candidate.
 - Deterministic rollback payload and test-result hashes equal the retained
   target definition.
+- Semantic configuration checks reject invalid ISO dates, nonfinite/negative or
+  malformed decimals, duplicate categories/evidence types, nonboolean rule and
+  package flags, and invalid duplicate windows before draft mutation. The
+  retained result document recomputes to its stored SHA-256 digest.
+- The database rejects duplicate lifecycle states for a version, including
+  concurrent terminal-transition attempts.
 - Database-trigger evidence that definitions, test evidence, approvals, and
   lifecycle events cannot be deleted.
 - Invalid-order, parallel activation, stale/foreign authority, and AI/system
@@ -73,9 +81,11 @@ vocabularies generate matching Python and TypeScript consumers.
 - Frontend tests cover the bounded lifecycle/evidence surface and confirm the
   old direct activation label is absent.
 - Clean synthetic reset with the worker stopped for deterministic ownership of
-  queued jobs: 167 API tests pass. The worker is restarted for runtime health
+  queued jobs: 174 API tests pass. The worker is restarted for runtime health
   and background-processing checks.
-- Frontend: 12 tests pass and the production TypeScript/Vite build succeeds.
+- Frontend: 13 tests pass, including every state-specific governance control and
+  disabled-without-rationale behavior; the production TypeScript/Vite build
+  succeeds.
 
 The PR evidence manifest must add immutable base/head SHAs, exact commands,
 exit codes, runtime versions, artifact hashes, AI review decisions, merge SHA,
@@ -86,7 +96,7 @@ and clean post-merge verification before Linear can move to Done.
 - This POC test suite requires deterministic reset before a complete run and a
   stopped worker during tests that explicitly claim queued jobs. REC-11 owns
   hermetic CI orchestration and durable manifest retention.
-- Configuration test checks are deliberately bounded structural/deterministic
+- Configuration test checks are deliberately bounded semantic and deterministic
   POC checks, not production policy simulation or customer acceptance.
 - Runtime configuration approval is performed by one synthetic seeded persona;
   production separation-of-duties, multi-party approval, revocation, and hosted

@@ -1,5 +1,7 @@
 import json
+from hashlib import sha256
 from pathlib import Path
+import uuid
 
 import psycopg
 import pytest
@@ -35,6 +37,7 @@ def draft_payload():
 
 def governance_fingerprint() -> tuple:
     tables = (
+        "configuration_drafts",
         "configuration_versions",
         "configuration_test_evidence",
         "configuration_approvals",
@@ -137,6 +140,10 @@ def test_complete_lifecycle_preserves_evidence_history_and_prospective_activatio
             "select approved_by,approved_role,rationale,approval_hash from configuration_approvals where configuration_version_id=%s",
             (tested_one["id"],),
         ).fetchone()
+        test_evidence = connection.execute(
+            "select payload_hash,results,result_hash from configuration_test_evidence where configuration_version_id=%s",
+            (tested_one["id"],),
+        ).fetchone()
     assert stored == [
         (1, "First governed package"),
         (2, "Second governed package"),
@@ -148,6 +155,14 @@ def test_complete_lifecycle_preserves_evidence_history_and_prospective_activatio
         "Human approval for initial use",
     )
     assert len(approval[3]) == 64
+    expected_result_hash = sha256(
+        json.dumps(
+            {"payloadHash": test_evidence[0], "report": test_evidence[1]},
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()
+    assert test_evidence[2] == expected_result_hash
 
     for table in (
         "configuration_versions",
@@ -158,6 +173,27 @@ def test_complete_lifecycle_preserves_evidence_history_and_prospective_activatio
         with pytest.raises(psycopg.errors.RaiseException, match="immutable"):
             with database() as connection:
                 connection.execute(f"delete from {table}")
+
+    with pytest.raises(psycopg.errors.UniqueViolation):
+        with database() as connection:
+            connection.execute(
+                """insert into configuration_lifecycle_events
+                   (id,configuration_version_id,contract_id,state,action,
+                    actor_id,actor_role,actor_organization_id,rationale,
+                    test_evidence_id,approval_id,predecessor_version_id,
+                    successor_version_id,rollback_target_version_id,event_hash)
+                   select %s,configuration_version_id,contract_id,state,action,
+                          actor_id,actor_role,actor_organization_id,rationale,
+                          test_evidence_id,approval_id,predecessor_version_id,
+                          successor_version_id,rollback_target_version_id,%s
+                   from configuration_lifecycle_events
+                   where configuration_version_id=%s and state='retired'""",
+                (
+                    f"duplicate-lifecycle-{uuid.uuid4().hex}",
+                    "0" * 64,
+                    tested_one["id"],
+                ),
+            )
 
 
 def test_invalid_and_out_of_order_transitions_are_rejected():
@@ -194,6 +230,40 @@ def test_configuration_contract_rejects_missing_deterministic_rule():
     payload["rules"] = payload["rules"][:-1]
     with pytest.raises(InvalidConfiguration, match="five deterministic"):
         update_draft(ADMIN, CONTRACT, payload)
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("invalid_service_date", "ISO service period"),
+        ("invalid_category_limit", "must be a decimal"),
+        ("nonfinite_control_total", "finite nonnegative"),
+        ("nonboolean_rule", "five deterministic"),
+        ("fractional_day_window", "nonnegative integer"),
+        ("nonboolean_package_flag", "Package labels and settings"),
+        ("duplicate_evidence", "At least one evidence type"),
+    ],
+)
+def test_semantically_invalid_configuration_cannot_be_saved(case, expected):
+    payload = draft_payload()
+    if case == "invalid_service_date":
+        payload["servicePeriod"]["start"] = "06/01/2026"
+    elif case == "invalid_category_limit":
+        payload["categories"][0]["limit"] = "not-a-number"
+    elif case == "nonfinite_control_total":
+        payload["ledgerControlTotal"] = "NaN"
+    elif case == "nonboolean_rule":
+        payload["rules"][0]["enabled"] = "yes"
+    elif case == "fractional_day_window":
+        payload["rules"][-1]["dayWindow"] = 1.5
+    elif case == "nonboolean_package_flag":
+        payload["package"]["includeManifest"] = "yes"
+    else:
+        payload["requiredEvidence"].append(payload["requiredEvidence"][0])
+    before = governance_fingerprint()
+    with pytest.raises(InvalidConfiguration, match=expected):
+        update_draft(ADMIN, CONTRACT, payload)
+    assert governance_fingerprint() == before
 
 
 def test_invoice_and_validation_records_require_exact_historical_configuration_version():

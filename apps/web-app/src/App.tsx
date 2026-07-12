@@ -1,6 +1,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import type {
   ActiveConfigurationDto as ActiveConfiguration,
+  GovernedConfigurationVersionDto as GovernedConfigurationVersion,
   IdentityDto as User,
   ValidationRunDto as ValidationRun,
 } from "./generated/contracts";
@@ -80,27 +81,6 @@ type Configuration = {
     includeManifest: boolean;
   };
   [key: string]: unknown;
-};
-type ConfigurationLifecycleEvent = {
-  state: string;
-  action: string;
-  actorId: string;
-  actorRole: string;
-  rationale: string;
-  testEvidenceId: string | null;
-  approvalId: string | null;
-  predecessorVersionId: string | null;
-  successorVersionId: string | null;
-  rollbackTargetVersionId: string | null;
-  eventHash: string;
-  occurredAt: string;
-};
-type GovernedConfigurationVersion = {
-  id: string;
-  version: number;
-  state: string;
-  active: boolean;
-  history: ConfigurationLifecycleEvent[];
 };
 type Finding = {
   id: string;

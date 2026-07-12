@@ -1,4 +1,6 @@
 from copy import deepcopy
+from datetime import date
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import json
 import uuid
@@ -6,7 +8,7 @@ import uuid
 from .access_scope import configuration_scope
 from ...authorization import Action, Actor, execute_authorized, require_permission
 from .provenance import append_event_tx
-from ...shared_contracts import ActiveConfigurationDto
+from ...shared_contracts import ActiveConfigurationDto, ConfigurationLifecycleResponseDto
 
 from ..ports.statements import Statement
 from ..transaction import transaction as database
@@ -49,27 +51,91 @@ def _rationale(value: str) -> str:
     return normalized
 
 
+def _nonnegative_decimal(value: object, field: str) -> Decimal:
+    try:
+        number = Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        raise InvalidConfiguration(f"{field} must be a decimal") from None
+    if not number.is_finite() or number < 0:
+        raise InvalidConfiguration(f"{field} must be a finite nonnegative decimal")
+    return number
+
+
 def validate_configuration(payload: dict) -> None:
+    if not isinstance(payload, dict):
+        raise InvalidConfiguration("Configuration must be an object")
     period = payload.get("servicePeriod", {})
-    if not period.get("start") or not period.get("end") or period["start"] > period["end"]:
+    try:
+        start = date.fromisoformat(period["start"])
+        end = date.fromisoformat(period["end"])
+    except (KeyError, TypeError, ValueError):
+        raise InvalidConfiguration("A valid ISO service period is required") from None
+    if start > end:
         raise InvalidConfiguration("A valid service period is required")
     categories = payload.get("categories", [])
-    if not categories or any(not {"code", "label", "limit"} <= item.keys() for item in categories):
+    if not isinstance(categories, list) or not categories or any(
+        not isinstance(item, dict)
+        or not isinstance(item.get("code"), str)
+        or not item["code"].strip()
+        or not isinstance(item.get("label"), str)
+        or not item["label"].strip()
+        or "limit" not in item
+        for item in categories
+    ):
         raise InvalidConfiguration("Categories with labels and limits are required")
-    if not payload.get("requiredEvidence"):
+    category_codes = [item["code"] for item in categories]
+    if len(category_codes) != len(set(category_codes)):
+        raise InvalidConfiguration("Category codes must be unique")
+    for item in categories:
+        _nonnegative_decimal(item["limit"], f"Category {item['code']} limit")
+    required_evidence = payload.get("requiredEvidence")
+    if (
+        not isinstance(required_evidence, list)
+        or not required_evidence
+        or any(not isinstance(item, str) or not item.strip() for item in required_evidence)
+        or len(required_evidence) != len(set(required_evidence))
+    ):
         raise InvalidConfiguration("At least one evidence type is required")
-    rules = {rule.get("code"): rule for rule in payload.get("rules", [])}
-    if set(rules) != REQUIRED_RULES or any(
-        rule.get("severity") not in {"blocker", "warning"} for rule in rules.values()
+    if "ledgerControlTotal" not in payload:
+        raise InvalidConfiguration("A ledger control total is required")
+    _nonnegative_decimal(payload["ledgerControlTotal"], "Ledger control total")
+    rule_list = payload.get("rules", [])
+    if not isinstance(rule_list, list) or any(
+        not isinstance(rule, dict) or not isinstance(rule.get("code"), str)
+        for rule in rule_list
+    ):
+        raise InvalidConfiguration("The five deterministic POC rules must be configured")
+    rules = {rule.get("code"): rule for rule in rule_list}
+    if len(rule_list) != len(REQUIRED_RULES) or set(rules) != REQUIRED_RULES or any(
+        rule.get("severity") not in {"blocker", "warning"}
+        or not isinstance(rule.get("enabled"), bool)
+        for rule in rules.values()
     ):
         raise InvalidConfiguration("The five deterministic POC rules must be configured")
     duplicate = rules["POSSIBLE_DUPLICATE"]
     if "amountTolerance" not in duplicate or "dayWindow" not in duplicate:
         raise InvalidConfiguration("Duplicate warning parameters are required")
-    if not REQUIRED_WORKFLOW_LABELS <= payload.get("workflowLabels", {}).keys():
+    _nonnegative_decimal(duplicate["amountTolerance"], "Duplicate amount tolerance")
+    day_window = duplicate["dayWindow"]
+    if isinstance(day_window, bool) or not isinstance(day_window, int) or day_window < 0:
+        raise InvalidConfiguration("Duplicate day window must be a nonnegative integer")
+    workflow_labels = payload.get("workflowLabels", {})
+    if (
+        not isinstance(workflow_labels, dict)
+        or set(workflow_labels) != REQUIRED_WORKFLOW_LABELS
+        or any(not isinstance(label, str) or not label.strip() for label in workflow_labels.values())
+    ):
         raise InvalidConfiguration("All workflow labels are required")
     package = payload.get("package", {})
-    if not package.get("label") or not package.get("invoiceTitle"):
+    if (
+        not isinstance(package, dict)
+        or not isinstance(package.get("label"), str)
+        or not package["label"].strip()
+        or not isinstance(package.get("invoiceTitle"), str)
+        or not package["invoiceTitle"].strip()
+        or not isinstance(package.get("includeValidationSummary"), bool)
+        or not isinstance(package.get("includeManifest"), bool)
+    ):
         raise InvalidConfiguration("Package labels and settings are required")
 
 
@@ -203,7 +269,6 @@ def _create_tested_version(
     ).fetchone()[0]
     version_id = f"config-{contract_id}-v{next_version}-{uuid.uuid4().hex[:8]}"
     snapshot.update({"id": version_id, "version": next_version, "status": "tested"})
-    report.update({"configurationVersionId": version_id, "payloadHash": payload_hash})
     evidence_id = f"config-test-{uuid.uuid4().hex}"
     connection.configuration.execute(
         Statement.CONFIGURATION_WRITE_CONFIGURATION_VERSIONS_004,
@@ -621,7 +686,9 @@ def lifecycle_history(actor: Actor, contract_id: str) -> dict:
                 "occurredAt": row[15].isoformat(),
             }
         )
-    return {"versions": list(versions.values())}
+    return ConfigurationLifecycleResponseDto.model_validate(
+        {"versions": list(versions.values())}
+    ).model_dump(by_alias=True, mode="json")
 
 
 def active_summary(actor: Actor, contract_id: str) -> dict | None:

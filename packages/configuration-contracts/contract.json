@@ -47,6 +47,32 @@
       {"name": "predecessor", "type": "VersionReference", "required": false, "nullable": true},
       {"name": "rollbackTarget", "type": "VersionReference", "required": false, "nullable": true}
     ]},
+    "ConfigurationLifecycleEventDto": {"model": "ConfigurationLifecycleEventDto", "fields": [
+      {"name": "state", "type": "ConfigurationLifecycle", "required": true},
+      {"name": "action", "type": "Action", "required": true},
+      {"name": "actorId", "type": "string", "required": true},
+      {"name": "actorRole", "type": "Role", "required": true},
+      {"name": "actorOrganizationId", "type": "string", "required": true},
+      {"name": "rationale", "type": "string", "required": true},
+      {"name": "testEvidenceId", "type": "string", "required": true, "nullable": true},
+      {"name": "approvalId", "type": "string", "required": true, "nullable": true},
+      {"name": "predecessorVersionId", "type": "string", "required": true, "nullable": true},
+      {"name": "successorVersionId", "type": "string", "required": true, "nullable": true},
+      {"name": "rollbackTargetVersionId", "type": "string", "required": true, "nullable": true},
+      {"name": "eventHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "occurredAt", "type": "datetime", "required": true}
+    ]},
+    "GovernedConfigurationVersionDto": {"model": "GovernedConfigurationVersionDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "configuration", "type": "map<string,any>", "required": true},
+      {"name": "state", "type": "ConfigurationLifecycle", "required": true},
+      {"name": "active", "type": "boolean", "required": true},
+      {"name": "history", "type": "ConfigurationLifecycleEventDto[]", "required": true}
+    ]},
+    "ConfigurationLifecycleResponseDto": {"model": "ConfigurationLifecycleResponseDto", "fields": [
+      {"name": "versions", "type": "GovernedConfigurationVersionDto[]", "required": true}
+    ]},
     "ActiveConfigurationDto": {"model": "ActiveConfigurationDto", "fields": [
       {"name": "id", "type": "string", "required": true},
       {"name": "version", "type": "integer", "required": true},
