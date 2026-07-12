@@ -30,7 +30,12 @@ class CiCertificationTests(unittest.TestCase):
         self.assertEqual((3, 12, 13), TOOLCHAINS.numeric_version("Python 3.12.13"))
 
     def test_test_count_covers_pytest_and_vitest(self) -> None:
-        content = "46 passed in 0.19s\nTests 13 passed (13)\n176 passed in 4.0s"
+        content = (
+            "46 passed in 0.19s\n"
+            "Test Files  2 passed (2)\n"
+            "Tests  13 passed (13)\n"
+            "176 passed in 4.0s\n"
+        )
         self.assertEqual(235, MANIFEST.count_tests(content))
 
     def test_retained_artifacts_are_hashed_and_manifest_is_excluded(self) -> None:

@@ -35,7 +35,7 @@ Status: Build
 ## Executable Evidence Before PR
 
 - Static gate: Python 3.12.2 local-compatible runtime, pinned Node 20.20.2,
-  50 typed source files, 4 registries/21 contracts, 166 named persistence
+  99 typed application/script source files, 4 registries/21 contracts, 166 named persistence
   statements, 45 table owners, 6 layers/9 capabilities, 49 policy/unit tests,
   13 frontend tests, and production build all pass.
 - Two-pass Compose gate: 176 API tests pass independently in each pass; API,

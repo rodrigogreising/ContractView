@@ -35,7 +35,9 @@ def command_version(*command: str) -> str:
 
 
 def count_tests(content: str) -> int:
-    return sum(int(value) for value in re.findall(r"(?:Tests\s+)?(\d+) passed", content))
+    pytest_counts = re.findall(r"(?m)^\s*(\d+) passed(?: in [0-9.]+s)?\s*$", content)
+    vitest_counts = re.findall(r"(?m)^\s*Tests\s+(\d+) passed(?:\s+\(\d+\))?\s*$", content)
+    return sum(int(value) for value in [*pytest_counts, *vitest_counts])
 
 
 def file_hashes(directory: Path) -> dict[str, str]:
@@ -78,6 +80,7 @@ def main() -> int:
         path.read_text(encoding="utf-8")
         for path in sorted(args.output_dir.glob("api-pass-*.log"))
     )
+    reset_fingerprint = (args.output_dir / "reset-fingerprint.sha256").read_text().strip()
     recorded = now()
     hashes = file_hashes(args.output_dir)
     static_check = {
@@ -91,7 +94,7 @@ def main() -> int:
     hermetic_check = {
         "command": "bash scripts/ci/run_hermetic.sh artifacts/ci",
         "exitCode": 0,
-        "result": "Two isolated fresh-volume migration/reset/API/Compose runs passed with an identical reset fingerprint",
+        "result": f"Two isolated fresh-volume migration/reset/API/Compose runs passed with identical reset fingerprint {reset_fingerprint}",
         "recordedAt": recorded,
         "testCount": count_tests(hermetic_logs),
         "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log"},
