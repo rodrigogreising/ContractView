@@ -35,6 +35,8 @@ class CiCertificationTests(unittest.TestCase):
         self.assertIn("git rev-parse --is-shallow-repository", workflow)
         self.assertIn("refs/remotes/origin/${{ github.event.pull_request.base.ref }}", workflow)
         self.assertIn("git merge-base --is-ancestor", workflow)
+        self.assertIn("Paced headed Journey 11 browser certification", workflow)
+        self.assertIn("xvfb-run --auto-servernum", workflow)
 
     def test_numeric_version_ignores_tool_prefix(self) -> None:
         self.assertEqual((20, 20, 2), TOOLCHAINS.numeric_version("v20.20.2"))
