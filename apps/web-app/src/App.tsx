@@ -176,33 +176,33 @@ type ReviewContext = {
   }>;
   provenance: Array<{ eventType: string; actorId: string; occurredAt: string }>;
 };
-const CONTRACT_ID = "contract-metro-harbor-2026";
+const CONTRACT_ID = "contract-synthetic-agency-ngo-2026";
 const personas = [
   [
     "Configuration Administrator",
-    "Alex Morgan",
-    "config.admin@contractview.demo",
+    "Synthetic Configuration Administrator",
+    "configuration.admin@example.test",
     "Demo-Config-2026!",
   ],
   [
     "NGO Preparer",
-    "Maya Chen",
-    "ngo.preparer@contractview.demo",
+    "Synthetic NGO Preparer",
+    "ngo.preparer@example.test",
     "Demo-Prepare-2026!",
   ],
   [
     "NGO Approver",
-    "Jordan Ellis",
-    "ngo.approver@contractview.demo",
+    "Synthetic NGO Approver",
+    "ngo.approver@example.test",
     "Demo-Approve-2026!",
   ],
   [
     "Government Reviewer",
-    "Samira Patel",
-    "government.reviewer@contractview.demo",
+    "Synthetic Government Reviewer",
+    "government.reviewer@example.test",
     "Demo-Review-2026!",
   ],
-  ["Auditor", "Noah Williams", "auditor@contractview.demo", "Demo-Audit-2026!"],
+  ["Auditor", "Synthetic Auditor", "auditor@example.test", "Demo-Audit-2026!"],
 ] as const;
 const roleLabel = (role: string) =>
   role

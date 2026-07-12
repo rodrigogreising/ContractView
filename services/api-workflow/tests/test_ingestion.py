@@ -10,7 +10,7 @@ from app.runtime import database, object_store
 from app.settings import get_settings
 from configuration_helpers import ensure_active_configuration as ensure_active_configuration_for_contract
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 APPROVER = Actor("user-ngo-approver", "org-ngo", Role.NGO_APPROVER)
 OTHER_NGO = Actor("outside-user", "org-outside", Role.NGO_PREPARER)

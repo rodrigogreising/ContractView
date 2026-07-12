@@ -3,7 +3,11 @@ import hashlib
 import json
 import os
 from decimal import Decimal
+from email.utils import parseaddr
 from pathlib import Path
+import re
+import subprocess
+import zipfile
 
 fixture_root = os.environ.get("FIXTURE_ROOT")
 FIXTURES = Path(fixture_root) if fixture_root else Path(__file__).resolve().parents[3] / "packages" / "test-fixtures"
@@ -39,8 +43,73 @@ def test_fixture_hash_manifest_matches_bytes() -> None:
         actual = hashlib.sha256((FIXTURES / "files" / filename).read_bytes()).hexdigest()
         assert actual == expected_hash, filename
 
-def test_fixture_text_is_non_branded_and_contains_no_real_personal_data() -> None:
-    forbidden = ("shoken", "passport", "social security", "routing number", "date of birth")
-    text_sources = [FIXTURES / "scenario.json", FIXTURES / "expected.json", FIXTURES / "files" / "ledger-june-2026.csv"]
-    combined = "\n".join(path.read_text().lower() for path in text_sources)
-    assert not any(term in combined for term in forbidden)
+def test_fixture_identities_match_the_closed_synthetic_catalog() -> None:
+    scenario = json.loads((FIXTURES / "scenario.json").read_text())
+    assert {item["name"] for item in scenario["organizations"]} == {
+        "Synthetic Public Agency",
+        "Synthetic Community Nonprofit",
+        "Synthetic Oversight Unit",
+        "Synthetic Platform Operations",
+    }
+    assert {item["displayName"] for item in scenario["personas"]} == {
+        "Synthetic Configuration Administrator",
+        "Synthetic NGO Preparer",
+        "Synthetic NGO Approver",
+        "Synthetic Government Reviewer",
+        "Synthetic Auditor",
+    }
+    for persona in scenario["personas"]:
+        address = parseaddr(persona["email"])[1]
+        assert address == persona["email"]
+        assert address.endswith("@example.test")
+    allowed_vendors = {
+        "Synthetic Community Nonprofit",
+        "Synthetic Facilities Vendor A",
+        "Synthetic Program Supplies Vendor B",
+        "Synthetic Equipment Vendor C",
+    }
+    rows = scenario["fixtureData"]["ledgerRows"]
+    assert {row["vendor"] for row in rows} == allowed_vendors
+    assert all(row["vendor"].startswith("Synthetic ") for row in rows)
+    assert all(
+        row["employee_reference"].startswith("SYNTHETIC-EMPLOYEE-")
+        for row in scenario["fixtureData"]["payrollRows"]
+    )
+
+
+def test_binary_fixture_metadata_and_text_are_explicitly_synthetic() -> None:
+    expected_vendors = {
+        invoice["vendor"]
+        for invoice in json.loads((FIXTURES / "scenario.json").read_text())["fixtureData"]["vendorInvoices"]
+    }
+    pdf_text = []
+    for path in sorted((FIXTURES / "files").glob("*.pdf")):
+        result = subprocess.run(
+            ["pdftotext", str(path), "-"], check=True, capture_output=True, text=True
+        )
+        pdf_text.append(result.stdout)
+        assert "Test fixture only" in result.stdout
+        assert "no real organization" in result.stdout.lower()
+        metadata = subprocess.run(
+            ["pdfinfo", str(path)], check=True, capture_output=True, text=True
+        ).stdout
+        assert "Title:           Synthetic vendor invoice" in metadata
+        assert "Author:          Synthetic Fixture Generator" in metadata
+        assert "Creator:         Synthetic Fixture Generator" in metadata
+        assert "Producer:        Synthetic Fixture Generator" in metadata
+    combined_pdf_text = "\n".join(pdf_text)
+    assert expected_vendors <= {
+        line.strip()
+        for line in combined_pdf_text.splitlines()
+        if line.strip().startswith("Synthetic ")
+    }
+
+    for path in sorted((FIXTURES / "files").glob("*.xlsx")):
+        with zipfile.ZipFile(path) as archive:
+            metadata = "\n".join(
+                archive.read(name).decode("utf-8")
+                for name in archive.namelist()
+                if name.startswith("docProps/")
+            )
+        assert "Synthetic Fixture Generator" in metadata
+        assert re.search(r"<dc:creator>Synthetic Fixture Generator</dc:creator>", metadata)

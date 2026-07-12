@@ -7,7 +7,7 @@ from app.http.api import app
 from app.runtime import database
 
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 FIXTURE = Path("/app/fixtures/scenario.json")
 
 
@@ -32,7 +32,7 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         login = client.post(
             "/auth/login",
             json={
-                "email": "config.admin@contractview.demo",
+                "email": "configuration.admin@example.test",
                 "password": "Demo-Config-2026!",
             },
         )
