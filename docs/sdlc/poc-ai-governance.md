@@ -128,3 +128,13 @@ Decision: `Certified with exceptions` for development continuation after the
 SUB-66 immutable review/merge gate. The narrow single-document-class evaluation
 is explicitly owned as an exception and blocks expansion to new document
 classes or real data until broader evaluation and privacy evidence exist.
+
+## SUB-49 Government Decision Authority
+
+SUB-49 contains no model call, prompt, confidence threshold, or AI-derived
+decision input. A database-provisioned Government Reviewer alone may return or
+approve. Return/approval reasons come from closed deterministic vocabulary;
+affected lines are checked against the exact submitted invoice; state-machine
+preconditions are deterministic; and event/package/version evidence is
+append-only. Fabricated system/AI actors fail without mutation. This preserves
+the prohibited-authority decision with no new AI configuration surface.

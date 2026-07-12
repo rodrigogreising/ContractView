@@ -259,6 +259,23 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert list_queue(Actor("outside-reviewer","org-other",Role.GOVERNMENT_REVIEWER))==[]
     with pytest.raises(ForbiddenError):decide(PREPARER,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence",["EXP-004"])
     with database() as connection:
+        decision_state_before=connection.execute("""select
+            (select count(*) from government_decisions),
+            (select count(*) from invoice_version_links),
+            (select status from government_queue_items where id=%s),
+            (select state from invoice_versions where id=%s)""",(item["id"],invoice["id"])).fetchone()
+    with pytest.raises(DecisionError,match="at least one"):decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Missing affected line",[])
+    with pytest.raises(DecisionError,match="exact submitted invoice"):decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Foreign affected line",["EXP-999"])
+    with pytest.raises(DecisionError,match="unique"):decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Duplicate affected line",["EXP-004","EXP-004"])
+    with pytest.raises(DecisionError,match="return reason"):decide(government,item["id"],"returned","APPROVED_AS_CORRECTED","Wrong structured reason",["EXP-004"])
+    with database() as connection:
+        decision_state_after=connection.execute("""select
+            (select count(*) from government_decisions),
+            (select count(*) from invoice_version_links),
+            (select status from government_queue_items where id=%s),
+            (select state from invoice_versions where id=%s)""",(item["id"],invoice["id"])).fetchone()
+    assert decision_state_after==decision_state_before
+    with database() as connection:
         v1_snapshots_before=connection.execute("select id,material_revision,stage,payload,snapshot_hash from invoice_snapshots where invoice_version_id=%s order by material_revision,stage",(invoice["id"],)).fetchall()
     returned=decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"])
     published_decision=government_decision_scope(PREPARER,item["id"])
@@ -268,8 +285,11 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     with pytest.raises(DecisionError,match="provisioned human"):decide(Actor("system-ai","org-government",Role.GOVERNMENT_REVIEWER),item["id"],"returned","CLARIFICATION","system attempt",[])
     with database() as connection:
         decision_row=connection.execute("select decision,reason_code,note,line_keys,actor_id,actor_role,decided_at is not null from government_decisions where id=%s",(returned["id"],)).fetchone()
+        decision_event=connection.execute("select actor_id,actor_role,actor_organization_id,organization_id,reason_code,payload->>'packageId',version_references from domain_events where event_type='returned' and aggregate_id=%s order by id desc limit 1",(invoice["id"],)).fetchone()
         state=connection.execute("select q.status,i.state from government_queue_items q join submissions s on s.id=q.submission_id join invoice_versions i on i.id=s.invoice_version_id where q.id=%s",(item["id"],)).fetchone()
     assert decision_row==("returned","EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"],government.user_id,Role.GOVERNMENT_REVIEWER.value,True)
+    assert decision_event[:6]==(government.user_id,Role.GOVERNMENT_REVIEWER.value,"org-government","org-ngo","EVIDENCE_CORRECTION",submission["packageId"])
+    assert {reference["kind"] for reference in decision_event[6]}=={"invoice","submission","package","decision"}
     assert state==("returned","returned")
     successor=returned["successorInvoiceVersionId"];feedback=revision_feedback(PREPARER,CONTRACT)
     assert feedback["invoiceVersionId"]==successor and feedback["predecessorInvoiceVersionId"]==invoice["id"] and feedback["lineKeys"]==["EXP-004"]
@@ -289,6 +309,7 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
         link=connection.execute("select predecessor_invoice_version_id,successor_invoice_version_id,government_decision_id from invoice_version_links where successor_invoice_version_id=%s",(successor,)).fetchone()
         v1_feedback=connection.execute("select reason_code,note,line_keys from government_decisions where id=%s",(returned["id"],)).fetchone()
         final=connection.execute("select state from invoice_versions where id=%s",(successor,)).fetchone()[0]
+        approval_event=connection.execute("select actor_id,actor_role,actor_organization_id,organization_id,reason_code,payload->>'packageId',version_references from domain_events where event_type='approved' and aggregate_id=%s order by id desc limit 1",(successor,)).fetchone()
         v1_snapshots_after=connection.execute("select id,material_revision,stage,payload,snapshot_hash from invoice_snapshots where invoice_version_id=%s order by material_revision,stage",(invoice["id"],)).fetchall()
         v2_snapshot_stages={row[0] for row in connection.execute("select stage from invoice_snapshots where invoice_version_id=%s",(successor,)).fetchall()}
         description_chain=connection.execute("""select id,invoice_version_id,correction_actor_id,predecessor_lineage_id
@@ -297,6 +318,8 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert v1_hashes==submission["packageHashes"] and link==(invoice["id"],successor,returned["id"])
     assert len(reproduction_hashes)==2 and len({row[1] for row in reproduction_hashes})==2 and len({row[2] for row in reproduction_hashes})==2
     assert v1_feedback==("EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"]) and final=="approved"
+    assert approval_event[:6]==(government.user_id,Role.GOVERNMENT_REVIEWER.value,"org-government","org-ngo","APPROVED_AS_CORRECTED",v2_package["id"])
+    assert {reference["kind"] for reference in approval_event[6]}=={"invoice","submission","package","decision"}
     assert v1_snapshots_after==v1_snapshots_before
     assert v2_snapshot_stages=={"validation","attestation","package","submission"}
     assert len(description_chain)==3

@@ -272,3 +272,26 @@ Controlling issue: `SUB-66` / REC-12. Project stage: Evidence Review.
 SUB-66's security decision is `Certified with exceptions` for return to Build
 only after immutable AI review, merge, and clean post-merge verification.
 Journey 11 and any staging/production promotion remain separately blocked.
+
+## SUB-49 Government Human-Authority Evidence
+
+Controlling issue: `SUB-49`. Project stage: Build.
+
+- Authorization resolves the queue/invoice/package contract and agency from
+  canonical records. The caller cannot supply organization or ownership scope.
+- A Government Reviewer actor must match an active provisioned database user,
+  role, and organization. Fabricated system/AI identities and NGO roles fail
+  before the decision callback mutates state.
+- Return reasons and approval reasons are disjoint. Notes are normalized and
+  required. Return line keys must be nonblank, unique, and present on the exact
+  submitted invoice; approval cannot inject affected-line evidence.
+- Denial tests compare decision count, revision-link count, queue status, and
+  invoice state before and after empty, foreign, duplicate, and wrong-reason
+  attempts.
+- Material events preserve Government actor organization separately from NGO
+  resource organization and bind exact invoice, submission, package, and
+  decision versions.
+
+All values remain synthetic. This closes the POC human-authority and
+cross-reference risk for the return/approval command; it does not authorize
+real-data or production review.

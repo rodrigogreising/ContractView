@@ -220,3 +220,17 @@ SUB-26, SUB-50, SUB-53, and SUB-55 remain blocked, and the runtime must retain
 canonical server authorization, capability-owned statements, immutable
 snapshots, deterministic validation/package contracts, and human-only
 attestation/submission/return/approval.
+
+## SUB-49 Exact Government Decision Boundary
+
+The existing Workflow owner retains return/approval orchestration and decision
+tables. Exact affected-line validation consumes only expense keys through the
+Invoices-owned `GOVERNMENT_DECISION_READ_INVOICE_LINES_009` application query
+port. Workflow does not gain invoice persistence ownership, and the HTTP/UI
+layers do not become authority sources.
+
+All structured evidence is validated before the transaction writes a decision,
+updates queue/invoice state, creates a successor, or appends provenance. The
+event keeps the Government organization as actor organization and the NGO as
+resource organization. This is an implementation refinement inside ADR 0002;
+it adds no layer, service, table owner, or network boundary.
