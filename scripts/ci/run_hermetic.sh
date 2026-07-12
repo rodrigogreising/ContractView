@@ -9,10 +9,23 @@ mkdir -p "$output_dir"
 cleanup() {
   "${compose[@]}" down -v --remove-orphans >/dev/null 2>&1 || true
 }
-trap cleanup EXIT
+
+current_pass=0
+finish() {
+  status=$?
+  if [[ "$status" -ne 0 ]]; then
+    "${compose[@]}" ps --format json > "$output_dir/failure-compose-pass-$current_pass.jsonl" 2>&1 || true
+    "${compose[@]}" logs --no-color > "$output_dir/failure-services-pass-$current_pass.log" 2>&1 || true
+  fi
+  cleanup
+  trap - EXIT
+  exit "$status"
+}
+trap finish EXIT
 
 fingerprints=()
 for pass in 1 2; do
+  current_pass="$pass"
   cleanup
   "${compose[@]}" up -d --build postgres minio api web
   "${compose[@]}" exec -T api python -m app.manage reset
@@ -20,7 +33,7 @@ for pass in 1 2; do
   "${compose[@]}" exec -T api pytest -q | tee "$output_dir/api-pass-$pass.log"
   "${compose[@]}" exec -T api python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"
   "${compose[@]}" exec -T web wget --quiet --tries=1 --spider http://127.0.0.1/
-  "${compose[@]}" up -d --build worker
+  "${compose[@]}" up -d --build --wait --wait-timeout 60 worker
   "${compose[@]}" exec -T worker python -m app.worker_health
   "${compose[@]}" ps --format json > "$output_dir/compose-pass-$pass.jsonl"
 done
