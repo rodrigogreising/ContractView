@@ -201,10 +201,10 @@ def build(output: Path, source_sha: str) -> dict:
         shutil.rmtree(output)
     output.mkdir(parents=True)
     included_paths: list[str] = []
-    excluded_paths: list[str] = []
+    excluded_count = 0
     for relative in tracked_files():
         if not included(relative):
-            excluded_paths.append(neutralize(relative))
+            excluded_count += 1
             continue
         source = ROOT / relative
         destination_relative = public_path(relative)
@@ -257,7 +257,14 @@ def build(output: Path, source_sha: str) -> dict:
         "gitHistoryIncluded": False,
         "privateControlPlaneIncluded": False,
         "includedPaths": sorted(included_paths),
-        "excludedSourcePaths": sorted(excluded_paths),
+        "exclusionRules": [
+            "Only root files named by the publication allowlist",
+            "apps/**, packages/**, and services/**",
+            "docs/adr/**, docs/architecture/**, and docs/journeys/** except private boundary review evidence",
+            "Only explicitly named architecture, contract-generation, and fixture-generation scripts",
+            "No Git metadata, agent skills, SDLC control-plane evidence, local artifacts, caches, or publication tooling",
+        ],
+        "excludedSourceFileCount": excluded_count,
         "fileHashes": hashes,
         "structuralChecks": [
             {"name": "legacy-and-private-fragments", "exitCode": 0},

@@ -76,6 +76,8 @@ class PublicationCandidateTests(unittest.TestCase):
                 (output / "PUBLICATION-MANIFEST.json").read_text(encoding="utf-8")
             )
             self.assertEqual(MODULE.PUBLIC_SLUG, persisted["repositorySlug"])
+            self.assertNotIn("excludedSourcePaths", persisted)
+            self.assertGreater(persisted["excludedSourceFileCount"], 0)
 
     def test_certifier_rejects_a_changed_candidate(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

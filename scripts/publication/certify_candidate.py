@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 
 
@@ -78,13 +79,20 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--project", default="publication-certification")
+    parser.add_argument("--evidence", type=Path)
     args = parser.parse_args()
     candidate = args.candidate.resolve()
     manifest_path = candidate / "PUBLICATION-MANIFEST.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     verify_source_hashes(candidate, manifest)
-    evidence = candidate / "certification"
-    evidence.mkdir(exist_ok=True)
+    evidence = (
+        args.evidence.resolve()
+        if args.evidence
+        else candidate.parent / f"{candidate.name}-certification"
+    )
+    if evidence.exists():
+        shutil.rmtree(evidence)
+    evidence.mkdir(parents=True)
     compose = [
         "docker",
         "compose",
@@ -109,7 +117,7 @@ def main() -> int:
                 "command": command,
                 "exitCode": 0,
                 "result": "Fresh isolated services built and became healthy",
-                "artifactHashes": {str(build_log.relative_to(candidate)): digest(build_log)},
+                "artifactHashes": {build_log.name: digest(build_log)},
             }
         )
         reset_command, reset_output = run(
@@ -123,7 +131,7 @@ def main() -> int:
                 "command": reset_command,
                 "exitCode": 0,
                 "result": "Numbered migrations and deterministic synthetic reset passed",
-                "artifactHashes": {str(reset_log.relative_to(candidate)): digest(reset_log)},
+                "artifactHashes": {reset_log.name: digest(reset_log)},
             }
         )
         api_command, api_output = run(
@@ -137,7 +145,7 @@ def main() -> int:
                 "exitCode": 0,
                 "result": "Complete API and fixture regression passed",
                 "testCount": count_pytest(api_output),
-                "artifactHashes": {str(api_log.relative_to(candidate)): digest(api_log)},
+                "artifactHashes": {api_log.name: digest(api_log)},
             }
         )
         web_command, web_output = run([*compose, "run", "--rm", "web-test"], candidate)
@@ -149,7 +157,7 @@ def main() -> int:
                 "exitCode": 0,
                 "result": "Clean npm install, production build, and frontend tests passed",
                 "testCount": count_vitest(web_output),
-                "artifactHashes": {str(web_log.relative_to(candidate)): digest(web_log)},
+                "artifactHashes": {web_log.name: digest(web_log)},
             }
         )
         _, service_output = run([*compose, "ps", "--format", "json"], candidate)
@@ -161,7 +169,7 @@ def main() -> int:
                 "exitCode": 0,
                 "result": "PostgreSQL, MinIO, API, and web service state retained",
                 "artifactHashes": {
-                    str(service_log.relative_to(candidate)): digest(service_log)
+                    service_log.name: digest(service_log)
                 },
             }
         )
@@ -188,6 +196,8 @@ def main() -> int:
             ).stdout.strip(),
         },
         "checks": checks,
+        "evidenceIncludedInCandidate": False,
+        "evidenceRetention": "Private sibling evidence bundle; hashes retained here",
         "visibilityChanged": False,
         "ownerPublicationDecision": "pending",
     }
