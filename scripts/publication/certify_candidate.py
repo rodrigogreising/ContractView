@@ -172,6 +172,7 @@ def main() -> int:
         policy_command, policy_output = run(
             [
                 sys.executable,
+                "-B",
                 "-m",
                 "unittest",
                 "scripts.tests.test_module_boundaries",
@@ -211,6 +212,7 @@ def main() -> int:
             text=True,
         )
 
+    verify_source_hashes(candidate, manifest)
     manifest["certificationStatus"] = "passed"
     manifest["certification"] = {
         "environment": {
