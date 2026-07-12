@@ -25,7 +25,7 @@ from app.package_generation import PackageError,generate_package,reproduce_packa
 from app.submission import submit
 from app.government_review import list_queue,review_context
 from app.government_decision import DecisionError,decide
-from app.revision import correct_revision,revision_feedback
+from app.revision import RevisionError,correct_revision,revision_feedback
 from app.provenance import audit_query
 from app.artifacts import download_artifact
 from io import BytesIO
@@ -294,9 +294,33 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     successor=returned["successorInvoiceVersionId"];feedback=revision_feedback(PREPARER,CONTRACT)
     assert feedback["invoiceVersionId"]==successor and feedback["predecessorInvoiceVersionId"]==invoice["id"] and feedback["lineKeys"]==["EXP-004"]
     v2=get_draft(PREPARER,successor);assert v2["version"]==invoice["version"]+1 and v2["state"]=="draft" and v2["total"]==invoice["total"]
+    with database() as connection:
+        v1_package_before=connection.execute("select path,artifact_id,sha256 from package_artifacts where package_id=%s order by path",(submission["packageId"],)).fetchall()
+        v1_findings_before=connection.execute("select id,validation_result_id,validation_run_id,expense_key,code,severity,message,status from validation_findings where invoice_version_id=%s order by id",(invoice["id"],)).fetchall()
+        v1_feedback_before=connection.execute("select id,decision,reason_code,note,line_keys,actor_id,actor_role,decided_at from government_decisions where id=%s",(returned["id"],)).fetchone()
+        v1_events_before=connection.execute("select id,event_key,event_type,schema_version,actor_id,actor_role,actor_organization_id,organization_id,contract_id,aggregate_type,aggregate_id,payload,reason_code,version_references,event_hash,occurred_at from domain_events where aggregate_id=%s order by id",(invoice["id"],)).fetchall()
+        rejected_correction_state_before=connection.execute("""select
+            (select material_revision from invoice_versions where id=%s),
+            (select description from invoice_lines where invoice_version_id=%s and expense_key='EXP-003'),
+            (select count(*) from revision_corrections where invoice_version_id=%s),
+            (select count(*) from field_lineage where invoice_version_id=%s),
+            (select count(*) from domain_events where aggregate_id=%s)""",(successor,successor,successor,successor,successor)).fetchone()
+    v1_bytes_before={path:download_artifact(AUDITOR,artifact_id) for path,artifact_id,_ in v1_package_before}
     with pytest.raises(ForbiddenError):correct_revision(APPROVER,successor,"EXP-004","Corrected evidence description","Government feedback")
-    correction=correct_revision(PREPARER,successor,"EXP-004","Equipment rental supported by corrected June service evidence","Government feedback decision")
+    with pytest.raises(RevisionError,match="exact returned line"):
+        correct_revision(PREPARER,successor,"EXP-003","Unrelated line must remain unchanged","Government feedback decision")
+    with database() as connection:
+        rejected_correction_state_after=connection.execute("""select
+            (select material_revision from invoice_versions where id=%s),
+            (select description from invoice_lines where invoice_version_id=%s and expense_key='EXP-003'),
+            (select count(*) from revision_corrections where invoice_version_id=%s),
+            (select count(*) from field_lineage where invoice_version_id=%s),
+            (select count(*) from domain_events where aggregate_id=%s)""",(successor,successor,successor,successor,successor)).fetchone()
+    assert rejected_correction_state_after==rejected_correction_state_before
+    correction=correct_revision(PREPARER,successor," EXP-004 "," Equipment rental supported by corrected June service evidence "," Government feedback decision ")
     assert correction["priorValue"]!=correction["correctedValue"]
+    assert correction["expenseKey"]=="EXP-004" and correction["governmentDecisionId"]==returned["id"]
+    assert correction["correctedValue"]=="Equipment rental supported by corrected June service evidence"
     execute_validation(PREPARER,successor);v2_attestation=attest(APPROVER,successor,ATTESTATION_TEXT);assert v2_attestation["current"]
     v2_package=generate_package(APPROVER,successor);assert v2_package["zip"]["sha256"]!=submission["packageHashes"]["package.zip"]
     v2_submission=submit(APPROVER,successor);assert v2_submission["invoiceVersion"]==v2["version"]
@@ -305,9 +329,13 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert approved["decision"]=="approved" and approved["invoiceVersion"]==v2["version"] and approved["packageId"]==v2_package["id"]
     with database() as connection:
         v1_hashes=dict(connection.execute("select path,sha256 from package_artifacts where package_id=%s",(submission["packageId"],)).fetchall())
+        v1_package_after=connection.execute("select path,artifact_id,sha256 from package_artifacts where package_id=%s order by path",(submission["packageId"],)).fetchall()
+        v1_findings_after=connection.execute("select id,validation_result_id,validation_run_id,expense_key,code,severity,message,status from validation_findings where invoice_version_id=%s order by id",(invoice["id"],)).fetchall()
         reproduction_hashes=connection.execute("select package_id,build_input_hash,archive_sha256 from package_reproduction_manifests where package_id in (%s,%s) order by package_id",(submission["packageId"],v2_package["id"])).fetchall()
         link=connection.execute("select predecessor_invoice_version_id,successor_invoice_version_id,government_decision_id from invoice_version_links where successor_invoice_version_id=%s",(successor,)).fetchone()
         v1_feedback=connection.execute("select reason_code,note,line_keys from government_decisions where id=%s",(returned["id"],)).fetchone()
+        v1_feedback_after=connection.execute("select id,decision,reason_code,note,line_keys,actor_id,actor_role,decided_at from government_decisions where id=%s",(returned["id"],)).fetchone()
+        v1_events_after=connection.execute("select id,event_key,event_type,schema_version,actor_id,actor_role,actor_organization_id,organization_id,contract_id,aggregate_type,aggregate_id,payload,reason_code,version_references,event_hash,occurred_at from domain_events where aggregate_id=%s order by id",(invoice["id"],)).fetchall()
         final=connection.execute("select state from invoice_versions where id=%s",(successor,)).fetchone()[0]
         approval_event=connection.execute("select actor_id,actor_role,actor_organization_id,organization_id,reason_code,payload->>'packageId',version_references from domain_events where event_type='approved' and aggregate_id=%s order by id desc limit 1",(successor,)).fetchone()
         v1_snapshots_after=connection.execute("select id,material_revision,stage,payload,snapshot_hash from invoice_snapshots where invoice_version_id=%s order by material_revision,stage",(invoice["id"],)).fetchall()
@@ -315,7 +343,11 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
         description_chain=connection.execute("""select id,invoice_version_id,correction_actor_id,predecessor_lineage_id
             from field_lineage where field_name='EXP-004.description'
               and invoice_version_id in (%s,%s) order by id""",(invoice["id"],successor)).fetchall()
+    v1_bytes_after={path:download_artifact(AUDITOR,artifact_id) for path,artifact_id,_ in v1_package_after}
+    assert v1_package_after==v1_package_before and v1_bytes_after==v1_bytes_before
     assert v1_hashes==submission["packageHashes"] and link==(invoice["id"],successor,returned["id"])
+    assert v1_findings_after==v1_findings_before and v1_feedback_after==v1_feedback_before
+    assert v1_events_after==v1_events_before
     assert len(reproduction_hashes)==2 and len({row[1] for row in reproduction_hashes})==2 and len({row[2] for row in reproduction_hashes})==2
     assert v1_feedback==("EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"]) and final=="approved"
     assert approval_event[:6]==(government.user_id,Role.GOVERNMENT_REVIEWER.value,"org-government","org-ngo","APPROVED_AS_CORRECTED",v2_package["id"])
@@ -352,7 +384,10 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
                 assert reference["version"]==snapshots_by_id[reference["id"]]["materialRevision"]
     correction_event=next(item for item in auditor_final["events"] if item["eventType"]=="invoice_line_corrected" and item["aggregateId"]==successor and item["payload"].get("correctionId")==correction["id"])
     invoice_reference=next(item for item in correction_event["versionReferences"] if item["kind"]=="invoice")
+    decision_reference=next(item for item in correction_event["versionReferences"] if item["kind"]=="decision")
     assert invoice_reference["version"]==v2["version"]
+    assert decision_reference["id"]==returned["id"] and decision_reference["version"]==1
+    assert decision_reference["sha256"] is None
     assert correction_event["payload"]["materialRevision"]==2
     assert {invoice["id"],successor} <= {item["invoiceVersionId"] for item in auditor_final["snapshots"]}
     reproduced_packages={item["packageId"]:item for item in auditor_final["reproducibility"]}

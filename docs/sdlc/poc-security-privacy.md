@@ -295,3 +295,27 @@ Controlling issue: `SUB-49`. Project stage: Build.
 All values remain synthetic. This closes the POC human-authority and
 cross-reference risk for the return/approval command; it does not authorize
 real-data or production review.
+
+## SUB-46 Revision Authorization And Immutability Evidence
+
+Controlling issue: `SUB-46`. Project stage: Build.
+
+- Canonical invoice scope and explicit assignment authorize the returned draft;
+  organization and contract ownership are never accepted from the request.
+- The server binds a correction to the persisted predecessor/successor link and
+  exact Government decision line keys. A valid line elsewhere in the same draft
+  is still rejected, with zero mutation across its line value, material
+  revision, correction records, lineage, and events.
+- NGO Approver cannot correct. NGO Preparer cannot attest, package, submit, or
+  make Government decisions. A separate provisioned NGO Approver must re-attest
+  and resubmit v2 after deterministic revalidation.
+- V1 package object bytes and artifact hashes, validation findings, feedback
+  decision, material events, and immutable snapshots are captured after return
+  and compared after v2 approval. Database append-only guards remain active.
+- The UI renders only returned line keys and disables correction when persisted
+  feedback cannot be matched to the editable draft; this is defense in depth,
+  not the authorization boundary.
+
+All tested identities and records remain synthetic and reserved-domain. This
+does not add real-data handling, hosted retention, SSO/MFA, or production
+promotion authority.

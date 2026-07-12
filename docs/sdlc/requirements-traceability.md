@@ -1,6 +1,6 @@
 # POC Requirements Traceability
 
-Status: Evidence Review; SUB-66 recovery recertification in progress
+Status: Build; recovery baseline certified with exceptions and POC journey work resumed
 
 Last updated: 2026-07-12
 
@@ -31,7 +31,7 @@ Last updated: 2026-07-12
 | SUB-45 | Submit version to government queue | 1, 4 | 11 | Workflow | Locked version and event |
 | SUB-47 | Government review queue | 1, 4 | 11 | Web/workflow | Scoped review UI |
 | SUB-49 | Exact-line government return and corrected-version approval | 1, 4 | 11 | Workflow with Invoices query port and Provenance evidence | Provisioned-human authority; decision-specific reasons; nonblank note; exact unique v1 line keys; zero-mutation denials; actor/resource organizations; invoice/submission/package/decision references; v2-only approval |
-| SUB-46 | NGO correction and resubmission | 1, 4 | 11 | Workflow/provenance | Immutable v1 and linked v2 |
+| SUB-46 | Exact-line NGO correction and resubmission | 1, 3, 4 | 11 | Invoices correction command with Workflow read model and Provenance evidence | Persisted decision-bound line; zero-mutation denial; normalized correction/decision lineage; deterministic v2 revalidation; separate Approver attestation/package/resubmission; byte/hash/finding/feedback/event/snapshot-stable v1; distinct v2 manifests and archive |
 | SUB-50 | Read-only audit timeline | 1 | 11 | Provenance/web | Both packages reconstructed |
 | SUB-53 | Reproducible commands | 2, 3 | 11 | Infrastructure | Documented clean run |
 | SUB-55 | Canonical E2E certification | 1-4 | 11 | Cross-cutting | Passing recorded Playwright run |

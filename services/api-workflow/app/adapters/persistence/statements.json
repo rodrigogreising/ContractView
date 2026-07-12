@@ -1948,6 +1948,22 @@
     "sql": "select l.successor_invoice_version_id,l.predecessor_invoice_version_id,d.id,d.reason_code,d.note,d.line_keys\n          from invoice_version_links l join government_decisions d on d.id=l.government_decision_id join invoice_versions i on i.id=l.successor_invoice_version_id where i.contract_id=%s and i.state='draft' order by i.version desc limit 1",
     "writeTables": []
   },
+  "REVISION_READ_GOVERNMENT_DECISIONS_INVOICE_VERSION_LINKS_014": {
+    "consumerCapability": "invoices",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "invoices",
+    "readTables": [
+      "government_decisions",
+      "invoice_version_links"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "workflow"
+    ],
+    "sql": "select d.id,d.line_keys from invoice_version_links l join government_decisions d on d.id=l.government_decision_id where l.successor_invoice_version_id=%s and d.decision='returned'",
+    "writeTables": []
+  },
   "REVISION_READ_FIELD_LINEAGE_013": {
     "consumerCapability": "invoices",
     "kind": "application-query-port",

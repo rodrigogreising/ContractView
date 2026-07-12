@@ -138,3 +138,13 @@ affected lines are checked against the exact submitted invoice; state-machine
 preconditions are deterministic; and event/package/version evidence is
 append-only. Fabricated system/AI actors fail without mutation. This preserves
 the prohibited-authority decision with no new AI configuration surface.
+
+## SUB-46 Revision Authority
+
+SUB-46 adds no model call, prompt, parser, threshold, or AI configuration. The
+persisted Government decision deterministically selects the only correctable
+line keys. A provisioned NGO Preparer supplies the human correction and reason;
+a provisioned NGO Approver separately revalidates, attests, packages, and
+resubmits. The correction event references the immutable decision and preserves
+the original extraction/lineage chain. AI/system actors gain no correction,
+validation, attestation, submission, return, or approval authority.

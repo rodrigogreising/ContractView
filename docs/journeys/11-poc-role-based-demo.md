@@ -114,3 +114,21 @@ Certify the complete ContractView POC through one visible, recorded browser jour
   and replaying each package build input reproduces every generated file and
   the ZIP byte-for-byte. V1 remains unchanged while V2 has distinct input,
   reproduction-manifest, and archive hashes.
+
+## SUB-46 Revision And Resubmission Certification
+
+The returned-revision segment is certified only when the normal NGO Preparer
+session receives the structured reason, note, exact line keys, immutable v1 id,
+and editable v2 id. The server must reject correction of a different existing
+v2 line with no change to the line, material revision, corrections, lineage, or
+events. The accepted correction must append the Government decision reference
+and same-field lineage successor.
+
+After correction, deterministic validation must create a v2 run. A separately
+authenticated NGO Approver must create a fresh attestation, package, and
+submission for v2. Certification captures v1 package bytes/artifact hashes,
+findings, feedback, aggregate events, and snapshots immediately after return
+and proves exact equality after final v2 approval. V2 must link to v1 and have
+distinct validation/build/archive identities. This issue certifies the journey
+segment; SUB-55 still owns the paced Playwright video, trace, screenshots, and
+clean end-to-end release decision.
