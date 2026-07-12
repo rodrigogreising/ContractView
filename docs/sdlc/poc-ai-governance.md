@@ -166,3 +166,11 @@ attestation, submission, return, correction, resubmission, approval, and audit
 outcomes continue to be owned by shared deterministic contracts or canonical
 human actors. Playwright proves those boundaries; it does not bypass or replace
 them.
+
+## SUB-53 Operator AI Boundary
+
+SUB-53 adds no provider, model, prompt, parser, threshold, evaluation class, or
+AI-generated configuration. The runbook explicitly records that the supported
+adapter is local, requires no external credential, produces draft fields only,
+and sends no bytes to a third party. Operator commands cannot turn AI output
+into deterministic validation or a human-authority action.

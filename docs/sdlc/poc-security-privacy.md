@@ -359,3 +359,21 @@ Controlling issue: `SUB-26`. Project stage: Build.
 This certifies the POC browser path. It does not authorize real data, public
 write access, production credentials, hosted deployment, or production artifact
 retention.
+
+## SUB-53 Operator Credential And Evidence Boundary
+
+Controlling issue: `SUB-53`. Project stage: Build.
+
+- The runbook names only public synthetic demo credentials and explicitly
+  prohibits their reuse or the introduction of real data.
+- The active local Tesseract/fixture parser needs no external provider key and
+  sends no source artifact outside the Compose project.
+- Toolchain checks fail before Compose mutation. Host port overrides permit an
+  isolated concurrent project without weakening container scope.
+- Normal stop preserves local named volumes; certification projects destroy
+  their isolated state after retaining browser/runtime evidence.
+- Reset is allowed only for disposable synthetic state. It is not a production
+  deletion, retention, or legal-hold mechanism.
+
+This adds no public write path, hosted credentials, customer data, support
+access, production storage, or production promotion authority.

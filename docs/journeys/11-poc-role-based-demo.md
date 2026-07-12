@@ -170,3 +170,16 @@ controls. Headless mode is the CI gate; headed mode defaults to paced `650 ms`
 slow motion and emits the same video, trace, screenshots, JSON, and runtime
 evidence. SUB-55 remains the terminal release certification of the merged
 journey.
+
+## SUB-53 Reproducible Operator Preconditions
+
+Journey 11 can be invoked from a clean checkout with `make journey11-headless`
+or `make journey11-headed`. Both commands delegate to the same isolated
+SUB-26 scenario. Headed mode defaults to 650 ms pacing; both modes retain JSON,
+video, trace, screenshots, HTML, runtime logs, and Compose state.
+
+Normal local operation uses `make start`, `make reset`, and `make health`.
+Reset stops the worker, replaces only disposable synthetic database/object
+state through supported commands, applies numbered migrations, idempotently
+seeds fixtures, restarts the worker, and prints the deterministic fingerprint.
+No journey prerequisite requires SQL, role switching, or storage mutation.

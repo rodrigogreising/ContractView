@@ -280,3 +280,17 @@ boundaries remain the production-shaped POC runtime. Playwright retains media
 and results but does not become a system of record; canonical assertions query
 the user-visible server projections, including v1/v2 package hashes and the
 read-only audit trail.
+
+## SUB-53 Operator Boundary
+
+The operator script composes existing PostgreSQL, MinIO, API, worker, and web
+units; it does not enter the modular-monolith application layers or own runtime
+state. Migrate, seed, reset, and fingerprint operations invoke the supported
+API management boundary. Browser certification delegates to the external
+SUB-26 harness.
+
+Stopping the worker during reset is process coordination, not a business-state
+shortcut. The script cannot switch roles, mutate submitted evidence directly,
+invent provenance, call an external AI provider, or grant authority. Port
+overrides affect only host publication and preserve the internal Compose
+network contract.
