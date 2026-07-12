@@ -90,6 +90,22 @@ prior invoice version.
 - Source and raw response artifacts remain organization-scoped and hash-verifiable.
 - Hosted providers, customer data, training reuse, and cross-tenant evaluation are out of scope.
 
+## SUB-68 Reproducibility Boundary
+
+Validation manifests record the exact extraction provider/model,
+prompt/instruction, parser, and extraction-schema identifiers that contributed
+draft inputs. These identifiers are evidence only. Deterministic validation
+executes versioned shared rule contracts against a reviewed immutable invoice
+snapshot; package generation executes a versioned template contract. Neither
+path invokes AI, accepts an AI finding, or grants an AI/system actor lifecycle
+authority.
+
+Replay validates the retained extraction-component identifiers and hashes but
+does not call a live model. A provider/model change therefore creates a new
+traceable input manifest instead of silently changing a historical result.
+The synthetic golden evaluation and separate configuration governance remain
+required for any future adapter change.
+
 ## Review Result
 
 - Decision: Approved.

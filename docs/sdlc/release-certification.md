@@ -80,6 +80,20 @@ Government Reviewer, Configuration Administrator, or a human decision to
 promote a real release. Journey 11 and release-scope authority evidence remain
 required where those actions are explicitly in scope.
 
+### Reproducible Runtime Evidence
+
+For validation/package changes, candidate evidence must prove more than a
+stable test name. The retained validation input manifest binds an immutable
+invoice snapshot and artifact hashes to exact configuration, schema, mapping,
+rule, workflow, view/template, and parser/model versions. The retained package
+reproduction manifest binds a versioned template/renderer contract, canonical
+claim columns, validation identity, generated-file hashes, and archive hash.
+
+Certification replays both paths from retained inputs and independently checks
+result/file hashes. Identical inputs must reproduce exactly; a changed input
+must create a distinct traceable version. A passing live generation that cannot
+be replayed from its retained evidence is blocked.
+
 ### Public Repository Publication
 
 Public source disclosure is a separate release decision from POC runtime

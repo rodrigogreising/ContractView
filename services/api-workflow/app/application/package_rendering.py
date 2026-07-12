@@ -2,6 +2,7 @@
 
 from typing import Any, Callable
 
+from ..shared_contracts import TemplateContract
 from .ports.package_rendering import InvoicePdfRendererPort
 
 _factory: Callable[[], InvoicePdfRendererPort] | None = None
@@ -14,7 +15,7 @@ def configure_invoice_pdf_renderer_factory(
     _factory = factory
 
 
-def render_invoice_pdf(invoice: dict[str, Any]) -> bytes:
+def render_invoice_pdf(invoice: dict[str, Any], template: TemplateContract) -> bytes:
     if _factory is None:
         raise RuntimeError("ContractView composition root has not configured package rendering")
-    return _factory().render(invoice)
+    return _factory().render(invoice, template)

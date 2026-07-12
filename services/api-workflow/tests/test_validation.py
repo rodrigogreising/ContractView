@@ -17,11 +17,11 @@ from app.extraction_review import list_extractions,review_field
 from app.ingestion import claim_next_job,create_upload_job,process_job
 from app.invoice_draft import assemble_draft,get_draft
 from app.runtime import database
-from app.validation import ENGINE_VERSION,execute_validation
+from app.validation import ENGINE_VERSION,execute_validation,reproduce_validation
 from app.budget import budget_snapshot
 from app.finding_resolution import current_findings,has_open_blockers,resolve_finding
 from app.attestation import ATTESTATION_TEXT,AttestationError,approval_preview,attest,current_attestation
-from app.package_generation import PackageError,generate_package
+from app.package_generation import PackageError,generate_package,reproduce_package
 from app.submission import submit
 from app.government_review import list_queue,review_context
 from app.government_decision import DecisionError,decide
@@ -63,6 +63,8 @@ def test_five_rules_record_versions_inputs_results_and_expected_findings(invoice
     run=execute_validation(PREPARER,invoice["id"])
     assert run["engineVersion"]==ENGINE_VERSION and run["invoiceVersionId"]==invoice["id"] and run["configurationVersionId"]==invoice["configurationVersionId"]
     assert len(run["inputHash"])==64 and len(run["outputHash"])==64
+    assert run["inputManifestId"].startswith("validation-input-")
+    assert run["inputManifestHash"]==run["inputHash"]
     assert {item["ruleCode"] for item in run["results"]}=={"SERVICE_PERIOD","REQUIRED_EVIDENCE","BUDGET_AVAILABLE","TOTAL_RECONCILIATION","POSSIBLE_DUPLICATE"}
     assert all(item["ruleVersion"] and item["severity"] in {"blocker","warning"} and item["normalizedInput"] for item in run["results"])
     failures={item["reasonCode"]:item for item in run["results"] if item["outcome"]=="fail"}
@@ -70,14 +72,23 @@ def test_five_rules_record_versions_inputs_results_and_expected_findings(invoice
     assert failures["SERVICE_PERIOD:EXP-004"]["severity"]=="blocker" and failures["POSSIBLE_DUPLICATE:EXP-005:EXP-002"]["severity"]=="warning"
     with database() as connection:
         event=connection.execute("select event_type,payload->>'inputHash',payload->>'outputHash' from domain_events where aggregate_id=%s",(run["id"],)).fetchone()
+        manifest=connection.execute("select manifest,manifest_hash from validation_input_manifests where id=%s",(run["inputManifestId"],)).fetchone()
     assert event==("validation_completed",run["inputHash"],run["outputHash"])
+    assert manifest[1]==run["inputHash"]
+    assert {"invoiceSnapshot","artifacts","schemas","mappings","rules","workflow","views","templates","configurationVersion","extractionComponents"} <= set(manifest[0])
+    assert manifest[0]["engineVersion"]==ENGINE_VERSION
+    assert all(item["version"] for item in manifest[0]["rules"])
 
 def test_same_invoice_and_configuration_reproduce_identical_normalized_output(invoice):
     first=execute_validation(PREPARER,invoice["id"]);second=execute_validation(PREPARER,invoice["id"])
     assert first["id"]!=second["id"]
     assert first["normalizedInputs"]==second["normalizedInputs"]
     assert first["inputHash"]==second["inputHash"] and first["outputHash"]==second["outputHash"]
+    assert first["inputManifestId"]==second["inputManifestId"]
     assert first["results"]==second["results"]
+    reproduced=reproduce_validation(PREPARER,first["id"])
+    assert reproduced["matches"] and reproduced["inputHash"]==first["inputHash"]
+    assert reproduced["outputHash"]==first["outputHash"] and reproduced["results"]==first["results"]
 
 def test_non_preparer_cannot_create_validation_run(invoice):
     with database() as connection:before=connection.execute("select count(*) from validation_runs where engine_version is not null").fetchone()[0]
@@ -179,9 +190,18 @@ def test_real_immutable_package_has_pdf_manifests_evidence_zip_and_hashes(invoic
         for item in package["manifest"]["files"]:assert sha256(archive.read(item["path"])).hexdigest()==item["sha256"]
     with database() as connection:
         records=connection.execute("select path,sha256 from package_artifacts where package_id=%s",(package["id"],)).fetchall()
-        event=connection.execute("select payload->>'zipSha256' from domain_events where aggregate_id=%s and event_type='package_generated'",(package["id"],)).fetchone()
+        event=connection.execute("select payload->>'zipSha256',payload->>'reproductionManifestHash' from domain_events where aggregate_id=%s and event_type='package_generated'",(package["id"],)).fetchone()
+        persisted=connection.execute("select build_input_hash,reproduction_manifest_hash,archive_sha256,archive_byte_size from package_reproduction_manifests where package_id=%s",(package["id"],)).fetchone()
     assert len(records)==len(package["artifacts"])+1 and all(len(row[1])==64 for row in records)
-    assert event==(package["zip"]["sha256"],)
+    assert event==(package["zip"]["sha256"],package["reproduction"]["manifestHash"])
+    assert persisted==(package["reproduction"]["buildInputHash"],package["reproduction"]["manifestHash"],package["zip"]["sha256"],len(zip_bytes))
+    reproduced=reproduce_package(APPROVER,package["id"])
+    assert reproduced["fileChecks"]=={key:True for key in reproduced["fileChecks"]}
+    assert reproduced["checks"]=={key:True for key in reproduced["checks"]}
+    assert reproduced["matches"] and reproduced["archiveBytes"]==zip_bytes
+    assert reproduced["archiveSha256"]==package["zip"]["sha256"]
+    with pytest.raises(psycopg.errors.RaiseException,match="append-only"):
+        with database() as connection:connection.execute("update package_reproduction_manifests set build_input='{}' where package_id=%s",(package["id"],))
 
 def test_submission_atomically_locks_exact_version_and_creates_government_queue(invoice):
     with database() as connection:
@@ -265,6 +285,7 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert approved["decision"]=="approved" and approved["invoiceVersion"]==v2["version"] and approved["packageId"]==v2_package["id"]
     with database() as connection:
         v1_hashes=dict(connection.execute("select path,sha256 from package_artifacts where package_id=%s",(submission["packageId"],)).fetchall())
+        reproduction_hashes=connection.execute("select package_id,build_input_hash,archive_sha256 from package_reproduction_manifests where package_id in (%s,%s) order by package_id",(submission["packageId"],v2_package["id"])).fetchall()
         link=connection.execute("select predecessor_invoice_version_id,successor_invoice_version_id,government_decision_id from invoice_version_links where successor_invoice_version_id=%s",(successor,)).fetchone()
         v1_feedback=connection.execute("select reason_code,note,line_keys from government_decisions where id=%s",(returned["id"],)).fetchone()
         final=connection.execute("select state from invoice_versions where id=%s",(successor,)).fetchone()[0]
@@ -274,6 +295,7 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
             from field_lineage where field_name='EXP-004.description'
               and invoice_version_id in (%s,%s) order by id""",(invoice["id"],successor)).fetchall()
     assert v1_hashes==submission["packageHashes"] and link==(invoice["id"],successor,returned["id"])
+    assert len(reproduction_hashes)==2 and len({row[1] for row in reproduction_hashes})==2 and len({row[2] for row in reproduction_hashes})==2
     assert v1_feedback==("EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"]) and final=="approved"
     assert v1_snapshots_after==v1_snapshots_before
     assert v2_snapshot_stages=={"validation","attestation","package","submission"}
@@ -310,6 +332,10 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert invoice_reference["version"]==v2["version"]
     assert correction_event["payload"]["materialRevision"]==2
     assert {invoice["id"],successor} <= {item["invoiceVersionId"] for item in auditor_final["snapshots"]}
+    reproduced_packages={item["packageId"]:item for item in auditor_final["reproducibility"]}
+    assert {submission["packageId"],v2_package["id"]} <= set(reproduced_packages)
+    assert all(item["validationInputManifestHash"] and item["buildInputHash"] and item["packageManifestHash"] and item["archiveSha256"] for item in reproduced_packages.values())
+    assert all(item["templateId"]=="reimbursement-invoice-pdf" and item["templateVersion"]==1 and len(item["templateHash"])==64 for item in reproduced_packages.values())
     with pytest.raises(psycopg.errors.RaiseException,match="append-only"):
         with database() as connection:
             connection.execute("update invoice_snapshots set payload='{}' where id=%s",(v1_snapshots_before[0][0],))

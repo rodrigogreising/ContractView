@@ -2,9 +2,13 @@
 
 ## Purpose
 
-This package defines versioned executable contracts for deterministic validation rules, results, reason codes, and reproducible validation runs in `contract.json`.
+This package defines versioned executable contracts for deterministic
+validation rules, results, reason codes, and reproducible validation runs in
+`contract.json`. Validation run DTOs bind the exact content-addressed input
+manifest used for execution.
 
-Current contract version: `1.0.0`; it depends only on `domain-types` version references and vocabulary.
+Current contract version: `1.1.0`; it depends only on `domain-types` version
+references and vocabulary.
 
 ## Owned Responsibilities
 

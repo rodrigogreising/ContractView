@@ -3,10 +3,13 @@
 ## Purpose
 
 This package defines shared executable contracts for rules, workflows, views,
-templates, configuration bundles, and exact schema/mapping version references
-in `contract.json`.
+templates, configuration bundles, extraction-component references, validation
+input manifests, package build inputs, package reproduction manifests, and
+exact schema/mapping version references in `contract.json`.
 
-Current contract version: `1.0.0`. The contract defines the full lifecycle but does not activate configuration; REC-06 implements its commands and persistence.
+Current contract version: `1.1.0`. The contract defines the full lifecycle but
+does not activate configuration; REC-06 implements its commands and
+persistence. REC-09 uses the versioned contracts for runtime reproduction.
 
 ## Owned Responsibilities
 
@@ -14,6 +17,7 @@ Current contract version: `1.0.0`. The contract defines the full lifecycle but d
 - Define lifecycle state vocabulary: draft, tested, approved, active, superseded, retired.
 - Define schema/mapping reference, workflow, view, and template contract vocabulary.
 - Define activation evidence and supersession reference shapes.
+- Define immutable validation/package reproduction input and output shapes.
 
 ## Explicit Non-Responsibilities
 
@@ -28,6 +32,8 @@ Current contract version: `1.0.0`. The contract defines the full lifecycle but d
 - Schema and mapping version-reference vocabulary; REC-06 owns their complete definitions.
 - Workflow, view, and template contract vocabulary.
 - Configuration bundle and lifecycle contracts.
+- Extraction component, validation input, package build, file digest, and
+  package reproduction contracts.
 - Activation approval and test evidence references.
 
 ## Allowed Dependencies

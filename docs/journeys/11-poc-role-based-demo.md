@@ -44,8 +44,13 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Original artifact hashes, upload actor, and source locations.
 - Importer, OCR/LLM, prompt/parser, confidence, and correction records.
 - Invoice versions, mappings, rule versions, validation runs, findings, and resolutions.
+- Content-addressed validation input manifests with exact invoice snapshot,
+  artifact, configuration, schema, mapping, rule, workflow, view/template, and
+  extraction component versions.
 - Attestation actors and exact invoice/package versions.
 - Package manifests and distinct hashes for versions 1 and 2.
+- Package reproduction manifests with versioned template/renderer contracts,
+  deterministic generated-file digests, archive hashes, and replay results.
 - Return feedback, revision relation, resubmission, approval, and audit-query evidence.
 - Versioned event envelopes with canonical actor role/organization, resource
   organization, reason, schema, immutable references, and event hashes.
@@ -71,6 +76,8 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Expense-date lineage points to a claimed-amount predecessor or a v2 correction
   skips the cloned same-field predecessor.
 - Auditor cannot reconstruct the claimed amount and both packages.
+- Replaying a retained validation/package input consults mutable current state,
+  produces different results/bytes, or fails to detect a changed dependency.
 - Playwright requires manual database changes or test-only role switching.
 
 ## Certification Criteria
@@ -89,3 +96,7 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - The auditor reconstructs both snapshot sets, all eight typed relation kinds,
   the return/correction/approval chain, and unchanged v1 snapshot/package
   hashes after v2 approval.
+- Replaying each retained validation input reproduces its findings/result hash,
+  and replaying each package build input reproduces every generated file and
+  the ZIP byte-for-byte. V1 remains unchanged while V2 has distinct input,
+  reproduction-manifest, and archive hashes.

@@ -1677,18 +1677,61 @@
     "sql": "select organization_id,contract_id,version from invoice_versions where id=%s",
     "writeTables": []
   },
+  "PACKAGE_GENERATION_READ_CONFIGURATION_VERSIONS_005": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload from configuration_versions where id=%s",
+    "writeTables": []
+  },
+  "PACKAGE_GENERATION_READ_PACKAGE_REPRODUCTION_MANIFESTS_007": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "packages",
+    "readTables": [
+      "package_reproduction_manifests"
+    ],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "select build_input,build_input_hash,reproduction_manifest,reproduction_manifest_hash,package_manifest_hash,archive_sha256,archive_byte_size from package_reproduction_manifests where package_id=%s",
+    "writeTables": []
+  },
+  "PACKAGE_GENERATION_READ_PACKAGES_009": {
+    "consumerCapability": "workflow",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "packages",
+    "readTables": [
+      "packages"
+    ],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "select invoice_version_id from packages where id=%s",
+    "writeTables": []
+  },
   "PACKAGE_GENERATION_READ_VALIDATION_RUNS_002": {
     "consumerCapability": "workflow",
     "kind": "application-query-port",
     "operation": "read",
     "owner": "validation",
     "readTables": [
+      "validation_input_manifests",
       "validation_runs"
     ],
     "sourceOwners": [
       "validation"
     ],
-    "sql": "select id,engine_version,input_hash,output_hash from validation_runs where id=%s",
+    "sql": "select r.id,r.engine_version,r.input_hash,r.output_hash,r.input_manifest_id,m.manifest_hash from validation_runs r join validation_input_manifests m on m.id=r.input_manifest_id where r.id=%s",
     "writeTables": []
   },
   "PACKAGE_GENERATION_WRITE_PACKAGES_003": {
@@ -1717,6 +1760,20 @@
     "sql": "insert into package_artifacts values (%s,%s,%s,%s)",
     "writeTables": [
       "package_artifacts"
+    ]
+  },
+  "PACKAGE_GENERATION_WRITE_PACKAGE_REPRODUCTION_MANIFESTS_008": {
+    "consumerCapability": "workflow",
+    "kind": "application-command-port",
+    "operation": "write",
+    "owner": "packages",
+    "readTables": [],
+    "sourceOwners": [
+      "packages"
+    ],
+    "sql": "insert into package_reproduction_manifests(id,package_id,validation_input_manifest_id,invoice_snapshot_id,template_id,template_version,template_hash,build_input,build_input_hash,reproduction_manifest,reproduction_manifest_hash,package_manifest_hash,archive_sha256,archive_byte_size) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "package_reproduction_manifests"
     ]
   },
   "PROVENANCE_READ_ARTIFACTS_ARTIFACTS_ARTIFACTS_DOMAIN_EVENTS_004": {
@@ -2161,18 +2218,37 @@
     "sql": "select payload from configuration_versions where id=%s",
     "writeTables": []
   },
-  "VALIDATION_READ_INVOICE_LINES_003": {
+  "VALIDATION_READ_ARTIFACTS_EXTRACTION_FIELDS_EXTRACTION_RUNS_INVOICE_LINES_003": {
     "consumerCapability": "validation",
-    "kind": "application-query-port",
+    "kind": "declared-read-model",
     "operation": "read",
-    "owner": "invoices",
+    "owner": "validation",
     "readTables": [
+      "artifacts",
+      "extraction_fields",
+      "extraction_runs",
       "invoice_lines"
     ],
     "sourceOwners": [
+      "artifacts",
+      "extraction",
       "invoices"
     ],
-    "sql": "select expense_key,expense_date,vendor,budget_category,claimed_amount,evidence_artifact_id,ledger_source_location\n                                        from invoice_lines where invoice_version_id=%s order by expense_key",
+    "sql": "select distinct x.source_artifact_id,sa.sha256,x.raw_response_artifact_id,ra.sha256,x.provider,x.model,x.prompt_version,x.parser_version,x.schema_version from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id join extraction_runs x on x.id=f.extraction_run_id join artifacts sa on sa.id=x.source_artifact_id left join artifacts ra on ra.id=x.raw_response_artifact_id where l.invoice_version_id=%s order by x.source_artifact_id",
+    "writeTables": []
+  },
+  "VALIDATION_READ_VALIDATION_INPUT_MANIFESTS_010": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "validation",
+    "readTables": [
+      "validation_input_manifests"
+    ],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "select id,manifest,manifest_hash from validation_input_manifests where id=%s",
     "writeTables": []
   },
   "VALIDATION_READ_INVOICE_VERSIONS_001": {
@@ -2209,12 +2285,13 @@
     "operation": "read",
     "owner": "validation",
     "readTables": [
+      "validation_input_manifests",
       "validation_runs"
     ],
     "sourceOwners": [
       "validation"
     ],
-    "sql": "select id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,status from validation_runs where id=%s",
+    "sql": "select r.id,r.invoice_version_id,r.configuration_version_id,r.engine_version,r.normalized_inputs,r.input_hash,r.output_hash,r.status,r.input_manifest_id,m.manifest_hash from validation_runs r left join validation_input_manifests m on m.id=r.input_manifest_id where r.id=%s",
     "writeTables": []
   },
   "VALIDATION_READ_VALIDATION_RUNS_009": {
@@ -2259,6 +2336,20 @@
       "validation_results"
     ]
   },
+  "VALIDATION_WRITE_VALIDATION_INPUT_MANIFESTS_011": {
+    "consumerCapability": "validation",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "validation",
+    "readTables": [],
+    "sourceOwners": [
+      "validation"
+    ],
+    "sql": "insert into validation_input_manifests(id,invoice_snapshot_id,schema_version,manifest,manifest_hash) values (%s,%s,%s,%s,%s) on conflict (id) do nothing",
+    "writeTables": [
+      "validation_input_manifests"
+    ]
+  },
   "VALIDATION_WRITE_VALIDATION_RUNS_004": {
     "consumerCapability": "validation",
     "kind": "repository",
@@ -2268,7 +2359,7 @@
     "sourceOwners": [
       "validation"
     ],
-    "sql": "insert into validation_runs(id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,created_by,status,material_revision,invoice_snapshot_id)\n                                  values (%s,%s,%s,%s,%s,%s,%s,%s,'completed',%s,%s)",
+    "sql": "insert into validation_runs(id,invoice_version_id,configuration_version_id,engine_version,normalized_inputs,input_hash,output_hash,created_by,status,material_revision,invoice_snapshot_id,input_manifest_id)\n                                  values (%s,%s,%s,%s,%s,%s,%s,%s,'completed',%s,%s,%s)",
     "writeTables": [
       "validation_runs"
     ]
@@ -2341,6 +2432,25 @@
     "readTables": ["invoice_snapshots", "invoice_versions"],
     "sourceOwners": ["invoices"],
     "sql": "select s.id,s.invoice_version_id,s.invoice_version,s.material_revision,s.stage,s.payload,s.snapshot_hash,s.created_by,s.actor_role,s.created_at from invoice_snapshots s join invoice_versions i on i.id=s.invoice_version_id where s.contract_id=%s and (%s=false or i.state<>'draft') order by s.invoice_version,s.material_revision,s.stage",
+    "writeTables": []
+  },
+  "PROVENANCE_READ_INVOICE_VERSIONS_PACKAGE_REPRODUCTION_MANIFESTS_PACKAGES_VALIDATION_INPUT_MANIFESTS_013": {
+    "consumerCapability": "provenance",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "provenance",
+    "readTables": [
+      "invoice_versions",
+      "package_reproduction_manifests",
+      "packages",
+      "validation_input_manifests"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "packages",
+      "validation"
+    ],
+    "sql": "select p.id,p.invoice_version_id,p.version,r.id,r.validation_input_manifest_id,v.manifest_hash,r.build_input_hash,r.package_manifest_hash,r.archive_sha256,r.reproduction_manifest_hash,r.template_id,r.template_version,r.template_hash,r.reproduction_manifest from package_reproduction_manifests r join packages p on p.id=r.package_id join invoice_versions i on i.id=p.invoice_version_id join validation_input_manifests v on v.id=r.validation_input_manifest_id where i.contract_id=%s and (%s=false or i.state<>'draft') order by p.version,p.id",
     "writeTables": []
   },
   "PROVENANCE_READ_PROVENANCE_RELATIONS_011": {

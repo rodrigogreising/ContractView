@@ -2,8 +2,9 @@
 
 ## Status
 
-Accepted; amended by SUB-59, implemented for shared contracts by SUB-61, and
-physically enforced for module/persistence boundaries by SUB-62
+Accepted; amended by SUB-59, implemented for shared contracts by SUB-61,
+physically enforced for module/persistence boundaries by SUB-62, and amended
+for reproducible validation/package execution by SUB-68
 
 ## Date
 
@@ -182,6 +183,31 @@ must match across the independent passes. CI retains schema-valid JSON evidence,
 command logs, service state, exact base/head SHAs, test counts, environment
 versions, and SHA-256 artifact hashes. This certifies a PR candidate; Journey 11
 and its Playwright artifacts remain the terminal POC release gate.
+
+### SUB-68 Amendment: Reproducible Validation And Packages
+
+Validation and package generation execute against immutable, content-addressed
+inputs rather than mutable invoice projections. A validation input manifest
+binds the exact invoice snapshot and source artifact hashes to schema, mapping,
+rule, workflow, view/template, parser/model, extraction-contract, and active
+configuration versions. The manifest hash is the validation input identity;
+the validation run retains both identifiers and executes validated shared
+`RuleDefinition` contracts.
+
+Package generation captures its own package-stage invoice snapshot and a
+versioned `Template` contract. A package build input fixes the template hash,
+renderer version, canonical claim-column order, validation run/input manifest,
+configuration, and source artifact hashes. The retained reproduction manifest
+hashes that input plus every generated file and the final deterministic ZIP.
+Reproduction re-executes from retained manifests and fails on any missing,
+changed, or unverifiable dependency.
+
+PostgreSQL owns append-only runtime manifests; MinIO owns immutable generated
+bytes. Identical retained inputs must reproduce validation results and package
+bytes exactly. Changed invoice/configuration/template/extraction inputs create
+new traceable records and hashes. AI remains limited to draft extraction: its
+provider/model/prompt/parser/schema identifiers are manifest inputs, never rule
+outcomes or human-authority decisions.
 
 ## AI Boundary
 

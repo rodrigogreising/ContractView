@@ -120,6 +120,12 @@ Required records:
 - Schema, mapping, rule, workflow, template, and parser/model versions.
 - Rule inputs, outputs, severity, reason code, and remediation guidance.
 
+Before rule execution, the application captures an immutable invoice snapshot
+and persists a content-addressed validation input manifest. The engine validates
+and executes shared rule contracts. Reproduction loads that exact manifest and
+snapshot; it does not consult the current draft or current active
+configuration.
+
 Submission-blocking results must be explainable without trusting an opaque model response.
 
 ### 6. Issue Resolution
@@ -147,6 +153,11 @@ Required records:
 - Submission receipt and channel.
 
 Submitted packages are locked. Later changes require amendment, return, or resubmission.
+
+Package generation persists a versioned build input and a reproduction manifest
+containing the exact template/renderer contract, canonical claim-column order,
+validation input, generated-file digests, and final archive hash. Reproduction
+must verify every retained dependency and produce identical bytes.
 
 ### 8. Agency Review, Return, and Approval
 
@@ -186,6 +197,8 @@ Required evidence:
 - Workflow transition events.
 - Human authority events.
 - Return/amendment/resubmission chain.
+- Validation input and package reproduction manifests, including independently
+  recomputed hashes and generated-file integrity results.
 
 Audit reconstruction may use a declared read model spanning capability owners.
 It is read-only and cannot become canonical workflow state or an escape hatch

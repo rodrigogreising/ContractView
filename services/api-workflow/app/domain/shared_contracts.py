@@ -206,6 +206,11 @@ CONTRACT_REQUIRED_FIELDS = {
     'WorkflowContract': frozenset(['id', 'version', 'states', 'transitions']),
     'ViewContract': frozenset(['id', 'version', 'role', 'fields']),
     'TemplateContract': frozenset(['id', 'version', 'media_type', 'content_hash']),
+    'ExtractionComponentVersionContract': frozenset(['source_artifact', 'provider', 'model', 'prompt_version', 'parser_version', 'schema_version']),
+    'ValidationInputManifestContract': frozenset(['schema_version', 'engine_version', 'normalized_inputs', 'invoice_snapshot', 'artifacts', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates', 'configuration_version', 'extraction_components']),
+    'PackageFileDigestContract': frozenset(['path', 'sha256', 'byte_size']),
+    'PackageBuildInputContract': frozenset(['schema_version', 'package_id', 'invoice_snapshot', 'attestation_id', 'validation_run', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'configuration_version', 'template', 'invoice_payload', 'validation_summary', 'claims', 'evidence']),
+    'PackageReproductionManifestContract': frozenset(['schema_version', 'build_input_hash', 'package_manifest_hash', 'archive_sha256', 'archive_byte_size', 'files', 'template', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'invoice_snapshot']),
     'ConfigurationBundleContract': frozenset(['id', 'version', 'lifecycle', 'scope', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates']),
     'ConfigurationLifecycleEventDto': frozenset(['state', 'action', 'actor_id', 'actor_role', 'actor_organization_id', 'rationale', 'test_evidence_id', 'approval_id', 'predecessor_version_id', 'successor_version_id', 'rollback_target_version_id', 'event_hash', 'occurred_at']),
     'GovernedConfigurationVersionDto': frozenset(['id', 'version', 'configuration', 'state', 'active', 'history']),
@@ -313,6 +318,8 @@ class ValidationRunDto(ContractModel):
     output_hash: str = Field(pattern='^[a-f0-9]{64}$')
     status: str
     results: list[RuleResult]
+    input_manifest_id: str | None = None
+    input_manifest_hash: str | None = Field(default=None, pattern='^[a-f0-9]{64}$')
 
 
 class WorkflowTransition(ContractModel):
@@ -341,6 +348,68 @@ class TemplateContract(ContractModel):
     version: int = Field(ge=1)
     media_type: str
     content_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    parameters: dict[str, Any] | None = None
+
+
+class ExtractionComponentVersionContract(ContractModel):
+    source_artifact: VersionReference
+    raw_response_artifact: VersionReference | None = None
+    provider: str
+    model: str
+    prompt_version: str
+    parser_version: str
+    schema_version: str
+
+
+class ValidationInputManifestContract(ContractModel):
+    schema_version: str
+    engine_version: str
+    normalized_inputs: dict[str, Any]
+    invoice_snapshot: VersionReference
+    artifacts: list[VersionReference]
+    schemas: list[VersionReference]
+    mappings: list[VersionReference]
+    rules: list[RuleDefinition]
+    workflow: WorkflowContract
+    views: list[ViewContract]
+    templates: list[TemplateContract]
+    configuration_version: VersionReference
+    extraction_components: list[ExtractionComponentVersionContract]
+
+
+class PackageFileDigestContract(ContractModel):
+    path: str
+    sha256: str = Field(pattern='^[a-f0-9]{64}$')
+    byte_size: int = Field(ge=0)
+
+
+class PackageBuildInputContract(ContractModel):
+    schema_version: str
+    package_id: str
+    invoice_snapshot: VersionReference
+    attestation_id: str
+    validation_run: VersionReference
+    validation_input_manifest_id: str
+    validation_input_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    configuration_version: VersionReference
+    template: TemplateContract
+    invoice_payload: dict[str, Any]
+    validation_summary: dict[str, Any]
+    claims: list[dict[str, Any]]
+    evidence: list[VersionReference]
+
+
+class PackageReproductionManifestContract(ContractModel):
+    schema_version: str
+    build_input_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    package_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    archive_sha256: str = Field(pattern='^[a-f0-9]{64}$')
+    archive_byte_size: int = Field(ge=0)
+    files: list[PackageFileDigestContract]
+    template: TemplateContract
+    validation_input_manifest_id: str
+    validation_input_manifest_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    invoice_snapshot: VersionReference
 
 
 class ConfigurationBundleContract(ContractModel):
