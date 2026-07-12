@@ -31,7 +31,7 @@ from app.artifacts import download_artifact
 from io import BytesIO
 import zipfile
 
-CONTRACT="contract-metro-harbor-2026";FILES=Path("/app/fixtures/files")
+CONTRACT="contract-synthetic-agency-ngo-2026";FILES=Path("/app/fixtures/files")
 PREPARER=Actor("user-ngo-preparer","org-ngo",Role.NGO_PREPARER);APPROVER=Actor("user-ngo-approver","org-ngo",Role.NGO_APPROVER);ADMIN=Actor("user-config-admin","org-operations",Role.CONFIGURATION_ADMINISTRATOR)
 AUDITOR=Actor("user-auditor","org-oversight",Role.AUDITOR)
 
@@ -42,7 +42,7 @@ def canonical_hash(value):
 
 class Adapter:
     provider="validation-fixture-provider";model="validation-fixture-v1"
-    def extract(self,*_):return OcrResponse(self.provider,self.model,"Northstar Learning Supply\nDate: 2026-06-18\nWorkshop materials and learning kits $1,820.00\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
+    def extract(self,*_):return OcrResponse(self.provider,self.model,"Synthetic Program Supplies Vendor B\nDate: 2026-06-18\nWorkshop materials and learning kits $1,820.00\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
 
 def complete(job,adapter=None):
     if job.status=="completed":return
@@ -229,7 +229,7 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     queue=list_queue(government);item=next(x for x in queue if x["id"]==submission["queueItemId"])
     unpublished=government_decision_scope(PREPARER,item["id"])
     assert not unpublished.published_to_ngo and not is_allowed(PREPARER,Action.READ,unpublished)
-    assert item["status"]=="submitted" and item["ngo"]=="Harbor Community Services" and item["invoiceVersion"]==invoice["version"]
+    assert item["status"]=="submitted" and item["ngo"]=="Synthetic Community Nonprofit" and item["invoiceVersion"]==invoice["version"]
     assert item["amount"]==invoice["total"] and item["servicePeriod"]=={"start":"2026-06-01","end":"2026-06-30"} and item["submittedAt"]
     context=review_context(government,item["id"])
     assert context["packageId"]==submission["packageId"] and context["configurationVersionId"]==invoice["configurationVersionId"]

@@ -16,11 +16,11 @@ The POC is an engineering and product-design exercise. It is not a customer pilo
 
 | Persona | Synthetic organization | Allowed POC actions |
 | --- | --- | --- |
-| Configuration Administrator | ContractView Demo Operations | Configure categories, rules, workflow labels, and package settings; activate a version |
-| NGO Preparer | Harbor Community Services | Upload evidence, review extraction, edit a draft, resolve findings, and revise a return |
-| NGO Approver | Harbor Community Services | Review, attest, generate a package, and submit an exact invoice version |
-| Government Reviewer | Metro Human Services Agency | Review submitted packages, return with structured feedback, and approve a resubmission |
-| Auditor | Metro Oversight Office | Read versions, provenance, events, validation results, packages, feedback, and approval |
+| Configuration Administrator | Synthetic Platform Operations | Configure categories, rules, workflow labels, and package settings; activate a version |
+| NGO Preparer | Synthetic Community Nonprofit | Upload evidence, review extraction, edit a draft, resolve findings, and revise a return |
+| NGO Approver | Synthetic Community Nonprofit | Review, attest, generate a package, and submit an exact invoice version |
+| Government Reviewer | Synthetic Public Agency | Review submitted packages, return with structured feedback, and approve a resubmission |
+| Auditor | Synthetic Oversight Unit | Read versions, provenance, events, validation results, packages, feedback, and approval |
 
 All names and artifacts are synthetic and non-branded.
 

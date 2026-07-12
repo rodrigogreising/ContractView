@@ -7,7 +7,7 @@ from app.ingestion import claim_next_job, create_upload_job, list_jobs, process_
 from app.ledger_import import parse_ledger
 from app.runtime import database
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINISTRATOR)
 FILES = Path("/app/fixtures/files")

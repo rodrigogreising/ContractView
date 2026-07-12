@@ -80,6 +80,25 @@ Government Reviewer, Configuration Administrator, or a human decision to
 promote a real release. Journey 11 and release-scope authority evidence remain
 required where those actions are explicitly in scope.
 
+### Public Repository Publication
+
+Public source disclosure is a separate release decision from POC runtime
+certification. A public candidate must:
+
+- be produced from an explicit allowlist under a neutral repository identity;
+- use only synthetic identities and reserved-domain contact data;
+- exclude Git history, private control-plane evidence, local artifacts, and
+  publication tooling;
+- include a security policy and an explicit rights notice;
+- include a machine-readable source SHA, path, file-hash, scan, environment,
+  command, exit-code, test-count, and evidence-artifact manifest; and
+- pass its own clean-database API, frontend, build, and Compose regression.
+
+Immutable AI security/privacy and implementation reviews certify the candidate
+against that manifest. They do not replace the repository owner's explicit
+decision to disclose the candidate. Visibility must remain unchanged until that
+decision is separately recorded.
+
 ## Non-Negotiable Blockers
 
 The release is blocked if any in-scope journey depends on:

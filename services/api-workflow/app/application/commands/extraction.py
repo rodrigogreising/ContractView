@@ -39,7 +39,7 @@ class OcrAdapter(Protocol):
 def parse_vendor_invoice(response: OcrResponse) -> dict[str, str]:
     lines = [line.strip() for line in response.text.splitlines() if line.strip()]
     vendor = next((line for line in lines if len(line) >= 4 and not line.lower().startswith((
-        "synthetic", "vendor invoice", "date:", "description", "workshop", "printed", "approved",
+        "test fixture", "vendor invoice", "date:", "description", "workshop", "printed", "approved",
         "claim only", "expense reference", "no real",
     ))), None)
     date_match = re.search(r"\bDate:\s*(\d{4}-\d{2}-\d{2})", response.text, re.I)

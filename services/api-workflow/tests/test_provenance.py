@@ -14,7 +14,7 @@ from app.provenance import EVENT_TYPES, LineageInput, append_event, append_linea
 from app.application.transaction import transaction as application_database
 from app.runtime import database
 
-CONTRACT = "contract-metro-harbor-2026"
+CONTRACT = "contract-synthetic-agency-ngo-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
 ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINISTRATOR)
 AUDITOR = Actor("user-auditor", "org-oversight", Role.AUDITOR)
@@ -136,7 +136,7 @@ def test_auditor_query_excludes_draft_only_events_after_contract_submission():
 
 
 def test_authentication_and_logout_append_domain_events():
-    token, _, _ = authenticate("ngo.preparer@contractview.demo", "Demo-Prepare-2026!")
+    token, _, _ = authenticate("ngo.preparer@example.test", "Demo-Prepare-2026!")
     revoke_session(token)
     with database() as connection:
         events = connection.execute(

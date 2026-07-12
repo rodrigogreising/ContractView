@@ -16,7 +16,7 @@ Status: Implemented and verified
 
 - EXP-003 presents a printed subtotal of $1,820.00 and an approved claim total of $1,280.00, providing the human extraction-correction path.
 - EXP-004 is dated 2026-07-03, outside the configured June service period, and must trigger `SERVICE_PERIOD` until corrected to 2026-06-30 in version 2.
-- EXP-005 is a separate $1,850.00 Metro Property Services charge one day after EXP-002 and must trigger `POSSIBLE_DUPLICATE`; its distinct invoice number supports warning resolution.
+- EXP-005 is a separate $1,850.00 Synthetic Facilities Vendor A charge one day after EXP-002 and must trigger `POSSIBLE_DUPLICATE`; its distinct invoice number supports warning resolution.
 - Government return code and comment are synthetic and explicitly tied to the service-date correction.
 
 ## Seed Boundary

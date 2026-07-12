@@ -2,25 +2,25 @@
   "scenarioVersion": "poc-v1",
   "syntheticOnly": true,
   "organizations": [
-    {"id": "org-government", "name": "Metro Human Services Agency", "kind": "government"},
-    {"id": "org-ngo", "name": "Harbor Community Services", "kind": "ngo"},
-    {"id": "org-oversight", "name": "Metro Oversight Office", "kind": "oversight"},
-    {"id": "org-operations", "name": "ContractView Demo Operations", "kind": "platform"}
+    {"id": "org-government", "name": "Synthetic Public Agency", "kind": "government"},
+    {"id": "org-ngo", "name": "Synthetic Community Nonprofit", "kind": "ngo"},
+    {"id": "org-oversight", "name": "Synthetic Oversight Unit", "kind": "oversight"},
+    {"id": "org-operations", "name": "Synthetic Platform Operations", "kind": "platform"}
   ],
   "personas": [
-    {"id": "user-config-admin", "displayName": "Alex Morgan", "email": "config.admin@contractview.demo", "password": "Demo-Config-2026!", "organizationId": "org-operations", "role": "configuration_administrator"},
-    {"id": "user-ngo-preparer", "displayName": "Maya Chen", "email": "ngo.preparer@contractview.demo", "password": "Demo-Prepare-2026!", "organizationId": "org-ngo", "role": "ngo_preparer"},
-    {"id": "user-ngo-approver", "displayName": "Jordan Ellis", "email": "ngo.approver@contractview.demo", "password": "Demo-Approve-2026!", "organizationId": "org-ngo", "role": "ngo_approver"},
-    {"id": "user-government-reviewer", "displayName": "Samira Patel", "email": "government.reviewer@contractview.demo", "password": "Demo-Review-2026!", "organizationId": "org-government", "role": "government_reviewer"},
-    {"id": "user-auditor", "displayName": "Noah Williams", "email": "auditor@contractview.demo", "password": "Demo-Audit-2026!", "organizationId": "org-oversight", "role": "auditor"}
+    {"id": "user-config-admin", "displayName": "Synthetic Configuration Administrator", "email": "configuration.admin@example.test", "password": "Demo-Config-2026!", "organizationId": "org-operations", "role": "configuration_administrator"},
+    {"id": "user-ngo-preparer", "displayName": "Synthetic NGO Preparer", "email": "ngo.preparer@example.test", "password": "Demo-Prepare-2026!", "organizationId": "org-ngo", "role": "ngo_preparer"},
+    {"id": "user-ngo-approver", "displayName": "Synthetic NGO Approver", "email": "ngo.approver@example.test", "password": "Demo-Approve-2026!", "organizationId": "org-ngo", "role": "ngo_approver"},
+    {"id": "user-government-reviewer", "displayName": "Synthetic Government Reviewer", "email": "government.reviewer@example.test", "password": "Demo-Review-2026!", "organizationId": "org-government", "role": "government_reviewer"},
+    {"id": "user-auditor", "displayName": "Synthetic Auditor", "email": "auditor@example.test", "password": "Demo-Audit-2026!", "organizationId": "org-oversight", "role": "auditor"}
   ],
   "accessAssignments": [
-    {"contractId": "contract-metro-harbor-2026", "userId": "user-config-admin", "role": "configuration_administrator", "agencyOrganizationId": "org-government"},
-    {"contractId": "contract-metro-harbor-2026", "userId": "user-auditor", "role": "auditor", "agencyOrganizationId": "org-government"}
+    {"contractId": "contract-synthetic-agency-ngo-2026", "userId": "user-config-admin", "role": "configuration_administrator", "agencyOrganizationId": "org-government"},
+    {"contractId": "contract-synthetic-agency-ngo-2026", "userId": "user-auditor", "role": "auditor", "agencyOrganizationId": "org-government"}
   ],
   "contract": {
-    "id": "contract-metro-harbor-2026",
-    "name": "Community Support Services 2026",
+    "id": "contract-synthetic-agency-ngo-2026",
+    "name": "Synthetic Community Services Contract 2026",
     "agencyOrganizationId": "org-government",
     "ngoOrganizationId": "org-ngo",
     "contractStart": "2026-01-01",
@@ -63,7 +63,7 @@
       "approved": "Final approval"
     },
     "package": {
-      "label": "Metro reimbursement review package",
+      "label": "Synthetic reimbursement review package",
       "invoiceTitle": "Synthetic reimbursement invoice",
       "includeValidationSummary": true,
       "includeManifest": true
@@ -74,11 +74,30 @@
     "version2LedgerTotal": "10130.00",
     "extractionProposal": {"expenseId": "EXP-003", "field": "amount", "proposed": "1820.00", "corrected": "1280.00"},
     "blocker": {"expenseId": "EXP-004", "rule": "SERVICE_PERIOD", "version1Value": "2026-07-03", "version2Value": "2026-06-30"},
-    "warning": {"expenseId": "EXP-005", "rule": "POSSIBLE_DUPLICATE", "similarTo": "EXP-002", "resolution": "Separate monthly facilities service documented by invoice INV-2026-0611"},
+    "warning": {"expenseId": "EXP-005", "rule": "POSSIBLE_DUPLICATE", "similarTo": "EXP-002", "resolution": "Separate monthly facilities service documented by invoice SYN-FAC-0611"},
     "governmentReturn": {"code": "SERVICE_DATE_CLARIFICATION", "comment": "Please correct the service date for the outreach equipment charge and resubmit."},
     "finalState": "government_approved",
     "submittedVersions": 2,
     "packageHashesMustDiffer": true,
     "version1MustRemainImmutable": true
+  },
+  "fixtureData": {
+    "ledgerRows": [
+      {"expense_id": "EXP-001", "expense_date": "2026-06-05", "vendor": "Synthetic Community Nonprofit", "description": "June program payroll", "budget_category": "Personnel", "amount": "4200.00", "invoice_number": "SYN-PAYROLL-2026-06", "evidence_file": "payroll-june-2026.xlsx"},
+      {"expense_id": "EXP-002", "expense_date": "2026-06-10", "vendor": "Synthetic Facilities Vendor A", "description": "June facility services", "budget_category": "Facilities", "amount": "1850.00", "invoice_number": "SYN-FAC-0610", "evidence_file": "vendor-invoice-exp-002.pdf"},
+      {"expense_id": "EXP-003", "expense_date": "2026-06-18", "vendor": "Synthetic Program Supplies Vendor B", "description": "Workshop materials", "budget_category": "Program Supplies", "amount": "1280.00", "invoice_number": "SYN-SUP-0618", "evidence_file": "vendor-invoice-exp-003.pdf"},
+      {"expense_id": "EXP-004", "expense_date": "2026-07-03", "vendor": "Synthetic Equipment Vendor C", "description": "Outreach equipment rental", "budget_category": "Program Supplies", "amount": "950.00", "invoice_number": "SYN-EQUIP-0703", "evidence_file": "vendor-invoice-exp-004.png"},
+      {"expense_id": "EXP-005", "expense_date": "2026-06-11", "vendor": "Synthetic Facilities Vendor A", "description": "Additional facility services", "budget_category": "Facilities", "amount": "1850.00", "invoice_number": "SYN-FAC-0611", "evidence_file": "vendor-invoice-exp-005.pdf"}
+    ],
+    "payrollRows": [
+      {"employee_reference": "SYNTHETIC-EMPLOYEE-001", "service_period": "2026-06", "budget_category": "Personnel", "amount": "2400.00"},
+      {"employee_reference": "SYNTHETIC-EMPLOYEE-002", "service_period": "2026-06", "budget_category": "Personnel", "amount": "1800.00"}
+    ],
+    "vendorInvoices": [
+      {"expense_id": "EXP-002", "vendor": "Synthetic Facilities Vendor A", "invoice_number": "SYN-FAC-0610", "date": "2026-06-10", "description": "June facility services", "printed_subtotal": "1850.00", "adjustment": "0.00", "approved_total": "1850.00", "note": "Approved in full for the synthetic June reimbursement package."},
+      {"expense_id": "EXP-003", "vendor": "Synthetic Program Supplies Vendor B", "invoice_number": "SYN-SUP-0618", "date": "2026-06-18", "description": "Workshop materials and learning kits", "printed_subtotal": "1820.00", "adjustment": "-540.00", "approved_total": "1280.00", "note": "Claim only the approved adjusted total; exclude the non-program materials adjustment."},
+      {"expense_id": "EXP-004", "vendor": "Synthetic Equipment Vendor C", "invoice_number": "SYN-EQUIP-0703", "date": "2026-07-03", "description": "Outreach equipment rental", "printed_subtotal": "950.00", "adjustment": "0.00", "approved_total": "950.00", "note": "Invoice date is intentionally outside the configured service period for validation testing."},
+      {"expense_id": "EXP-005", "vendor": "Synthetic Facilities Vendor A", "invoice_number": "SYN-FAC-0611", "date": "2026-06-11", "description": "Additional facility services", "printed_subtotal": "1850.00", "adjustment": "0.00", "approved_total": "1850.00", "note": "Separate synthetic service from SYN-FAC-0610 for duplicate-warning testing."}
+    ]
   }
 }
