@@ -37,7 +37,7 @@ Status: Build
 
 - Static gate: Python 3.12.2 local-compatible runtime, pinned Node 20.20.2,
   102 typed application/script source files, 4 registries/21 contracts, 166 named persistence
-  statements, 45 table owners, 6 layers/9 capabilities, 58 policy/unit tests,
+  statements, 45 table owners, 6 layers/9 capabilities, 59 policy/unit tests,
   13 frontend tests, and production build all pass.
 - Two-pass Compose gate: 178 API tests pass independently in each pass; API,
   web, worker, PostgreSQL, and MinIO health checks pass; both clean resets yield

@@ -38,10 +38,13 @@ jobs:
           cache-dependency-path: apps/web-app/package-lock.json
       - name: Install pinned dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends poppler-utils
           python3 -m pip install --requirement services/api-workflow/requirements.txt --requirement requirements-dev.txt
           npm ci --prefix apps/web-app
       - name: Static, policy, unit, frontend, and build gates
         run: |
+          set -o pipefail
           mkdir -p artifacts/ci
           bash scripts/ci/run_static.sh 2>&1 | tee artifacts/ci/static.log
       - name: Two-pass hermetic Compose certification

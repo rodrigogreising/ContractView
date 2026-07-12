@@ -38,6 +38,10 @@ class CiCertificationTests(unittest.TestCase):
         )
         self.assertEqual(235, MANIFEST.count_tests(content))
 
+    def test_manifest_rejects_evidence_without_passing_tests(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "no passing test count"):
+            MANIFEST.required_test_count("Static", "1 failed in 0.2s\n")
+
     def test_retained_artifacts_are_hashed_and_manifest_is_excluded(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

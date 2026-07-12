@@ -46,6 +46,13 @@ def count_tests(content: str) -> int:
     return sum(int(value) for value in [*pytest_counts, *vitest_counts])
 
 
+def required_test_count(label: str, content: str) -> int:
+    count = count_tests(content)
+    if count <= 0:
+        raise SystemExit(f"{label} evidence contains no passing test count")
+    return count
+
+
 def file_hashes(directory: Path) -> dict[str, str]:
     return {
         str(path.relative_to(directory)): sha256(path.read_bytes()).hexdigest()
@@ -94,7 +101,7 @@ def main() -> int:
         "exitCode": 0,
         "result": "Formatting, fatal lint, mypy, ontology, persistence, module, architecture, SDLC, repository tests, frontend tests, and build passed",
         "recordedAt": recorded,
-        "testCount": count_tests(static_log),
+        "testCount": required_test_count("Static", static_log),
         "artifactHashes": {"static.log": hashes["static.log"]},
     }
     hermetic_check = {
@@ -102,7 +109,7 @@ def main() -> int:
         "exitCode": 0,
         "result": f"Two isolated fresh-volume migration/reset/API/Compose runs passed with identical reset fingerprint {reset_fingerprint}",
         "recordedAt": recorded,
-        "testCount": count_tests(hermetic_logs),
+        "testCount": required_test_count("Hermetic", hermetic_logs),
         "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log"},
     }
     manifest = {
