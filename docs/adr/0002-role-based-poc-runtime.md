@@ -307,3 +307,16 @@ the captured v1 and v2 archive hashes back to the final audit trails, proving
 immutable predecessor evidence and a distinct successor package. This is a
 certification adapter around ADR 0002's existing boundaries, not a new runtime
 layer, capability owner, or distributed deployment.
+
+### SUB-53 Implementation Note: POC Operator Contract
+
+No new ADR is required. `scripts/poc.sh`, Make aliases, npm aliases, and the POC
+runbook form an operations adapter over the existing Compose topology and
+supported management commands. They add no deployable, data owner, authority,
+or provider integration.
+
+The adapter enforces toolchain preconditions, waits for service health, stops
+the worker around deterministic schema/object reset, prints the canonical reset
+fingerprint, and delegates both browser modes to the SUB-26 harness. Parameterized
+host ports support isolated concurrent projects without altering service
+networking or application contracts.

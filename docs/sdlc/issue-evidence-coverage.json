@@ -28,5 +28,35 @@
         "Five distinct personas use normal login/logout and only their server-authorized lifecycle actions"
       ]
     }
+  },
+  "SUB-53": {
+    "riskAndGateLabels": [
+      "gate:adr",
+      "gate:architecture",
+      "gate:release-certification",
+      "gate:security-privacy",
+      "risk:auditability",
+      "risk:configuration-drift"
+    ],
+    "riskCoverage": {
+      "gate:adr": [
+        "ADR 0002 records the no-new-ADR operations adapter rationale and unchanged authority boundaries"
+      ],
+      "gate:architecture": [
+        "Boundary evidence and policy tests prove commands compose existing units without adding a runtime owner"
+      ],
+      "gate:release-certification": [
+        "Hosted static, two-pass hermetic Compose, headless Journey 11, and retained hashes certify the operator contract"
+      ],
+      "gate:security-privacy": [
+        "The runbook limits credentials and state to isolated synthetic POC use and documents evidence retention"
+      ],
+      "risk:auditability": [
+        "Reset fingerprints, service health, browser artifacts, command results, and machine manifests are retained"
+      ],
+      "risk:configuration-drift": [
+        "One script owns Make/npm command delegation and tests keep migration, reset, and browser aliases aligned"
+      ]
+    }
   }
 }

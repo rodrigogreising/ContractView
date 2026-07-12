@@ -6,7 +6,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-contractview}
       POSTGRES_USER: ${POSTGRES_USER:-contractview}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-contractview}
-    ports: ["5432:5432"]
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
     volumes: ["postgres-data:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-contractview} -d ${POSTGRES_DB:-contractview}"]
@@ -19,7 +19,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-contractview}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-contractview-demo-secret}
-    ports: ["9000:9000", "9001:9001"]
+    ports: ["${MINIO_PORT:-9000}:9000", "${MINIO_CONSOLE_PORT:-9001}:9001"]
     volumes: ["minio-data:/data"]
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
@@ -38,7 +38,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:-local-synthetic-poc-only}
       FIXTURE_ROOT: /app/fixtures
       PYTHONPATH: /app
-    ports: ["8000:8000"]
+    ports: ["${API_PORT:-8000}:8000"]
     depends_on:
       postgres: {condition: service_healthy}
       minio: {condition: service_healthy}
@@ -62,7 +62,7 @@ services:
     build:
       context: ./apps/web-app
       args: {VITE_CONTRACTVIEW_DEMO_MODE: "true"}
-    ports: ["4173:80"]
+    ports: ["${WEB_PORT:-4173}:80"]
     depends_on:
       api: {condition: service_healthy}
     healthcheck:

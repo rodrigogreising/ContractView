@@ -101,12 +101,15 @@ class CiCertificationTests(unittest.TestCase):
         )
 
     def test_issue_evidence_coverage_is_complete(self) -> None:
-        profile = MANIFEST.load_evidence_coverage("SUB-26")
-        self.assertEqual(
-            set(profile["riskAndGateLabels"]),
-            set(profile["riskCoverage"]),
-        )
-        self.assertIn("risk:human-authority", profile["riskAndGateLabels"])
+        for issue in ("SUB-26", "SUB-53"):
+            with self.subTest(issue=issue):
+                profile = MANIFEST.load_evidence_coverage(issue)
+                self.assertEqual(
+                    set(profile["riskAndGateLabels"]),
+                    set(profile["riskCoverage"]),
+                )
+        sub_26 = MANIFEST.load_evidence_coverage("SUB-26")
+        self.assertIn("risk:human-authority", sub_26["riskAndGateLabels"])
 
     def test_stale_prerequisite_is_rejected(self) -> None:
         with self.assertRaisesRegex(SystemExit, "not an ancestor of the PR base"):

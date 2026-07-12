@@ -248,3 +248,17 @@ The same scenario must pass headless and in a paced headed mode. Passing this
 gate certifies the harness and its integration into required CI. SUB-55 remains
 the terminal release decision, and SUB-53 remains responsible for documented
 operator-facing reproducible commands.
+
+## SUB-53 Reproducible Operations Gate
+
+SUB-53 is eligible for approval only when the immutable diff and executable
+evidence prove a clean-checkout operator can validate prerequisites; start,
+stop, migrate, seed/reset, and health-check the complete stack; independently
+start API, worker, and web boundaries; and invoke headless and paced headed
+Journey 11 without SQL or test-only state mutation.
+
+The runbook must identify every synthetic-only default, prohibit real data and
+credential reuse, record the local no-external-key extraction adapter, preserve
+the worker/reset ordering, and retain deterministic fingerprints and browser
+artifacts. Passing this gate unblocks SUB-55 but does not replace its terminal
+release review.
