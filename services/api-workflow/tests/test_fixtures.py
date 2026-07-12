@@ -90,6 +90,13 @@ def test_binary_fixture_metadata_and_text_are_explicitly_synthetic() -> None:
         pdf_text.append(result.stdout)
         assert "Test fixture only" in result.stdout
         assert "no real organization" in result.stdout.lower()
+        metadata = subprocess.run(
+            ["pdfinfo", str(path)], check=True, capture_output=True, text=True
+        ).stdout
+        assert "Title:           Synthetic vendor invoice" in metadata
+        assert "Author:          Synthetic Fixture Generator" in metadata
+        assert "Creator:         Synthetic Fixture Generator" in metadata
+        assert "Producer:        Synthetic Fixture Generator" in metadata
     combined_pdf_text = "\n".join(pdf_text)
     assert expected_vendors <= {
         line.strip()

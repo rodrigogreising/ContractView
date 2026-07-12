@@ -61,9 +61,16 @@ def verify_source_hashes(candidate: Path, manifest: dict) -> None:
         for relative, expected_digest in expected.items()
         if actual.get(relative) != expected_digest
     )
-    if missing or changed:
+    actual_paths = {
+        str(path.relative_to(candidate))
+        for path in candidate.rglob("*")
+        if path.is_file() and path.name != "PUBLICATION-MANIFEST.json"
+    }
+    unexpected = sorted(actual_paths - set(expected))
+    if missing or changed or unexpected:
         raise SystemExit(
-            f"Candidate differs from its manifest; missing={missing}, changed={changed}"
+            "Candidate differs from its manifest; "
+            f"missing={missing}, changed={changed}, unexpected={unexpected}"
         )
 
 

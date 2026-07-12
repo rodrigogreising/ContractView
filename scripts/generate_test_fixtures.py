@@ -87,6 +87,7 @@ def vendor_pdf(path: Path, invoice: dict[str, str]) -> None:
     document.setCreator(GENERATOR)
     document.setTitle("Synthetic vendor invoice")
     document.setSubject("Test fixture containing no real organization or transaction")
+    document._doc.info.producer = GENERATOR
     width, height = letter
     y = height - 60
 

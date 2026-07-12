@@ -40,11 +40,13 @@ class PublicationCandidateTests(unittest.TestCase):
 
     def test_neutral_identity_rewrite_is_complete(self) -> None:
         transformed = MODULE.neutralize(
-            "ContractView contractview CONTRACTVIEW @contractview/web-app"
+            "ContractView contractview CONTRACTVIEW @contractview/web-app SUB-79 REC-12"
         )
         self.assertNotIn("contractview", transformed.lower())
         self.assertIn(MODULE.PUBLIC_TITLE, transformed)
         self.assertIn(MODULE.PUBLIC_IDENTIFIER, transformed)
+        self.assertNotIn("SUB-79", transformed)
+        self.assertNotIn("REC-12", transformed)
 
     def test_rejects_non_reserved_identity_and_secret_shapes(self) -> None:
         failures: list[str] = []
@@ -85,6 +87,21 @@ class PublicationCandidateTests(unittest.TestCase):
             source.write_text("changed", encoding="utf-8")
             with self.assertRaises(SystemExit):
                 CERTIFIER.verify_source_hashes(candidate, manifest)
+
+    def test_certifier_rejects_an_unhashed_extra_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            candidate = Path(directory)
+            source = candidate / "source.txt"
+            source.write_text("original", encoding="utf-8")
+            manifest = {"fileHashes": {"source.txt": CERTIFIER.digest(source)}}
+            (candidate / "unexpected.txt").write_text("extra", encoding="utf-8")
+            with self.assertRaises(SystemExit):
+                CERTIFIER.verify_source_hashes(candidate, manifest)
+
+    def test_private_control_plane_reference_is_rejected(self) -> None:
+        failures: list[str] = []
+        MODULE.verify_text(Path("README.md"), "internal SUB-79 evidence", failures)
+        self.assertEqual(["README.md: contains a private control-plane reference"], failures)
 
     def test_certifier_counts_colored_test_summaries(self) -> None:
         self.assertEqual(177, CERTIFIER.count_pytest("\x1b[32m177 passed in 9.2s\x1b[0m\n"))

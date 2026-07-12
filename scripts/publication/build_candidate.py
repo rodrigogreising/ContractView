@@ -86,11 +86,15 @@ SECRET_PATTERNS = (
     re.compile(r"AIza[0-9A-Za-z_-]{35}"),
 )
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+)")
+PRIVATE_REFERENCE_PATTERNS = (
+    re.compile(r"\bSUB-[0-9]+\b"),
+    re.compile(r"\bREC-[0-9]+\b"),
+)
 
 
 def tracked_files() -> list[str]:
     result = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        ["git", "ls-files", "--cached"],
         cwd=ROOT,
         check=True,
         capture_output=True,
@@ -116,23 +120,32 @@ def neutralize(content: str) -> str:
         .replace("CONTRACTVIEW", "SYNTHETIC_REIMBURSEMENT_POC")
         .replace("contractview", PUBLIC_IDENTIFIER)
     )
-    return (
+    neutral = (
         neutral.replace(f"@{PUBLIC_IDENTIFIER}", f"@{PUBLIC_SLUG}")
         .replace(
             f"{PUBLIC_IDENTIFIER}-artifacts",
             "synthetic-reimbursement-poc-artifacts",
         )
     )
+    neutral = re.sub(r"\bSUB-[0-9]+\b", "implementation milestone", neutral)
+    return re.sub(r"\bREC-[0-9]+\b", "recovery milestone", neutral)
 
 
 def binary_text(path: Path) -> str:
     if path.suffix == ".pdf":
-        return subprocess.run(
+        page_text = subprocess.run(
             ["pdftotext", str(path), "-"],
             check=True,
             capture_output=True,
             text=True,
         ).stdout
+        metadata = subprocess.run(
+            ["pdfinfo", str(path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+        return page_text + "\n" + metadata
     if path.suffix == ".xlsx":
         with zipfile.ZipFile(path) as archive:
             return "\n".join(
@@ -170,6 +183,9 @@ def verify_text(path: Path, content: str, failures: list[str]) -> None:
     for pattern in SECRET_PATTERNS:
         if pattern.search(content):
             failures.append(f"{path}: contains a high-confidence secret shape")
+    for pattern in PRIVATE_REFERENCE_PATTERNS:
+        if pattern.search(content):
+            failures.append(f"{path}: contains a private control-plane reference")
     for match in EMAIL.finditer(content):
         domain = match.group(1).lower()
         if not (
@@ -188,7 +204,7 @@ def build(output: Path, source_sha: str) -> dict:
     excluded_paths: list[str] = []
     for relative in tracked_files():
         if not included(relative):
-            excluded_paths.append(relative)
+            excluded_paths.append(neutralize(relative))
             continue
         source = ROOT / relative
         destination_relative = public_path(relative)
@@ -215,6 +231,7 @@ def build(output: Path, source_sha: str) -> dict:
         if not path.is_file():
             continue
         relative = str(path.relative_to(output))
+        verify_text(Path(relative), relative, failures)
         if ".git" in path.parts:
             failures.append(f"{relative}: Git metadata is prohibited")
         if path.suffix in TEXT_SUFFIXES or path.name in {
@@ -263,7 +280,11 @@ def build(output: Path, source_sha: str) -> dict:
         "visibilityChanged": False,
     }
     manifest_path = output / "PUBLICATION-MANIFEST.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    manifest_text = json.dumps(manifest, indent=2) + "\n"
+    verify_text(manifest_path, manifest_text, failures)
+    if failures:
+        raise SystemExit("Publication candidate rejected:\n- " + "\n- ".join(failures))
+    manifest_path.write_text(manifest_text, encoding="utf-8")
     print(
         f"Built structurally verified candidate with {len(hashes)} files at {output}"
     )
@@ -275,13 +296,26 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-sha")
     args = parser.parse_args()
-    source_sha = args.source_sha or subprocess.run(
+    source_sha = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if status:
+        raise SystemExit("Publication export requires a clean Git worktree")
+    if args.source_sha and args.source_sha != source_sha:
+        raise SystemExit(
+            f"Requested source SHA {args.source_sha} does not match HEAD {source_sha}"
+        )
     build(args.output.resolve(), source_sha)
     return 0
 

@@ -18,9 +18,3 @@ Do not submit real customer, employer, employee, client, vendor, bank, tax,
 health, identity, authentication, or payment data. Demonstrations and bug
 reports must use the committed synthetic fixtures or newly generated synthetic
 data.
-
-## Disclosure
-
-Public visibility is a separate owner decision. The private engineering
-repository, Git history, PR discussion, CI artifacts, and control-plane links
-must not be disclosed as a substitute for the certified publication candidate.
