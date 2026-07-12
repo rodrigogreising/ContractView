@@ -24,6 +24,7 @@ REVIEW_SKILLS = [
     "cv-review-journey-certification",
     "cv-review-release-readiness",
 ]
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 
 def now() -> str:
@@ -35,8 +36,13 @@ def command_version(*command: str) -> str:
 
 
 def count_tests(content: str) -> int:
-    pytest_counts = re.findall(r"(?m)^\s*(\d+) passed(?: in [0-9.]+s)?\s*$", content)
-    vitest_counts = re.findall(r"(?m)^\s*Tests\s+(\d+) passed(?:\s+\(\d+\))?\s*$", content)
+    normalized = ANSI_ESCAPE.sub("", content)
+    pytest_counts = re.findall(
+        r"(?m)^\s*(\d+) passed(?: in [0-9.]+s)?\s*$", normalized
+    )
+    vitest_counts = re.findall(
+        r"(?m)^\s*Tests\s+(\d+) passed(?:\s+\(\d+\))?\s*$", normalized
+    )
     return sum(int(value) for value in [*pytest_counts, *vitest_counts])
 
 

@@ -32,8 +32,8 @@ class CiCertificationTests(unittest.TestCase):
     def test_test_count_covers_pytest_and_vitest(self) -> None:
         content = (
             "46 passed in 0.19s\n"
-            "Test Files  2 passed (2)\n"
-            "Tests  13 passed (13)\n"
+            "\x1b[2m Test Files \x1b[22m \x1b[1m\x1b[32m2 passed\x1b[39m\x1b[22m (2)\n"
+            "\x1b[2m      Tests \x1b[22m \x1b[1m\x1b[32m13 passed\x1b[39m\x1b[22m (13)\n"
             "176 passed in 4.0s\n"
         )
         self.assertEqual(235, MANIFEST.count_tests(content))
