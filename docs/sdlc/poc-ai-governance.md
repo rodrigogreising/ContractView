@@ -174,3 +174,17 @@ AI-generated configuration. The runbook explicitly records that the supported
 adapter is local, requires no external credential, produces draft fields only,
 and sends no bytes to a third party. Operator commands cannot turn AI output
 into deterministic validation or a human-authority action.
+
+## SUB-55 Terminal Journey AI Boundary
+
+SUB-55 changes no provider, model, prompt, parser, schema, threshold, supported
+document class, or configuration authority. The recorded browser journey
+observes the local adapter create draft fields, requires an NGO Preparer to
+correct the intentionally wrong proposed value, and only then executes shared
+deterministic rules. Separate canonical humans perform configuration approval,
+attestation, submission, return, correction, resubmission, and final approval.
+
+The final replay evidence verifies retained provider/model/prompt/parser
+identifiers without calling live AI. The permission summary is derived from
+the closed role vocabulary and grants no action. A system or AI actor remains
+unable to activate configuration or perform any human-authority transition.

@@ -262,3 +262,27 @@ credential reuse, record the local no-external-key extraction adapter, preserve
 the worker/reset ordering, and retain deterministic fingerprints and browser
 artifacts. Passing this gate unblocks SUB-55 but does not replace its terminal
 release review.
+
+## SUB-55 Terminal POC Release Gate
+
+SUB-55 is certifiable only when its issue-scoped immutable PR diff and hosted
+manifest prove all acceptance criteria against the exact candidate head. Every
+persona must visibly show name, organization, role, bounded permissions, and
+logout. The UI must execute configuration activation, upload/processing,
+extraction correction, deterministic validation, attestation, package
+generation, submission, Government return, NGO revision/resubmission, final
+Government approval, and Auditor reconstruction.
+
+The release evidence must also prove direct forbidden API commands fail
+without mutation, retained validation/package inputs replay exactly, v1 remains
+unchanged, v2 has distinct identities and bytes, and the Auditor has no
+mutation surface. Both clean headless and default paced headed modes retain
+machine results, video, trace, screenshots, HTML, logs, Compose state, exact
+SHAs, commands, versions, counts, and hashes.
+
+Applicable ADR/architecture, boundary, security/privacy, AI/configuration,
+traceability, implementation, journey, and release AI reviews must all return
+`Approved` against one immutable base/head diff. Human code review is not a
+gate. This synthetic development POC may be `Certified` after merge and clean
+post-merge verification; staging, production, real data, or a real-world
+release promotion remains a separately human decision.

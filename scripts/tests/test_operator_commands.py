@@ -42,6 +42,8 @@ class OperatorCommandTests(unittest.TestCase):
         for command in ("start", "stop", "migrate", "seed", "reset", "health"):
             self.assertIn(f"bash scripts/poc.sh {command}", makefile)
         self.assertIn("bash scripts/poc.sh certify-headless", makefile)
+        self.assertIn('certify-headless "$(EVIDENCE_DIR)"', makefile)
+        self.assertIn('record-headed "$(EVIDENCE_DIR)"', makefile)
         self.assertIn("bash scripts/poc.sh record-headed", makefile)
         self.assertIn("bash scripts/poc.sh start", package)
         self.assertIn("bash scripts/poc.sh reset", package)

@@ -79,5 +79,64 @@
         "One script owns Make/npm command delegation and tests keep migration, reset, and browser aliases aligned"
       ]
     }
+  },
+  "SUB-55": {
+    "projectStatus": "Evidence Review",
+    "certificationRationale": "Terminal POC certification proves the complete Journey 11 lifecycle, visible persona permissions, server-side denials without mutation, deterministic replay, immutable versions, and retained release artifacts from isolated state.",
+    "includeJourneyInCleanRuntime": true,
+    "reviewSkills": [
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-requirements-traceability",
+      "cv-review-implementation-tests",
+      "cv-review-journey-certification",
+      "cv-review-release-readiness"
+    ],
+    "riskAndGateLabels": [
+      "gate:adr",
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:ai-governance",
+      "gate:config-governance",
+      "gate:release-certification",
+      "risk:auditability",
+      "risk:human-authority",
+      "risk:configuration-drift",
+      "risk:ai-authority"
+    ],
+    "riskCoverage": {
+      "gate:adr": [
+        "ADR 0002 records the terminal external-certification adapter and no-new-runtime-decision rationale"
+      ],
+      "gate:architecture": [
+        "Boundary fitness tests and the public-surface Playwright run prove one modular monolith with no client authority or new owner"
+      ],
+      "gate:security-privacy": [
+        "Synthetic-only fixtures, normal revocable sessions, direct 403 assertions, zero-mutation tests, and isolated retained evidence cover the POC threat boundary"
+      ],
+      "gate:ai-governance": [
+        "The real local adapter produces reviewed draft fields only; deterministic rules and canonical humans own every downstream decision"
+      ],
+      "gate:config-governance": [
+        "Visible UI execution and lifecycle tests prove draft, immutable test evidence, human approval, and prospective activation before invoice work"
+      ],
+      "gate:release-certification": [
+        "Hosted static and two-pass Compose gates plus clean headless and paced headed Journey 11 retain machine results, video, trace, screenshots, logs, state, and hashes"
+      ],
+      "risk:auditability": [
+        "The Auditor reconstructs exact actors, versions, relations, snapshots, validation/package manifests, and both archive hashes while v1 remains unchanged"
+      ],
+      "risk:human-authority": [
+        "All five personas display bounded permissions and use distinct normal sessions; only assigned humans perform configuration, attestation, submission, return, and approval"
+      ],
+      "risk:configuration-drift": [
+        "Pinned tools, exact contracts, deterministic reset fingerprints, validation replay, and byte-identical package replay constrain environment and configuration drift"
+      ],
+      "risk:ai-authority": [
+        "Playwright observes human correction of the AI draft before deterministic validation and proves no AI/system authority action occurs"
+      ]
+    }
   }
 }

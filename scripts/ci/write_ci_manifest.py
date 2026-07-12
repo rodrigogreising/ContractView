@@ -140,6 +140,14 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
     labels = profile.get("riskAndGateLabels")
     coverage = profile.get("riskCoverage")
     review_skills = profile.get("reviewSkills")
+    project_status = profile.get("projectStatus", "Build")
+    certification_rationale = profile.get(
+        "certificationRationale",
+        "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
+    )
+    include_journey_in_clean_runtime = profile.get(
+        "includeJourneyInCleanRuntime", False
+    )
     if (
         not isinstance(labels, list)
         or not labels
@@ -166,10 +174,25 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
             or any(not isinstance(item, str) or not item.strip() for item in evidence)
         ):
             raise SystemExit(f"Evidence coverage is invalid for {issue} label {label}")
+    if project_status not in {
+        "Design Review",
+        "Build",
+        "Evidence Review",
+        "Rollout",
+        "Completed",
+    }:
+        raise SystemExit(f"Project status is invalid for {issue}")
+    if not isinstance(certification_rationale, str) or not certification_rationale.strip():
+        raise SystemExit(f"Certification rationale is invalid for {issue}")
+    if not isinstance(include_journey_in_clean_runtime, bool):
+        raise SystemExit(f"Clean runtime journey flag is invalid for {issue}")
     return {
         "riskAndGateLabels": labels,
         "riskCoverage": coverage,
         "reviewSkills": review_skills,
+        "projectStatus": project_status,
+        "certificationRationale": certification_rationale,
+        "includeJourneyInCleanRuntime": include_journey_in_clean_runtime,
     }
 
 
@@ -225,7 +248,7 @@ def main() -> int:
     }
     manifest = {
         "issue": issue,
-        "projectStatus": "Build",
+        "projectStatus": evidence_coverage["projectStatus"],
         "branch": args.branch,
         "baseSha": args.base_sha,
         "headSha": args.head_sha,
@@ -245,12 +268,19 @@ def main() -> int:
         "checks": [static_check, hermetic_check, journey_check],
         "certification": {
             "behaviorChanged": True,
-            "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
+            "rationale": evidence_coverage["certificationRationale"],
             "requiredReviewSkills": evidence_coverage["reviewSkills"],
             "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
             "riskCoverage": evidence_coverage["riskCoverage"],
             "cleanRuntimeRequired": True,
-            "cleanRuntimeChecks": [hermetic_check],
+            "cleanRuntimeChecks": [
+                hermetic_check,
+                *(
+                    [journey_check]
+                    if evidence_coverage["includeJourneyInCleanRuntime"]
+                    else []
+                ),
+            ],
         },
         "review": {
             "decision": "Pending",

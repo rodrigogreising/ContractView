@@ -100,12 +100,13 @@ input {
 .identity {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 18px;
   padding: 14px 28px;
   background: #fff;
   border-bottom: 1px solid #d6d9d0;
 }
-.identity div {
+.identity-person {
   display: flex;
   flex-direction: column;
   margin-right: auto;
@@ -120,6 +121,11 @@ input {
   color: #294d37 !important;
   font-weight: 700;
   font-size: 0.86rem;
+}
+.permission-summary {
+  max-width: 29rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 .panel {
   margin-top: 40px;

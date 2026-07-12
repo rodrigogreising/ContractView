@@ -7,12 +7,43 @@ import appSource from "./App.tsx?raw";
 import { AuditorWorkspace } from "./workspaces/AuditorWorkspace";
 import type { AuditTimelineDto } from "./generated/contracts";
 import { roleLabel } from "./presentation/roleLabel";
+import { IdentityHeader, permissionSummary } from "./presentation/IdentityHeader";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("web module boundaries", () => {
   it("renders camel-case ontology fields as accessible words", () => {
     expect(roleLabel("sourceReference")).toBe("Source Reference");
+  });
+  it("renders the exact bounded permissions for every authenticated role", () => {
+    const cases = [
+      ["configuration_administrator", "Configure, test, approve, and activate assigned contracts"],
+      ["ngo_preparer", "Upload, correct, assemble, validate, and resolve assigned drafts"],
+      ["ngo_approver", "Attest, package, and submit assigned invoice versions"],
+      ["government_reviewer", "Review, return, and approve assigned submissions"],
+      ["auditor", "Read-only audit access to assigned submissions"],
+    ] as const;
+    for (const [role, permissions] of cases) {
+      expect(permissionSummary(role)).toBe(permissions);
+      const html = renderToString(
+        <IdentityHeader
+          user={{
+            id: `${role}-1`,
+            displayName: roleLabel(role),
+            email: `${role}@example.test`,
+            organizationId: "organization-1",
+            organizationName: "Synthetic Organization",
+            role,
+          }}
+          activeConfiguration={null}
+          onLogout={() => {}}
+        />,
+      );
+      expect(html).toContain('aria-label="Permissions"');
+      expect(html).toContain("Permissions:");
+      expect(html).toContain(permissions);
+      expect(html).toContain("Log out");
+    }
   });
   it("keeps transport and fixed contract selection out of the application shell", () => {
     expect(appSource).not.toContain("fetch(");

@@ -6,15 +6,15 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = path.resolve(here, "../../../packages/test-fixtures/files");
 
 const personas = {
-  administrator: ["configuration.admin@example.test", "Demo-Config-2026!", "Synthetic Configuration Administrator", "Synthetic Platform Operations", "Configuration Administrator"],
-  preparer: ["ngo.preparer@example.test", "Demo-Prepare-2026!", "Synthetic NGO Preparer", "Synthetic Community Nonprofit", "NGO Preparer"],
-  approver: ["ngo.approver@example.test", "Demo-Approve-2026!", "Synthetic NGO Approver", "Synthetic Community Nonprofit", "NGO Approver"],
-  government: ["government.reviewer@example.test", "Demo-Review-2026!", "Synthetic Government Reviewer", "Synthetic Public Agency", "Government Reviewer"],
-  auditor: ["auditor@example.test", "Demo-Audit-2026!", "Synthetic Auditor", "Synthetic Oversight Unit", "Auditor"],
+  administrator: ["configuration.admin@example.test", "Demo-Config-2026!", "Synthetic Configuration Administrator", "Synthetic Platform Operations", "Configuration Administrator", "Configure, test, approve, and activate assigned contracts"],
+  preparer: ["ngo.preparer@example.test", "Demo-Prepare-2026!", "Synthetic NGO Preparer", "Synthetic Community Nonprofit", "NGO Preparer", "Upload, correct, assemble, validate, and resolve assigned drafts"],
+  approver: ["ngo.approver@example.test", "Demo-Approve-2026!", "Synthetic NGO Approver", "Synthetic Community Nonprofit", "NGO Approver", "Attest, package, and submit assigned invoice versions"],
+  government: ["government.reviewer@example.test", "Demo-Review-2026!", "Synthetic Government Reviewer", "Synthetic Public Agency", "Government Reviewer", "Review, return, and approve assigned submissions"],
+  auditor: ["auditor@example.test", "Demo-Audit-2026!", "Synthetic Auditor", "Synthetic Oversight Unit", "Auditor", "Read-only audit access to assigned submissions"],
 } as const;
 
 async function login(page: Page, persona: keyof typeof personas, testInfo: TestInfo) {
-  const [email, password, user, organization, role] = personas[persona];
+  const [email, password, user, organization, role, permissions] = personas[persona];
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
@@ -22,6 +22,7 @@ async function login(page: Page, persona: keyof typeof personas, testInfo: TestI
   await expect(page.locator("header.identity")).toContainText(user);
   await expect(page.locator("header.identity")).toContainText(organization);
   await expect(page.locator("header.identity")).toContainText(role);
+  await expect(page.getByLabel("Permissions")).toHaveText(`Permissions: ${permissions}`);
   await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath(`${persona}-workspace.png`), fullPage: true });
 }

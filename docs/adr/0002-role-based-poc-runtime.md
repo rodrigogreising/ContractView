@@ -320,3 +320,18 @@ the worker around deterministic schema/object reset, prints the canonical reset
 fingerprint, and delegates both browser modes to the SUB-26 harness. Parameterized
 host ports support isolated concurrent projects without altering service
 networking or application contracts.
+
+### SUB-55 Implementation Note: Terminal POC Certification
+
+No new ADR is required. SUB-55 closes the release-evidence loop around the
+existing runtime, browser harness, and operator contract. A shared React
+identity header visibly describes each role's bounded actions; this is a
+presentational explanation of the server-owned role and never grants authority.
+The Playwright client asserts the description alongside the canonical user,
+organization, role, normal logout, and direct server denials.
+
+The terminal certification remains outside the modular-monolith capability
+graph. It drives public web/API surfaces, starts from isolated Compose state,
+and retains machine results, video, trace, screenshots, runtime logs, service
+state, and hashes. It adds no deployable, table owner, configuration primitive,
+provider integration, or system/AI authority.

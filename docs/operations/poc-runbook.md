@@ -110,6 +110,16 @@ screenshots, HTML, runtime logs, and Compose state:
 make journey11-headless
 ```
 
+To retain evidence at a specific path, pass the Make variable explicitly:
+
+```bash
+make journey11-headless EVIDENCE_DIR=artifacts/journey11/release-headless
+make journey11-headed EVIDENCE_DIR=artifacts/journey11/release-headed
+```
+
+The Make targets forward that directory to the same operator script; omitting
+it preserves the timestamped default.
+
 Paced headed recording executes the same scenario. Its default slow motion is
 650 milliseconds between browser actions:
 

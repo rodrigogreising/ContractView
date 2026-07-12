@@ -377,3 +377,28 @@ Controlling issue: `SUB-53`. Project stage: Build.
 
 This adds no public write path, hosted credentials, customer data, support
 access, production storage, or production promotion authority.
+
+## SUB-55 Terminal POC Security Evidence
+
+Controlling issue: `SUB-55`. Project stage: Evidence Review.
+
+- Every authenticated header visibly states the current synthetic user,
+  organization, role, bounded permission summary, and logout. The summary is
+  usability evidence only; application authorization still resolves the
+  canonical session, assignment, resource, lifecycle state, and action.
+- The canonical journey uses distinct server-issued sessions and logs out
+  before every persona handoff. Direct forbidden API commands must return `403`
+  and existing zero-mutation integration tests remain part of the static and
+  hermetic gates.
+- Browser media, traces, HTML, logs, and machine results contain only the
+  closed synthetic fixture catalog and reserved-domain identities. No external
+  provider credential or customer data enters the run.
+- Unique Compose projects and fresh PostgreSQL/MinIO volumes isolate candidate
+  and headed-demo runs; retained evidence is hashed before the environment is
+  destroyed.
+
+Residual risks remain the accepted local synthetic-POC exclusions: no hosted
+retention/backup/legal hold, SSO/MFA, malware scanning, real-data approval, or
+production penetration test. The public full-history/license/hosted-secret-
+scanning exceptions are unchanged. This certification cannot promote staging,
+production, or real data.
