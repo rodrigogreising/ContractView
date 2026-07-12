@@ -6,10 +6,14 @@ import { demoMode, demoPersonas } from "./demo/personas";
 import appSource from "./App.tsx?raw";
 import { AuditorWorkspace } from "./workspaces/AuditorWorkspace";
 import type { AuditTimelineDto } from "./generated/contracts";
+import { roleLabel } from "./presentation/roleLabel";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("web module boundaries", () => {
+  it("renders camel-case ontology fields as accessible words", () => {
+    expect(roleLabel("sourceReference")).toBe("Source Reference");
+  });
   it("keeps transport and fixed contract selection out of the application shell", () => {
     expect(appSource).not.toContain("fetch(");
     expect(appSource).not.toContain("contract-synthetic-agency-ngo-2026");

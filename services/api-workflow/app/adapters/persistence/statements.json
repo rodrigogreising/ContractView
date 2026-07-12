@@ -649,7 +649,7 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select v.id,v.version,v.payload,e.state,e.action,e.actor_id,e.actor_role,e.actor_organization_id,e.rationale,e.test_evidence_id,e.approval_id,e.predecessor_version_id,e.successor_version_id,e.rollback_target_version_id,e.event_hash,e.occurred_at,(a.configuration_version_id=v.id)\n               from configuration_versions v join configuration_lifecycle_events e on e.configuration_version_id=v.id\n               left join configuration_active_versions a on a.contract_id=v.contract_id\n               where v.contract_id=%s order by v.version,e.sequence",
+    "sql": "select v.id,v.version,v.payload,e.state,e.action,e.actor_id,e.actor_role,e.actor_organization_id,e.rationale,e.test_evidence_id,e.approval_id,e.predecessor_version_id,e.successor_version_id,e.rollback_target_version_id,e.event_hash,e.occurred_at,coalesce(a.configuration_version_id=v.id,false)\n               from configuration_versions v join configuration_lifecycle_events e on e.configuration_version_id=v.id\n               left join configuration_active_versions a on a.contract_id=v.contract_id\n               where v.contract_id=%s order by v.version,e.sequence",
     "writeTables": []
   },
   "CONFIGURATION_WRITE_CONFIGURATION_DRAFTS_001": {

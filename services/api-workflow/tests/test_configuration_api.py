@@ -68,6 +68,14 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         assert candidate["state"] == "tested"
         assert candidate["testEvidence"]["passed"] is True
 
+        preactivation = client.get(f"/configuration/lifecycle?contractId={CONTRACT}")
+        assert preactivation.status_code == 200
+        tested_version = {
+            item["id"]: item for item in preactivation.json()["versions"]
+        }[candidate["id"]]
+        assert tested_version["active"] is False
+        assert tested_version["state"] == "tested"
+
         approved = client.post(
             f"/configuration/versions/{candidate['id']}/approve",
             json={"rationale": "Human administrator approved HTTP evidence"},

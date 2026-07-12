@@ -1,4 +1,4 @@
-.PHONY: start stop logs migrate seed reset health test
+.PHONY: start stop logs migrate seed reset health test journey11-headless journey11-headed
 start:
 	docker compose up --build -d
 stop:
@@ -17,3 +17,7 @@ health:
 test:
 	docker compose run --rm api pytest
 	docker compose run --rm web-test
+journey11-headless:
+	bash scripts/run_journey11.sh headless
+journey11-headed:
+	bash scripts/run_journey11.sh headed

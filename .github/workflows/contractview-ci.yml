@@ -35,13 +35,17 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: apps/web-app/package-lock.json
+          cache-dependency-path: |
+            apps/web-app/package-lock.json
+            tests/e2e/package-lock.json
       - name: Install pinned dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends poppler-utils
           python3 -m pip install --requirement services/api-workflow/requirements.txt --requirement requirements-dev.txt
           npm ci --prefix apps/web-app
+          npm ci --prefix tests/e2e
+          npm exec --prefix tests/e2e -- playwright install --with-deps chromium
       - name: Static, policy, unit, frontend, and build gates
         run: |
           set -o pipefail
@@ -49,6 +53,8 @@ jobs:
           bash scripts/ci/run_static.sh 2>&1 | tee artifacts/ci/static.log
       - name: Two-pass hermetic Compose certification
         run: bash scripts/ci/run_hermetic.sh artifacts/ci
+      - name: Headless Journey 11 browser certification
+        run: bash scripts/run_journey11.sh headless artifacts/ci/journey11
       - name: Build schema-valid PR evidence manifest
         if: github.event_name == 'pull_request' && success()
         run: |

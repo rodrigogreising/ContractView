@@ -20,6 +20,7 @@ REVIEW_SKILLS = [
     "cv-review-adr-architecture",
     "cv-review-boundary-review",
     "cv-review-security-privacy",
+    "cv-review-ai-governance",
     "cv-review-requirements-traceability",
     "cv-review-implementation-tests",
     "cv-review-journey-certification",
@@ -53,6 +54,16 @@ def required_test_count(label: str, content: str) -> int:
     if count <= 0:
         raise SystemExit(f"{label} evidence contains no passing test count")
     return count
+
+
+def playwright_test_count(result: dict) -> int:
+    stats = result.get("stats", {})
+    expected = stats.get("expected")
+    if not isinstance(expected, int) or expected <= 0:
+        raise SystemExit("Journey 11 evidence contains no passing browser test")
+    if stats.get("unexpected") != 0 or stats.get("flaky") != 0:
+        raise SystemExit("Journey 11 browser evidence is not clean")
+    return expected
 
 
 def file_hashes(directory: Path) -> dict[str, str]:
@@ -151,6 +162,10 @@ def main() -> int:
     reset_fingerprint = (args.output_dir / "reset-fingerprint.sha256").read_text().strip()
     recorded = now()
     hashes = file_hashes(args.output_dir)
+    journey_result_path = args.output_dir / "journey11" / "results.json"
+    if not journey_result_path.exists():
+        raise SystemExit("Journey 11 browser evidence is missing")
+    journey_count = playwright_test_count(json.loads(journey_result_path.read_text()))
     static_check = {
         "command": "bash scripts/ci/run_static.sh",
         "exitCode": 0,
@@ -165,7 +180,15 @@ def main() -> int:
         "result": f"Two isolated fresh-volume migration/reset/API/Compose runs passed with identical reset fingerprint {reset_fingerprint}",
         "recordedAt": recorded,
         "testCount": required_test_count("Hermetic", hermetic_logs),
-        "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log"},
+        "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log" and not name.startswith("journey11/")},
+    }
+    journey_check = {
+        "command": "bash scripts/run_journey11.sh headless artifacts/ci/journey11",
+        "exitCode": 0,
+        "result": "Clean Compose Journey 11 passed through normal five-persona login/logout with retained video, trace, screenshots, and JSON result",
+        "recordedAt": recorded,
+        "testCount": journey_count,
+        "artifactHashes": {name: digest for name, digest in hashes.items() if name.startswith("journey11/")},
     }
     manifest = {
         "issue": issue,
@@ -186,12 +209,12 @@ def main() -> int:
             "docker": command_version("docker", "--version"),
             "dockerCompose": command_version("docker", "compose", "version"),
         },
-        "checks": [static_check, hermetic_check],
+        "checks": [static_check, hermetic_check, journey_check],
         "certification": {
             "behaviorChanged": True,
             "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
             "requiredReviewSkills": REVIEW_SKILLS,
-            "evidenceKinds": ["policy", "unit", "integration", "boundary", "migration", "frontend", "compose", "artifact"],
+            "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
             "riskCoverage": {
                 "gate:release-certification": [
                     "Pinned format/lint/type/test/build gates",

@@ -337,3 +337,25 @@ Controlling issue: `SUB-50`. Project stage: Build.
 
 All content remains synthetic and reserved-domain. This adds no broader
 retention, real-data, public-write, support-access, or production authority.
+
+## SUB-26 Browser And Artifact Security Evidence
+
+Controlling issue: `SUB-26`. Project stage: Build.
+
+- The browser uses normal server-issued sessions; every persona logs out before
+  the next login, and no role-switch or session-injection helper exists.
+- Configuration Administrator and Auditor sessions make direct forbidden API
+  requests and require server `403` responses. Auditor UI contains no form or
+  action button.
+- The journey uses only the deterministic synthetic fixture pack. Video,
+  screenshots, trace, HTML, logs, and JSON therefore contain demo identities
+  and synthetic values only; they remain development certification evidence.
+- The Compose project and volumes are unique per run, the web test port is
+  private, and cleanup removes all isolated state unless an explicit diagnostic
+  retention flag is set.
+- Captured v1/v2 hashes are asserted through the server-owned audit projection;
+  Playwright does not write or synthesize provenance.
+
+This certifies the POC browser path. It does not authorize real data, public
+write access, production credentials, hosted deployment, or production artifact
+retention.

@@ -148,3 +148,25 @@ package/archive identities differ while captured v1 evidence remains unchanged.
 The workspace has no mutation control; direct API mutation attempts are denied
 with no durable state change. SUB-55 still owns browser pacing, screenshots,
 trace, video, and the final clean-environment release decision.
+
+## SUB-26 Canonical Browser Harness Certification
+
+The entire journey is automated as one Playwright scenario from a clean,
+isolated Compose environment. It uses the supported reset command, starts the
+real worker afterward, and performs only visible UI actions plus explicit
+negative HTTP authorization assertions. There are no manual database edits,
+test endpoints, or test-only role switches.
+
+The scenario logs in and out as Configuration Administrator, NGO Preparer, NGO
+Approver, Government Reviewer, NGO Preparer, NGO Approver, Government Reviewer,
+and Auditor. Every workspace assertion includes current user, organization,
+role, permissions, and logout. Screenshots cover role workspaces, activation,
+v1 validation/submission/return, v2 correction/resubmission/approval, and final
+audit reconstruction.
+
+Final assertions bind both captured archive hashes to their corresponding
+EXP-004 audit trails, prove they differ, and prove the Auditor has no mutation
+controls. Headless mode is the CI gate; headed mode defaults to paced `650 ms`
+slow motion and emits the same video, trace, screenshots, JSON, and runtime
+evidence. SUB-55 remains the terminal release certification of the merged
+journey.

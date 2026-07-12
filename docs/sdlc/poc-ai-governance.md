@@ -156,3 +156,13 @@ reads retained extraction provider/model/prompt/parser identifiers as evidence
 only. Deterministic validation owns findings; canonical humans own corrections,
 attestation, submission, return, and approval. The projection cannot create or
 reinterpret those decisions, and replay does not call live AI.
+
+## SUB-26 Browser Harness Authority
+
+SUB-26 changes no model, prompt, parser, confidence rule, or AI authority. The
+browser observes the existing local worker's supported synthetic extraction and
+requires NGO human correction before deterministic validation. All validation,
+attestation, submission, return, correction, resubmission, approval, and audit
+outcomes continue to be owned by shared deterministic contracts or canonical
+human actors. Playwright proves those boundaries; it does not bypass or replace
+them.

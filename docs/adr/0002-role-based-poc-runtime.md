@@ -291,3 +291,19 @@ snapshot to each immutable package. Extraction corrections and second-version
 submissions use the closed `field_corrected` and `resubmitted` event values.
 This makes the executable ontology observable without adding a write path,
 database owner, deployable, or AI/human authority.
+
+### SUB-26 Implementation Note: Canonical Browser Harness
+
+Journey 11 is now one Playwright scenario executed against the public web and
+HTTP surfaces in an isolated Compose project. The harness uses the supported
+deterministic reset command before starting the real worker, normal
+server-issued login/logout for all five personas, and visible UI interactions
+for every material lifecycle transition. It contains no test endpoint, direct
+database edit, role-switch shortcut, or client-side authority substitution.
+
+Headless CI and paced headed demo modes share the scenario and retain JSON,
+video, trace, screenshots, runtime logs, and Compose state. The scenario binds
+the captured v1 and v2 archive hashes back to the final audit trails, proving
+immutable predecessor evidence and a distinct successor package. This is a
+certification adapter around ADR 0002's existing boundaries, not a new runtime
+layer, capability owner, or distributed deployment.

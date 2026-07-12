@@ -45,6 +45,18 @@ class CiCertificationTests(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "no passing test count"):
             MANIFEST.required_test_count("Static", "1 failed in 0.2s\n")
 
+    def test_playwright_result_requires_one_clean_expected_test(self) -> None:
+        self.assertEqual(
+            1,
+            MANIFEST.playwright_test_count(
+                {"stats": {"expected": 1, "unexpected": 0, "flaky": 0}}
+            ),
+        )
+        with self.assertRaisesRegex(SystemExit, "not clean"):
+            MANIFEST.playwright_test_count(
+                {"stats": {"expected": 1, "unexpected": 1, "flaky": 0}}
+            )
+
     def test_retained_artifacts_are_hashed_and_manifest_is_excluded(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

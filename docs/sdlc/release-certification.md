@@ -233,3 +233,18 @@ evidence, both package trails, and zero-mutation Auditor denial. The clean
 Compose suite must pass twice with identical semantic fingerprints. Passing
 this gate satisfies the audit reconstruction precursor but does not replace
 SUB-55 Playwright artifacts or release approval.
+
+## SUB-26 Playwright Harness Gate
+
+SUB-26 is eligible for approval only when an immutable PR diff and hosted CI
+prove that a clean isolated Compose run completes Journey 11 through normal
+login/logout for every persona without database edits, test endpoints, or role
+switching. The evidence must retain JSON results, video, trace, lifecycle and
+role screenshots, runtime logs, and Compose state; assert server-side forbidden
+actions; and match captured distinct v1/v2 archive hashes in the final read-only
+audit projection.
+
+The same scenario must pass headless and in a paced headed mode. Passing this
+gate certifies the harness and its integration into required CI. SUB-55 remains
+the terminal release decision, and SUB-53 remains responsible for documented
+operator-facing reproducible commands.
