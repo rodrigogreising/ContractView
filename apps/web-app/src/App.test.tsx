@@ -477,9 +477,11 @@ describe("authentication shell", () => {
         }}
         attestation={null}
         generatedPackage={null}
+        submission={null}
         message=""
         onAttest={() => {}}
         onGeneratePackage={() => {}}
+        onSubmit={() => {}}
       />,
     );
     expect(html).toContain("Material revision");

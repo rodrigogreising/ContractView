@@ -198,6 +198,7 @@ CONTRACT_REQUIRED_FIELDS = {
     'EntityContract': frozenset(['id', 'entity_type', 'version', 'fields']),
     'RelationContract': frozenset(['id', 'relation_type', 'source', 'target']),
     'IdentityDto': frozenset(['id', 'display_name', 'email', 'organization_id', 'organization_name', 'role']),
+    'ContractContextDto': frozenset(['contract_id', 'contract_name', 'agency_organization_id', 'agency_organization_name', 'ngo_organization_id', 'ngo_organization_name']),
     'RuleDefinition': frozenset(['code', 'version', 'severity', 'enabled', 'parameters']),
     'RuleResult': frozenset(['rule_code', 'rule_version', 'severity', 'reason_code', 'outcome', 'normalized_input', 'message']),
     'ValidationRunContract': frozenset(['id', 'invoice_version', 'configuration_version', 'engine_version', 'input_hash', 'output_hash', 'results']),
@@ -276,6 +277,15 @@ class IdentityDto(ContractModel):
     organization_id: str
     organization_name: str
     role: Role
+
+
+class ContractContextDto(ContractModel):
+    contract_id: str
+    contract_name: str
+    agency_organization_id: str
+    agency_organization_name: str
+    ngo_organization_id: str
+    ngo_organization_name: str
 
 
 class RuleDefinition(ContractModel):

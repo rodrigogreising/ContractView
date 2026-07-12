@@ -1,6 +1,8 @@
 from app.authentication import authenticate, identity, resolve_session, revoke_session
 from app.authorization import Role
 from app.runtime import database
+from app.access_scope import contract_contexts
+from app.authorization import Actor
 
 
 def test_seeded_login_creates_resolvable_opaque_session():
@@ -46,3 +48,32 @@ def test_logout_revokes_server_session_immediately():
 def test_unknown_or_missing_session_is_rejected():
     assert resolve_session(None) is None
     assert resolve_session("fabricated-browser-storage-value") is None
+
+
+def test_contract_context_is_derived_from_canonical_session_scope():
+    cases = [
+        ("configuration.admin@example.test", "Demo-Config-2026!"),
+        ("ngo.preparer@example.test", "Demo-Prepare-2026!"),
+        ("ngo.approver@example.test", "Demo-Approve-2026!"),
+        ("government.reviewer@example.test", "Demo-Review-2026!"),
+        ("auditor@example.test", "Demo-Audit-2026!"),
+    ]
+    for email, password in cases:
+        _, actor, _ = authenticate(email, password)
+        contexts = contract_contexts(actor)
+        by_id = {context["contractId"]: context for context in contexts}
+        assert by_id["contract-synthetic-agency-ngo-2026"] == {
+            "contractId": "contract-synthetic-agency-ngo-2026",
+            "contractName": "Synthetic Community Services Contract 2026",
+            "agencyOrganizationId": "org-government",
+            "agencyOrganizationName": "Synthetic Public Agency",
+            "ngoOrganizationId": "org-ngo",
+            "ngoOrganizationName": "Synthetic Community Nonprofit",
+        }
+        if actor.role in {Role.NGO_PREPARER, Role.NGO_APPROVER}:
+            assert all(item["ngoOrganizationId"] == actor.organization_id for item in contexts)
+        if actor.role is Role.GOVERNMENT_REVIEWER:
+            assert all(item["agencyOrganizationId"] == actor.organization_id for item in contexts)
+    assert contract_contexts(
+        Actor("outside-reviewer", "org-other", Role.GOVERNMENT_REVIEWER)
+    ) == []

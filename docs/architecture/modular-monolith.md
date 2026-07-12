@@ -323,3 +323,25 @@ Compose project and fresh PostgreSQL/MinIO volumes. Two successful passes with
 the same semantic reset fingerprint prove that tests do not depend on retained
 database or object-store state. Logs and the evidence manifest are outputs of
 the certification adapter, not application audit records.
+
+## SUB-65 Web Feature Boundaries
+
+The single React deployable mirrors capability ownership without pretending to
+be a set of services:
+
+- `src/api` owns response/error normalization and is the only production source
+  that calls `fetch`;
+- feature folders own typed API facades and rendering for session,
+  configuration, ingestion, invoices, validation, approval, government review,
+  revision, and audit;
+- `src/workspaces` owns presentational composition for all five POC roles;
+- `src/generated` remains the authoritative cross-runtime DTO/lifecycle
+  consumer; and
+- `src/demo` is an explicit test/demo build boundary, not production session
+  configuration.
+
+The server-owned `ContractContextDto` is resolved from canonical contract
+ownership and `contract_role_assignments`. The default production web bundle
+contains neither seeded credentials nor a fixed synthetic contract identifier.
+Role workspace visibility is usability behavior only and cannot authorize a
+command.

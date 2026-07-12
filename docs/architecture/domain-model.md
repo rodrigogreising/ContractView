@@ -28,6 +28,7 @@ free-form runtime dictionaries. Canonical inputs are the four
 | `ConfigurationBundle` | Versioned set of schemas, mappings, rules, workflows, views, templates, and rule parameters active for a contract or pilot context. | Must follow lifecycle before production activation. |
 | `InvoiceSnapshot` | Immutable invoice content and material-revision identity used by validation, attestation, package, submission, return, and approval evidence. | Distinct from an editable draft aggregate. |
 | `PackageManifest` | Deterministic package inputs, paths, hashes, template/configuration versions, and reproduction metadata. | Immutable; owned by package generation. |
+| `ContractContextDto` | Server-authorized contract identity and agency/NGO ownership names exposed to a signed-in workspace. | Generated shared DTO; derived from canonical ownership/assignments, never client authority. |
 
 ### Typed Relation Direction
 

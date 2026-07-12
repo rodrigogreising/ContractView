@@ -29,6 +29,18 @@ The web app provides role-specific product workflows for nonprofit fiscal staff,
 - Client-side presentation state.
 - Accessibility and usability behavior for review workflows.
 
+## Implemented Module Boundary
+
+- `src/api`: transport and normalized API errors.
+- `src/features/*`: capability API facades and feature rendering.
+- `src/workspaces/*`: five presentational role workspaces.
+- `src/generated`: generated shared DTO and lifecycle contracts.
+- `src/demo`: credentials available only to explicit demo/test builds.
+
+Contract selection is not hard-coded. After normal authentication the browser
+loads server-authorized `ContractContextDto` records and uses the selected
+canonical identifier. Server authorization remains authoritative.
+
 ## Allowed Dependencies
 
 - API contracts exposed by `services/api-workflow`.
@@ -50,7 +62,7 @@ The web app provides role-specific product workflows for nonprofit fiscal staff,
 
 ## Certification/Testing Setup
 
-Future tests must certify:
+Tests certify:
 
 - Role-specific screens render the same canonical invoice state with appropriate actions per role.
 - Nonprofit upload-to-draft, issue resolution, approval/submission, agency review, return, resubmission, approval, and auditor reconstruction journeys can be executed through the UI.

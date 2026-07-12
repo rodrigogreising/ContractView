@@ -84,6 +84,10 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 
 - The full Playwright journey passes through UI interactions from a clean environment.
 - User name, organization, role badge, and logout are visible in every authenticated session.
+- Each session loads its contract context from the server-authorized context
+  response; the production application bundle contains no fixed contract or
+  seeded credential literal. The paced POC image enables the explicit demo
+  credential boundary.
 - Server-side authorization rejects every tested forbidden command without mutation.
 - Direct draft activation and invalid configuration transitions are rejected;
   the browser-visible evidence proves test, human approval, and prospective
