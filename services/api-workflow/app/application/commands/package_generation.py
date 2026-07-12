@@ -48,13 +48,13 @@ def generate_package(actor:Actor,invoice_id:str)->dict:
             snapshot=create_invoice_snapshot_tx(connection,actor,invoice_id,"package")
             connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGES_003,(package_id,invoice_id,att["id"],invoice["version"],zip_art.id,json.dumps(manifest),actor.user_id,snapshot["id"]))
             append_relation_tx(connection,row[1],row[0],"derived_from",
-                {"kind":"invoice_snapshot","id":snapshot["id"],"version":invoice["version"],"sha256":snapshot["sha256"]},
-                {"kind":"package","id":package_id,"version":invoice["version"]},actor=actor)
+                {"kind":"package","id":package_id,"version":invoice["version"]},
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":snapshot["payload"]["materialRevision"],"sha256":snapshot["sha256"]},actor=actor)
             for path,artifact in stored.items():connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGE_ARTIFACTS_004,(package_id,artifact.id,path,artifact.sha256))
             connection.packages.execute(Statement.PACKAGE_GENERATION_WRITE_PACKAGE_ARTIFACTS_004,(package_id,zip_art.id,"package.zip",zip_art.sha256))
             append_event_tx(connection,"package_generated","package",package_id,actor_id=actor.user_id,organization_id=row[0],contract_id=row[1],payload={"invoiceVersionId":invoice_id,"zipArtifactId":zip_art.id,"zipSha256":zip_art.sha256,"invoiceSnapshotId":snapshot["id"]},version_references=[
                 {"kind":"package","id":package_id,"version":invoice["version"]},
-                {"kind":"invoice_snapshot","id":snapshot["id"],"version":invoice["version"],"sha256":snapshot["sha256"]},
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":snapshot["payload"]["materialRevision"],"sha256":snapshot["sha256"]},
                 {"kind":"artifact","id":zip_art.id,"version":1,"sha256":zip_art.sha256},
             ]);connection.commit()
         return {"id":package_id,"invoiceVersionId":invoice_id,"manifest":manifest,"artifacts":{p:{"id":a.id,"sha256":a.sha256} for p,a in stored.items()},"zip":{"id":zip_art.id,"sha256":zip_art.sha256}}

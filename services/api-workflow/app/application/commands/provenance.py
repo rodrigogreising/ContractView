@@ -146,6 +146,12 @@ def append_relation_tx(
     actor: Actor,
     reason_code: str | None = None,
 ) -> str:
+    canonical_actor = connection.identity.execute(
+        Statement.PROVENANCE_READ_USERS_008,
+        (actor.user_id,),
+    ).fetchone()
+    if canonical_actor != (actor.role.value, actor.organization_id):
+        raise ValueError("Relation actor must match canonical identity")
     relation_id = f"relation-{uuid.uuid4().hex}"
     contract = RelationContract.model_validate(
         {

@@ -38,7 +38,7 @@ an `expenseDate` predecessor rather than the former `claimedAmount` edge.
 ## Executable Acceptance Evidence
 
 - Clean synthetic migration/reset and focused API run: 15 tests pass.
-- Clean full API regression after targeted additions: 175 tests pass.
+- Clean full API regression after targeted additions and review fixes: 176 tests pass.
 - Persistence policy: 45 table owners and 167 named statements pass ownership,
   consumer, operation, and declared-read-model validation.
 - Material envelopes expose schema, canonical actor/role/organizations,
@@ -60,6 +60,22 @@ an `expenseDate` predecessor rather than the former `claimedAmount` edge.
 - Frontend: 13 tests pass and the production build succeeds. Full Compose smoke
   reaches healthy PostgreSQL, MinIO, API, worker, and web services with real
   readiness endpoints responsive.
+
+## Immutable AI Review Fixes
+
+The seven-skill review of head `5be3aa2bbc9e83d587feb6f91ddffe3ae81871af`
+returned `Approved with required fixes`. The follow-up change:
+
+- identifies invoice snapshots consistently by material revision while keeping
+  the invoice business version as a separate reference;
+- makes packages the source of `derived_from` and corrected successors the
+  source of `amends`, with direction assertions;
+- records exact v2 invoice and correction-lineage references on the correction
+  event; and
+- verifies relation actor role/organization against canonical identity before
+  persistence, with a forged-actor zero-mutation test.
+
+The new immutable head requires a repeated seven-skill review before merge.
 
 ## Remaining Handoff Evidence
 

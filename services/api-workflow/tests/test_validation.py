@@ -296,6 +296,19 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
             "reasonCode":relation["reasonCode"],
         }
         assert relation["relationHash"]==canonical_hash(relation_document)
+    derived=[item for item in auditor_final["relations"] if item["relationType"]=="derived_from"]
+    assert derived and all(item["source"]["kind"]=="package" and item["target"]["kind"]=="invoice_snapshot" for item in derived)
+    amendment=next(item for item in auditor_final["relations"] if item["relationType"]=="amends")
+    assert amendment["source"]["id"]==successor and amendment["target"]["id"]==invoice["id"]
+    snapshots_by_id={item["id"]:item for item in auditor_final["snapshots"]}
+    for event_item in auditor_final["events"]:
+        for reference in event_item["versionReferences"]:
+            if reference["kind"]=="invoice_snapshot":
+                assert reference["version"]==snapshots_by_id[reference["id"]]["materialRevision"]
+    correction_event=next(item for item in auditor_final["events"] if item["eventType"]=="invoice_line_corrected" and item["aggregateId"]==successor and item["payload"].get("correctionId")==correction["id"])
+    invoice_reference=next(item for item in correction_event["versionReferences"] if item["kind"]=="invoice")
+    assert invoice_reference["version"]==v2["version"]
+    assert correction_event["payload"]["materialRevision"]==2
     assert {invoice["id"],successor} <= {item["invoiceVersionId"] for item in auditor_final["snapshots"]}
     with pytest.raises(psycopg.errors.RaiseException,match="append-only"):
         with database() as connection:

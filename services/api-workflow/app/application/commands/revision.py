@@ -38,7 +38,7 @@ def create_return_revision_tx(connection,invoice_id:str,decision_id:str,actor_id
     predecessor_ref={"kind":"invoice","id":invoice_id,"version":source[0]}
     successor_ref={"kind":"invoice","id":successor,"version":version}
     append_relation_tx(connection,contract_id,organization_id,"returned_as",predecessor_ref,successor_ref,actor=reviewer)
-    append_relation_tx(connection,contract_id,organization_id,"amends",predecessor_ref,successor_ref,actor=reviewer)
+    append_relation_tx(connection,contract_id,organization_id,"amends",successor_ref,predecessor_ref,actor=reviewer)
     append_event_tx(connection,"revision_created","invoice_version",successor,actor_id=actor_id,organization_id=organization_id,contract_id=contract_id,payload={"predecessorInvoiceVersionId":invoice_id,"governmentDecisionId":decision_id,"version":version})
     return successor
 
@@ -64,7 +64,7 @@ def correct_revision(actor:Actor,invoice_id:str,expense_key:str,description:str,
             correction_id=f"revision-correction-{uuid.uuid4().hex}"
             lineage_rows=connection.provenance.execute(Statement.REVISION_READ_FIELD_LINEAGE_013,(invoice_id,)).fetchall()
             predecessor=next((row for row in reversed(lineage_rows) if row[0]==f"{expense_key}.description"),None)
-            append_lineage_tx(connection,LineageInput(
+            correction_lineage_id=append_lineage_tx(connection,LineageInput(
                 contract_id=invoice[1],organization_id=invoice[0],field_name=f"{expense_key}.description",
                 field_value=description,source_artifact_id=predecessor[2] if predecessor else None,
                 source_location=predecessor[3] if predecessor else None,
@@ -79,6 +79,9 @@ def correct_revision(actor:Actor,invoice_id:str,expense_key:str,description:str,
             ))
             connection.invoices.execute(Statement.REVISION_WRITE_INVOICE_LINES_010,(description,invoice_id,expense_key));connection.invoices.execute(Statement.REVISION_WRITE_INVOICE_VERSIONS_011,(invoice_id,))
             connection.invoices.execute(Statement.REVISION_WRITE_REVISION_CORRECTIONS_012,(correction_id,invoice_id,expense_key,prior[0],description,reason,actor.user_id))
-            append_event_tx(connection,"invoice_line_corrected","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=invoice[1],payload={"correctionId":correction_id,"expenseKey":expense_key,"field":"description","priorValue":prior[0],"correctedValue":description,"reason":reason});connection.commit()
+            append_event_tx(connection,"invoice_line_corrected","invoice_version",invoice_id,actor_id=actor.user_id,organization_id=invoice[0],contract_id=invoice[1],payload={"correctionId":correction_id,"expenseKey":expense_key,"field":"description","priorValue":prior[0],"correctedValue":description,"reason":reason,"invoiceVersion":invoice[3],"materialRevision":invoice[4]+1,"lineageId":correction_lineage_id},version_references=[
+                {"kind":"invoice","id":invoice_id,"version":invoice[3]},
+                {"kind":"entity","id":str(correction_lineage_id),"version":1},
+            ]);connection.commit()
         return {"id":correction_id,"invoiceVersionId":invoice_id,"expenseKey":expense_key,"priorValue":prior[0],"correctedValue":description,"reason":reason}
     return execute_authorized(actor,Action.UPDATE,scope,command)

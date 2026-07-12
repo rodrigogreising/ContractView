@@ -1922,7 +1922,7 @@
     "sourceOwners": [
       "invoices"
     ],
-    "sql": "select organization_id,contract_id,state from invoice_versions where id=%s",
+    "sql": "select organization_id,contract_id,state,version,material_revision from invoice_versions where id=%s",
     "writeTables": []
   },
   "REVISION_READ_INVOICE_VERSION_LINKS_001": {

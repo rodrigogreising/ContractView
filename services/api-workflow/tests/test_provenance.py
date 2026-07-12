@@ -10,7 +10,8 @@ from app.artifacts import store_artifact
 from app.authentication import authenticate, revoke_session
 from app.authorization import Actor, ForbiddenError, Role
 from configuration_helpers import ensure_active_configuration
-from app.provenance import EVENT_TYPES, LineageInput, append_event, append_lineage, audit_query
+from app.provenance import EVENT_TYPES, LineageInput, append_event, append_lineage, append_relation_tx, audit_query
+from app.application.transaction import transaction as application_database
 from app.runtime import database
 
 CONTRACT = "contract-metro-harbor-2026"
@@ -87,6 +88,26 @@ def test_database_rejects_an_incomplete_material_event_envelope():
             connection.execute(
                 "insert into domain_events(event_type,aggregate_type,aggregate_id) values ('validation_completed','validation_run','incomplete')"
             )
+
+
+def test_relation_actor_must_match_canonical_identity_without_mutation():
+    with database() as connection:
+        before = connection.execute("select count(*) from provenance_relations").fetchone()[0]
+    forged = Actor(PREPARER.user_id, PREPARER.organization_id, Role.NGO_APPROVER)
+    with pytest.raises(ValueError, match="canonical identity"):
+        with application_database() as connection:
+            append_relation_tx(
+                connection,
+                CONTRACT,
+                PREPARER.organization_id,
+                "supports",
+                {"kind":"artifact","id":"forged-source","version":1},
+                {"kind":"invoice","id":"forged-target","version":1},
+                actor=forged,
+            )
+    with database() as connection:
+        after = connection.execute("select count(*) from provenance_relations").fetchone()[0]
+    assert after == before
 
 
 def test_auditor_query_excludes_draft_only_events_after_contract_submission():
