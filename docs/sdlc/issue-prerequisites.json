@@ -37,5 +37,12 @@
       "mergeSha": "45964570a986f7f87b772ba73d46b17c233c915e",
       "postMergeVerified": true
     }
+  ],
+  "SUB-65": [
+    {"issue": "SUB-58", "mergeSha": "08ae4ffef3f2ef386473149b596b6a5abbc147d8", "postMergeVerified": true},
+    {"issue": "SUB-61", "mergeSha": "1cc5d9a78060a0c40bb67cb8770d0c7de2f53639", "postMergeVerified": true},
+    {"issue": "SUB-62", "mergeSha": "be38a4a176dcca129bf053eebdc12dfc6d51be67", "postMergeVerified": true},
+    {"issue": "SUB-63", "mergeSha": "a15d93637c0f998de5dc07374f6a6c975586f876", "postMergeVerified": true},
+    {"issue": "SUB-68", "mergeSha": "7504ad34d7055d0977ddb5705ca1add43576a62c", "postMergeVerified": true}
   ]
 }

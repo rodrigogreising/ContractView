@@ -38,6 +38,16 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         )
         assert login.status_code == 200
         assert login.json()["user"]["role"] == "configuration_administrator"
+        contexts = client.get("/auth/contracts")
+        assert contexts.status_code == 200
+        assert contexts.json()["contracts"] == [{
+            "contractId": CONTRACT,
+            "contractName": "Synthetic Community Services Contract 2026",
+            "agencyOrganizationId": "org-government",
+            "agencyOrganizationName": "Synthetic Public Agency",
+            "ngoOrganizationId": "org-ngo",
+            "ngoOrganizationName": "Synthetic Community Nonprofit",
+        }]
 
         saved = client.put(
             f"/configuration/draft?contractId={CONTRACT}", json=payload
@@ -100,4 +110,5 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         assert all(event["actorRole"] == "configuration_administrator" for event in governed["history"])
 
         assert client.post("/auth/logout").status_code == 204
+        assert client.get("/auth/contracts").status_code == 401
         assert client.get(f"/configuration/lifecycle?contractId={CONTRACT}").status_code == 401

@@ -59,7 +59,9 @@ services:
       timeout: 3s
       retries: 20
   web:
-    build: {context: ./apps/web-app}
+    build:
+      context: ./apps/web-app
+      args: {VITE_CONTRACTVIEW_DEMO_MODE: "true"}
     ports: ["4173:80"]
     depends_on:
       api: {condition: service_healthy}
@@ -73,6 +75,7 @@ services:
     build:
       context: ./apps/web-app
       target: build
+      args: {VITE_CONTRACTVIEW_DEMO_MODE: "true"}
     command: npm test
 volumes:
   postgres-data:

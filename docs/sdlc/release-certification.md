@@ -94,6 +94,16 @@ result/file hashes. Identical inputs must reproduce exactly; a changed input
 must create a distinct traceable version. A passing live generation that cannot
 be replayed from its retained evidence is blocked.
 
+### Web Boundary Certification
+
+Production-facing web candidates must exclude seeded credentials and fixed
+contract selection. Contract context comes from the authenticated server and
+generated shared DTOs. CI verifies that only the transport module performs
+network requests, capability/role modules remain presentational, API errors are
+handled explicitly, and the default production bundle contains neither demo
+credential nor synthetic-contract literals. Demo credentials require an
+explicit demo/test build flag.
+
 ### Public Repository Publication
 
 Public source disclosure is a separate release decision from POC runtime

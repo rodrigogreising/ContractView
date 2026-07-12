@@ -4,11 +4,12 @@
 
 This package defines the versioned shared domain primitives and closed lifecycle vocabulary for ContractView. `contract.json` is executable source input for the generated Python and TypeScript consumers.
 
-Current contract version: `1.0.0`.
+Current contract version: `1.1.0`.
 
 ## Owned Responsibilities
 
 - Define shared names and shapes for core ontology primitives.
+- Define the server-authorized contract context consumed by role workspaces.
 - Define actor roles, invoice lifecycle states, issue statuses, severity categories, and human authority terms.
 - Provide stable vocabulary for apps, services, events, rules, configuration, and fixtures.
 

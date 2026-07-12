@@ -1,6 +1,6 @@
 {
   "package": "domain-types",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": {
     "policy": "semver-additive",
     "minor": "May add optional fields; may not remove or reinterpret fields or closed vocabulary values.",
@@ -71,6 +71,14 @@
       {"name": "organizationId", "type": "string", "required": true},
       {"name": "organizationName", "type": "string", "required": true},
       {"name": "role", "type": "Role", "required": true}
+    ]},
+    "ContractContextDto": {"model": "ContractContextDto", "fields": [
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "contractName", "type": "string", "required": true},
+      {"name": "agencyOrganizationId", "type": "string", "required": true},
+      {"name": "agencyOrganizationName", "type": "string", "required": true},
+      {"name": "ngoOrganizationId", "type": "string", "required": true},
+      {"name": "ngoOrganizationName", "type": "string", "required": true}
     ]}
   }
 }

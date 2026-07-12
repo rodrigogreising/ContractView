@@ -4,7 +4,8 @@
 
 Accepted; amended by SUB-59, implemented for shared contracts by SUB-61,
 physically enforced for module/persistence boundaries by SUB-62, and amended
-for reproducible validation/package execution by SUB-68
+for reproducible validation/package execution by SUB-68 and web feature
+ownership by SUB-65
 
 ## Date
 
@@ -208,6 +209,24 @@ bytes exactly. Changed invoice/configuration/template/extraction inputs create
 new traceable records and hashes. AI remains limited to draft extraction: its
 provider/model/prompt/parser/schema identifiers are manifest inputs, never rule
 outcomes or human-authority decisions.
+
+### SUB-65 Implementation Note: Feature-Owned Web Application
+
+The React deployment remains one application, but transport, session,
+configuration, ingestion, invoices, validation, approval, government review,
+revision, audit, and role workspaces have explicit modules. The application
+shell coordinates typed feature APIs and presentation state; it no longer owns
+HTTP response parsing, seeded credentials, fixed contract selection, or feature
+rendering implementations.
+
+Authenticated contract context is returned by a canonical server query over
+contract ownership and explicit assignments. The client selects only from
+those returned contexts; a caller-provided contract identifier never grants
+authority. The shared `ContractContextDto` is generated for Python and
+TypeScript. Demo credentials compile only when the explicit demo/test build
+flag is enabled and are absent from the default production bundle. Client role
+routing remains presentational; every command still authorizes the server
+session, assignment, resource, and lifecycle state.
 
 ## AI Boundary
 

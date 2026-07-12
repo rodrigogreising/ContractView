@@ -34,6 +34,11 @@ receives composed adapters. Neither entry point owns business rules.
 | Web app | Role-specific nonprofit, agency, auditor, support, and admin screens over shared canonical state. | Nonprofit staff, agency reviewers, auditors, support, admins |
 | Admin console | Configuration, onboarding, support access controls, rule/test management, and rollout controls. | Implementation specialists, customer admins, platform support |
 
+The current POC web app implements transport, capability feature modules, and
+five role workspaces inside one React deployment. Contract context is a
+server-authorized generated DTO; demo credentials are an explicit demo/test
+build input and are absent from the default production bundle.
+
 ### Services
 
 | Unit | Responsibility | Must own | Must not own |

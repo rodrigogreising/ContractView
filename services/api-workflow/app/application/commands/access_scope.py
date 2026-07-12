@@ -10,6 +10,7 @@ claims never become resource ownership facts.
 from typing import Any
 
 from ...authorization import Actor, ResourceKind, ResourceScope
+from ...shared_contracts import ContractContextDto
 
 
 def _contract(connection: Any, contract_id: str) -> tuple[str, str]:
@@ -60,6 +61,35 @@ def _build(
         canonical=True,
         actor_assigned=_is_assigned(connection, actor, contract_id, agency_id),
     )
+
+
+def contract_contexts(actor: Actor) -> list[dict[str, str]]:
+    """Return only contract contexts authorized by canonical session scope."""
+    role = actor.role.value
+    with database() as connection:
+        rows = connection.read_models.execute(
+            Statement.ACCESS_SCOPE_READ_CONTRACTS_CONTRACT_ROLE_ASSIGNMENTS_ORGANIZATIONS_USERS_010,
+            (
+                role,
+                actor.user_id,
+                role,
+                role,
+                actor.organization_id,
+                role,
+                actor.organization_id,
+            ),
+        ).fetchall()
+    return [
+        ContractContextDto(
+            contract_id=row[0],
+            contract_name=row[1],
+            agency_organization_id=row[2],
+            agency_organization_name=row[3],
+            ngo_organization_id=row[4],
+            ngo_organization_name=row[5],
+        ).model_dump(by_alias=True)
+        for row in rows
+    ]
 
 
 def contract_scope(actor: Actor, contract_id: str, resource_id: str, kind: ResourceKind) -> ResourceScope:

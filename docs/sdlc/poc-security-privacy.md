@@ -200,6 +200,27 @@ Residual POC risk remains local evidence retention without hosted backup,
 external timestamping, legal hold, or automated deletion. All retained values
 are synthetic and non-branded; real or hosted data requires a new review.
 
+## SUB-65 Web Session And Demo Boundary
+
+Controlling issue: `SUB-65` / REC-10. Project stage: Build.
+
+- The browser obtains contract identifiers only from `/auth/contracts`, whose
+  query derives NGO/agency ownership or explicit administrator/auditor
+  assignments from the canonical server session.
+- Client role workspaces are presentational. Every API command retains its
+  existing server authorization and zero-mutation denial behavior.
+- Seeded emails/passwords live only in `src/demo` and compile into explicit
+  demo/test builds. The default production build contains no demo credential or
+  fixed contract literal.
+- Transport errors are normalized centrally; feature modules cannot silently
+  treat a failed response as authorized data.
+- All identities and contexts remain synthetic and reserved-domain. This does
+  not add real identity provisioning, SSO/MFA, or hosted deployment.
+
+Residual POC risk: the demo Compose build intentionally exposes synthetic
+credentials for a local recorded journey. It must never be promoted as a
+production build; real identity lifecycle remains deferred.
+
 ## SUB-79 Public Disclosure Boundary
 
 Controlling issue: `SUB-79`. Project stage: Build.

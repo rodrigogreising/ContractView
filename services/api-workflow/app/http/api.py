@@ -31,6 +31,7 @@ from ..government_review import list_queue,review_context
 from ..government_decision import DecisionError,decide
 from ..revision import RevisionError,correct_revision,revision_feedback
 from ..application.runtime_health import ensure_runtime_ready, runtime_readiness
+from ..access_scope import contract_contexts
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -112,6 +113,11 @@ def logout(response: Response, contractview_session: str | None = Cookie(default
 def me(resolved=Depends(current_identity)):
     actor, profile = resolved
     return {"user": identity(actor, profile)}
+
+@app.get("/auth/contracts")
+def authorized_contracts(resolved=Depends(current_identity)):
+    actor, _ = resolved
+    return {"contracts": contract_contexts(actor)}
 
 @app.post("/ingestion/uploads", status_code=202)
 async def upload_evidence(contractId: str = Form(...), file: UploadFile = File(...), resolved=Depends(current_identity)):

@@ -9,7 +9,7 @@ from app.authorization import ResourceKind, Role
 from app.shared_contracts import (
     ActorReference, ArtifactContract, ArtifactKind, ConfigurationBundleContract,
     ConfigurationLifecycle, EntityContract, EntityType, EventEnvelope, EventType,
-    FieldType, IdentityDto, RelationContract, RelationType, RuleDefinition, RuleSeverity,
+    ContractContextDto, FieldType, IdentityDto, RelationContract, RelationType, RuleDefinition, RuleSeverity,
     PackageBuildInputContract, PackageReproductionManifestContract, TemplateContract,
     TypedField, ValidationInputManifestContract, VersionReference, ViewContract,
     WorkflowContract,
@@ -34,6 +34,8 @@ def test_identity_dto_preserves_the_existing_public_api_shape():
         "id":"u1","displayName":"Synthetic User","email":"user@example.test",
         "organizationId":"o1","organizationName":"Synthetic Org","role":"auditor",
     }
+    context=ContractContextDto(contract_id="c1",contract_name="Synthetic Contract",agency_organization_id="agency",agency_organization_name="Synthetic Agency",ngo_organization_id="ngo",ngo_organization_name="Synthetic NGO")
+    assert context.model_dump(by_alias=True)["contractId"]=="c1"
 
 
 def test_artifact_field_entity_and_relation_round_trip_to_camel_case():
