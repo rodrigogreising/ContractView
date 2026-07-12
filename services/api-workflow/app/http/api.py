@@ -8,7 +8,19 @@ from ..ingestion import InvalidUpload, create_upload_job, list_jobs
 from ..artifacts import download_artifact, get_artifact
 from ..extraction_review import InvalidReview, list_extractions, review_field
 from ..invoice_draft import DraftAssemblyError, assemble_draft, latest_draft
-from ..configuration import InvalidConfiguration, active_summary, activate_draft, get_draft, update_draft
+from ..configuration import (
+    InvalidConfiguration,
+    active_summary,
+    activate_version,
+    approve_version,
+    get_draft,
+    lifecycle_history,
+    retire_version,
+    rollback_version,
+    supersede_version,
+    test_draft,
+    update_draft,
+)
 from ..validation import execute_validation,latest_validation
 from ..budget import budget_snapshot
 from ..finding_resolution import InvalidResolution,current_findings,resolve_finding
@@ -52,6 +64,18 @@ class RevisionCorrectionRequest(BaseModel):
     expenseKey:str
     description:str
     reason:str
+
+class RationaleRequest(BaseModel):
+    rationale: str
+
+class ActivateConfigurationRequest(RationaleRequest):
+    versionId: str
+
+class SupersedeConfigurationRequest(RationaleRequest):
+    successorVersionId: str
+
+class RollbackConfigurationRequest(RationaleRequest):
+    targetVersionId: str
 
 def current_identity(contractview_session: str | None = Cookie(default=None)):
     resolved = resolve_session(contractview_session)
@@ -157,10 +181,52 @@ def save_configuration_draft(contractId: str,payload: dict,resolved=Depends(curr
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
     except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
 
-@app.post("/configuration/activate")
-def activate_configuration(contractId: str,resolved=Depends(current_identity)):
+@app.post("/configuration/test")
+def test_configuration(contractId: str,payload:RationaleRequest,resolved=Depends(current_identity)):
     actor,_=resolved
-    try:return {"configuration":activate_draft(actor,contractId)}
+    try:return {"configurationVersion":test_draft(actor,contractId,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/versions/{version_id}/approve")
+def approve_configuration(version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":approve_version(actor,version_id,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/activate")
+def activate_configuration(payload:ActivateConfigurationRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":activate_version(actor,payload.versionId,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/versions/{version_id}/supersede")
+def supersede_configuration(version_id:str,payload:SupersedeConfigurationRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":supersede_version(actor,version_id,payload.successorVersionId,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/versions/{version_id}/retire")
+def retire_configuration(version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":retire_version(actor,version_id,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/rollback")
+def rollback_configuration(contractId:str,payload:RollbackConfigurationRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":rollback_version(actor,contractId,payload.targetVersionId,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.get("/configuration/lifecycle")
+def configuration_lifecycle(contractId:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return lifecycle_history(actor,contractId)
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
     except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
 

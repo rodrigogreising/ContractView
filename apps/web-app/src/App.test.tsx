@@ -49,6 +49,7 @@ describe("authentication shell", () => {
           version: 1,
           activatedAt: "2026-07-11",
         }}
+        configurationLifecycle={[]}
         validation={null}
         findings={[]}
         revisionFeedback={null}
@@ -68,7 +69,12 @@ describe("authentication shell", () => {
         onGeneratePackage={() => {}}
         onSubmitInvoice={() => {}}
         onSaveConfiguration={() => {}}
+        onTestConfiguration={() => {}}
+        onApproveConfiguration={() => {}}
         onActivateConfiguration={() => {}}
+        onSupersedeConfiguration={() => {}}
+        onRetireConfiguration={() => {}}
+        onRollbackConfiguration={() => {}}
       />,
     );
     expect(html).toContain("Upload ledger and evidence");
@@ -196,9 +202,45 @@ describe("authentication shell", () => {
           },
         }}
         active={{ id: "config-v1", version: 1, activatedAt: "now" }}
+        versions={[
+          {
+            id: "config-v2",
+            version: 2,
+            state: "tested",
+            active: false,
+            history: [
+              {
+                state: "tested",
+                action: "test",
+                actorId: "admin",
+                actorRole: "configuration_administrator",
+                rationale: "Validated deterministic configuration",
+                testEvidenceId: "evidence-v2",
+                approvalId: null,
+                predecessorVersionId: "config-v1",
+                successorVersionId: null,
+                rollbackTargetVersionId: null,
+                eventHash: "abcdef123456",
+                occurredAt: "2026-07-12T12:00:00Z",
+              },
+            ],
+          },
+          {
+            id: "config-v1",
+            version: 1,
+            state: "active",
+            active: true,
+            history: [],
+          },
+        ]}
         message=""
         onSave={() => {}}
+        onTest={() => {}}
+        onApprove={() => {}}
         onActivate={() => {}}
+        onSupersede={() => {}}
+        onRetire={() => {}}
+        onRollback={() => {}}
       />,
     );
     expect(html).toContain("Active version 1");
@@ -208,7 +250,11 @@ describe("authentication shell", () => {
     expect(html).toContain("Package label");
     expect(html).toContain("Preview configuration");
     expect(html).toContain("Save validated draft");
-    expect(html).toContain("Activate numbered version");
+    expect(html).toContain("Test draft and retain evidence");
+    expect(html).toContain("Record human approval");
+    expect(html).toContain("Immutable lifecycle evidence");
+    expect(html).toContain("Validated deterministic configuration");
+    expect(html).not.toContain("Activate numbered version");
   });
   it("renders explainable blocker and warning with deterministic hashes and versions", () => {
     const html = renderToString(

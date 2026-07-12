@@ -10,7 +10,7 @@
   "vocabularies": {
     "actorRoles": {"python": "Role", "typescript": "ActorRole", "constant": "ACTOR_ROLES", "values": ["configuration_administrator", "ngo_preparer", "ngo_approver", "government_reviewer", "auditor"]},
     "resourceKinds": {"python": "ResourceKind", "typescript": "ResourceKind", "constant": "RESOURCE_KINDS", "values": ["configuration", "invoice", "artifact", "job", "package", "government_decision", "audit"]},
-    "actions": {"python": "Action", "typescript": "Action", "constant": "ACTIONS", "values": ["read", "create", "update", "activate", "attest", "submit", "return", "approve"]},
+    "actions": {"python": "Action", "typescript": "Action", "constant": "ACTIONS", "values": ["read", "create", "update", "test", "approve_configuration", "activate", "supersede", "retire", "rollback", "attest", "submit", "return", "approve"]},
     "artifactKinds": {"python": "ArtifactKind", "typescript": "ArtifactKind", "constant": "ARTIFACT_KINDS", "values": ["original", "generated"]},
     "fieldTypes": {"python": "FieldType", "typescript": "FieldType", "constant": "FIELD_TYPES", "values": ["string", "decimal", "integer", "boolean", "date", "datetime", "identifier", "reference"]},
     "entityTypes": {"python": "EntityType", "typescript": "EntityType", "constant": "ENTITY_TYPES", "values": ["contract", "artifact", "expense", "invoice", "invoice_line", "validation_run", "package", "submission", "decision"]},

@@ -51,6 +51,11 @@ def test_government_decision_is_hidden_from_ngo_until_published() -> None:
 def test_configuration_is_administered_only_by_configuration_role() -> None:
     configuration = resource(ResourceKind.CONFIGURATION, owner=AGENCY)
     assert is_allowed(ADMIN, Action.ACTIVATE, configuration)
+    assert is_allowed(ADMIN, Action.TEST, configuration)
+    assert is_allowed(ADMIN, Action.APPROVE_CONFIGURATION, configuration)
+    assert is_allowed(ADMIN, Action.SUPERSEDE, configuration)
+    assert is_allowed(ADMIN, Action.RETIRE, configuration)
+    assert is_allowed(ADMIN, Action.ROLLBACK, configuration)
     assert not is_allowed(ADMIN, Action.ACTIVATE, resource(ResourceKind.CONFIGURATION, assigned=False))
     assert not is_allowed(PREPARER, Action.UPDATE, configuration)
     assert not is_allowed(REVIEWER, Action.ACTIVATE, configuration)
@@ -136,7 +141,15 @@ def test_exhaustive_role_tenant_resource_action_matrix() -> None:
             }
         elif actor.role is Role.CONFIGURATION_ADMINISTRATOR:
             expected = assigned and kind is ResourceKind.CONFIGURATION and action in {
-                Action.READ, Action.CREATE, Action.UPDATE, Action.ACTIVATE,
+                Action.READ,
+                Action.CREATE,
+                Action.UPDATE,
+                Action.TEST,
+                Action.APPROVE_CONFIGURATION,
+                Action.ACTIVATE,
+                Action.SUPERSEDE,
+                Action.RETIRE,
+                Action.ROLLBACK,
             }
         elif actor.role in {Role.NGO_PREPARER, Role.NGO_APPROVER}:
             expected = False
@@ -177,4 +190,4 @@ def test_exhaustive_role_tenant_resource_action_matrix() -> None:
             actor.role, kind, action, tenant_match, submitted, published, assigned
         )
         evaluated += 1
-    assert evaluated == 4480
+    assert evaluated == len(actors) * len(ResourceKind) * len(Action) * 2**4

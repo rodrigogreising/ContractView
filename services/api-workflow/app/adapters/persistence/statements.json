@@ -19,12 +19,13 @@
     "operation": "read",
     "owner": "configuration",
     "readTables": [
+      "configuration_active_versions",
       "configuration_versions"
     ],
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select 1 from configuration_versions where contract_id=%s and status='active' limit 1",
+    "sql": "select 1 from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s limit 1",
     "writeTables": []
   },
   "ACCESS_SCOPE_READ_CONTRACTS_001": {
@@ -577,12 +578,60 @@
     "operation": "read",
     "owner": "configuration",
     "readTables": [
+      "configuration_active_versions",
       "configuration_versions"
     ],
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select id,version,activated_at from configuration_versions where contract_id=%s order by version desc limit 1",
+    "sql": "select v.id,v.version,a.activated_at from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_APPROVALS_CONFIGURATION_LIFECYCLE_EVENTS_CONFIGURATION_TEST_EVIDENCE_CONFIGURATION_VERSIONS_009": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_approvals",
+      "configuration_lifecycle_events",
+      "configuration_test_evidence",
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select v.contract_id,v.version,v.payload,e.state,te.id,te.payload_hash,te.result_hash,te.suite_version,ap.id,ap.approval_hash,e.rollback_target_version_id\n               from configuration_versions v\n               join lateral (select state,rollback_target_version_id from configuration_lifecycle_events where configuration_version_id=v.id order by sequence desc limit 1) e on true\n               left join configuration_test_evidence te on te.configuration_version_id=v.id\n               left join configuration_approvals ap on ap.configuration_version_id=v.id\n               where v.id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_ACTIVE_VERSIONS_012": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_active_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select configuration_version_id from configuration_active_versions where contract_id=%s for update",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_ACTIVE_VERSIONS_CONFIGURATION_LIFECYCLE_EVENTS_CONFIGURATION_VERSIONS_014": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_active_versions",
+      "configuration_lifecycle_events",
+      "configuration_versions"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select v.id,v.version,v.payload,e.state,e.action,e.actor_id,e.actor_role,e.actor_organization_id,e.rationale,e.test_evidence_id,e.approval_id,e.predecessor_version_id,e.successor_version_id,e.rollback_target_version_id,e.event_hash,e.occurred_at,(a.configuration_version_id=v.id)\n               from configuration_versions v join configuration_lifecycle_events e on e.configuration_version_id=v.id\n               left join configuration_active_versions a on a.contract_id=v.contract_id\n               where v.contract_id=%s order by v.version,e.sequence",
     "writeTables": []
   },
   "CONFIGURATION_WRITE_CONFIGURATION_DRAFTS_001": {
@@ -608,9 +657,79 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "insert into configuration_versions\n                   (id, contract_id, version, status, payload, activated_by, activated_at)\n                   values (%s,%s,%s,'active',%s,%s,now())",
+    "sql": "insert into configuration_versions(id,contract_id,version,status,payload) values (%s,%s,%s,'tested',%s)",
     "writeTables": [
       "configuration_versions"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_TEST_EVIDENCE_007": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_test_evidence(id,configuration_version_id,contract_id,payload_hash,suite_version,results,result_hash,tested_by,tested_role,tested_organization_id,rationale) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "configuration_test_evidence"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_LIFECYCLE_EVENTS_008": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_lifecycle_events(id,configuration_version_id,contract_id,state,action,actor_id,actor_role,actor_organization_id,rationale,test_evidence_id,approval_id,predecessor_version_id,successor_version_id,rollback_target_version_id,event_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "configuration_lifecycle_events"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_APPROVALS_011": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_approvals(id,configuration_version_id,contract_id,test_evidence_id,approved_by,approved_role,approved_organization_id,rationale,approval_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "configuration_approvals"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_ACTIVE_VERSIONS_013": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "insert into configuration_active_versions(contract_id,configuration_version_id,activated_by,predecessor_version_id,rollback_target_version_id) values (%s,%s,%s,%s,%s)",
+    "writeTables": [
+      "configuration_active_versions"
+    ]
+  },
+  "CONFIGURATION_WRITE_CONFIGURATION_ACTIVE_VERSIONS_016": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "update configuration_active_versions set configuration_version_id=%s,activated_by=%s,activated_at=now(),predecessor_version_id=%s,rollback_target_version_id=%s where contract_id=%s and configuration_version_id=%s",
+    "writeTables": [
+      "configuration_active_versions"
     ]
   },
   "EXTRACTION_REVIEW_READ_ARTIFACTS_EXTRACTION_FIELDS_EXTRACTION_RUNS_001": {
@@ -1267,12 +1386,13 @@
     "operation": "read",
     "owner": "configuration",
     "readTables": [
+      "configuration_active_versions",
       "configuration_versions"
     ],
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select id,payload from configuration_versions where contract_id=%s order by version desc limit 1",
+    "sql": "select v.id,v.payload from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s",
     "writeTables": []
   },
   "INVOICE_DRAFT_READ_CONFIGURATION_VERSIONS_015": {
@@ -1492,12 +1612,13 @@
     "operation": "read",
     "owner": "configuration",
     "readTables": [
+      "configuration_active_versions",
       "configuration_versions"
     ],
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select payload from configuration_versions where contract_id=%s order by version desc limit 1",
+    "sql": "select v.payload from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s",
     "writeTables": []
   },
   "LEDGER_IMPORT_READ_LEDGER_IMPORTS_001": {

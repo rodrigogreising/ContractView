@@ -35,7 +35,9 @@ def _draft_payload() -> dict:
 
 def _mutation_fingerprint() -> tuple:
     tables = (
-        "configuration_drafts", "configuration_versions", "artifacts", "artifact_relations",
+        "configuration_drafts", "configuration_versions", "configuration_test_evidence",
+        "configuration_approvals", "configuration_lifecycle_events",
+        "configuration_active_versions", "artifacts", "artifact_relations",
         "ingestion_jobs", "extraction_field_reviews", "invoice_versions", "invoice_lines",
         "validation_runs", "attestations", "packages", "submissions", "government_decisions",
         "domain_events", "field_lineage",

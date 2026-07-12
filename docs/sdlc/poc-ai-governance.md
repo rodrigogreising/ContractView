@@ -34,6 +34,15 @@ All extracted fields are visibly marked as proposed until accepted or corrected.
 
 Prompt, parser, extraction schema, and provider/model identifier are versioned application configuration. Changing them requires fixture evaluation evidence, but the POC does not implement a customer-facing AI configuration editor.
 
+The reimbursement configuration lifecycle is executable and separate from AI
+evaluation: `draft -> tested -> approved -> active -> superseded -> retired`.
+Deterministic tests create immutable evidence; an assigned human Configuration
+Administrator alone approves and promotes a version. AI/system actors cannot
+test, approve, activate, supersede, retire, or prepare rollback. Rollback creates
+a new tested candidate and therefore cannot bypass evidence or human approval.
+These controls govern the fixed POC reimbursement settings only and do not add
+a customer-facing prompt/model editor.
+
 ## Implemented Versions
 
 - Adapter contract: `OcrAdapter`.
@@ -45,7 +54,7 @@ Prompt, parser, extraction schema, and provider/model identifier are versioned a
 - Review threshold: 0.8500; all outputs require review regardless of confidence.
 - Supported class: the synthetic EXP-003 vendor invoice, page 1.
 
-These identifiers are explicit application configuration constants for the POC. A change is not considered approved until the golden evaluation below passes and this record is amended. Draft, tested, approved, active, superseded, and retired provider configurations are a production lifecycle concern; only one approved active POC adapter is delivered.
+These identifiers are explicit application configuration constants for the POC. A change is not considered approved until the golden evaluation below passes and this record is amended. Provider/model configuration remains a separately governed application delivery concern; the new reimbursement configuration UI cannot edit or promote the OCR adapter. Only one approved active POC adapter is delivered.
 
 ## Synthetic Evaluation Record
 

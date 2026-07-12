@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "dependsOn": {"domain-types": "^1.0.0", "configuration-contracts": "^1.0.0"},
   "vocabularies": {
-    "eventTypes": {"python": "EventType", "typescript": "EventType", "constant": "EVENT_TYPES", "values": ["login_succeeded", "login_failed", "logout", "config_activated", "artifact_uploaded", "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed", "invoice_line_corrected", "finding_resolved", "attested", "package_generated", "submitted", "returned", "revision_created", "resubmitted", "approved"]}
+    "eventTypes": {"python": "EventType", "typescript": "EventType", "constant": "EVENT_TYPES", "values": ["login_succeeded", "login_failed", "logout", "config_tested", "config_approved", "config_activated", "config_superseded", "config_retired", "config_rollback_prepared", "artifact_uploaded", "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed", "invoice_line_corrected", "finding_resolved", "attested", "package_generated", "submitted", "returned", "revision_created", "resubmitted", "approved"]}
   },
   "contracts": {
     "EventEnvelope": {"model": "EventEnvelope", "fields": [

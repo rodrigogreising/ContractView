@@ -66,6 +66,7 @@ those provider packages.
 | --- | --- | --- |
 | Organization and user roles | API/workflow service | Role assignment event, permission decision record for material actions |
 | Contract and budget setup | Configuration registry | Configuration bundle version and activation approval |
+| Configuration lifecycle | Configuration capability | Immutable test evidence, human approval, lifecycle event hash, predecessor/successor/rollback references, and prospective active projection |
 | File upload intake | Ingestion service | Artifact hash, uploader, tenant, upload timestamp, scan result |
 | Ledger import | Ingestion service plus extraction pipeline | Source row references, parser/importer version, draft field lineage |
 | OCR and extraction | Extraction pipeline | Source location, confidence, model/parser version, correction history |

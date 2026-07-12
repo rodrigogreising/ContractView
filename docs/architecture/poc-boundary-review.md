@@ -100,9 +100,23 @@ runtime while preserving the SUB-60 contract and tests.
 
 ## Implemented Configuration Contract
 
-`services/api-workflow/app/application/commands/configuration.py` owns the constrained POC configuration schema and activation command. PostgreSQL stores a mutable per-contract draft and immutable numbered activation snapshots. Invoice versions and validation runs reference the precise snapshot by foreign key; neither UI state nor runtime AI can activate or rewrite configuration.
+`services/api-workflow/app/application/commands/configuration.py` owns the
+constrained POC configuration schema and the explicit test, approve, activate,
+supersede, retire, and rollback commands. PostgreSQL stores a mutable
+per-contract draft separately from immutable numbered definitions, test
+evidence, approvals, and lifecycle events. A small active-version projection is
+the only mutable governance record and switches atomically during prospective
+supersession. Invoice versions and validation runs reference the precise
+historical snapshot by foreign key; neither UI state nor runtime AI can
+activate or rewrite configuration.
 
-The React administrator surface is a fixed projection over this contract: category limits, five named rule settings, workflow labels, and package labels. Later persona headers receive only the active version summary; no generic expression editor or AI configuration path exists.
+The React administrator surface is a fixed projection over this contract:
+category limits, five named rule settings, workflow labels, package labels,
+governance rationale, permitted lifecycle actions, and immutable evidence
+history. Later persona headers receive only the active version summary; no
+generic expression editor or AI configuration path exists. Rollback prepares a
+new tested candidate from retained history and still requires human approval
+and supersession.
 
 ## Implemented Artifact Contract
 

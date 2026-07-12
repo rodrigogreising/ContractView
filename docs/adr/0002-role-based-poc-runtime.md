@@ -118,8 +118,33 @@ statements.
 ## Configuration
 
 - Administrator edits a constrained reimbursement configuration through the UI.
-- Activation creates an immutable version covering categories, limits, rule parameters, workflow/package labels, and output settings.
+- Testing creates an immutable numbered version and deterministic evidence
+  covering categories, limits, rule parameters, workflow/package labels, and
+  output settings.
+- A canonically assigned human Configuration Administrator records approval
+  before initial activation or supersession. Direct draft-to-active transitions
+  are prohibited.
+- The lifecycle is `draft -> tested -> approved -> active -> superseded ->
+  retired`. Rollback creates a new tested candidate from a retained predecessor;
+  it does not reactivate history or bypass approval.
 - Draft invoices use the active version at creation/revalidation; submitted versions retain their referenced configuration.
+
+### SUB-63 Implementation Note: Governed Configuration Lifecycle
+
+Configuration definitions, immutable test evidence, human approvals, lifecycle
+events, and the mutable current-active projection have distinct persistence
+contracts. Lifecycle events record actor, role, organization, rationale,
+timestamp, evidence and approval references, predecessor/successor/rollback
+references, and a deterministic event hash. Definitions and evidence are
+append-only; only the active projection changes atomically during prospective
+activation or supersession.
+
+The API exposes explicit test, approve, activate, supersede, retire, rollback,
+and history commands. The bounded React administrator workspace consumes those
+commands and displays retained evidence; it cannot activate an editable draft.
+AI/system actors receive no configuration authority. Existing invoice,
+validation, package, and submission records keep exact historical configuration
+foreign keys when the active projection changes.
 
 ## AI Boundary
 

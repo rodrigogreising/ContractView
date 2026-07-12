@@ -104,3 +104,33 @@ before real or hosted data is permitted.
 - No production penetration test or hosted security review.
 
 These risks are acceptable only because the environment is local, synthetic, and non-production. Any real or hosted data use reopens security/privacy review.
+
+## SUB-63 Configuration Lifecycle Recovery
+
+Controlling issue: `SUB-63` / REC-06. Project stage: Build.
+
+- Every lifecycle command resolves the canonical contract and requires the
+  persisted active Configuration Administrator assignment introduced by
+  SUB-60. A caller-supplied role, organization, or contract claim is not an
+  authority source.
+- Testing and approval record the assigned human administrator identity, role,
+  organization, rationale, and immutable hashes. Database constraints prohibit
+  system/AI roles in these records.
+- Direct draft-to-active, skipped approval, parallel activation, stale
+  supersession, active retirement, foreign-contract rollback, and unauthorized
+  actions fail before mutation. Tests compare governance-table fingerprints for
+  direct and authority denials.
+- Definition snapshots, test evidence, approvals, and lifecycle events are
+  append-only. The current-active projection is capability-owned and changes
+  only inside the same transaction that appends the corresponding lifecycle and
+  domain events.
+- The API integration test uses the normal server-issued cookie session and
+  logout. The UI does not provide test-only role switching or client-only
+  authorization.
+- All data and rationales in the POC remain synthetic and non-branded. This
+  lifecycle does not approve production configuration or real-world use.
+
+Required immutable-diff AI reviews are security/privacy, AI/config governance,
+architecture, boundary, traceability, journey, and implementation. Human code
+review is not required; human participation is retained only where the runtime
+business action itself is explicitly human authority.

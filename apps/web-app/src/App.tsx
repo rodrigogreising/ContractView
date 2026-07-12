@@ -81,6 +81,27 @@ type Configuration = {
   };
   [key: string]: unknown;
 };
+type ConfigurationLifecycleEvent = {
+  state: string;
+  action: string;
+  actorId: string;
+  actorRole: string;
+  rationale: string;
+  testEvidenceId: string | null;
+  approvalId: string | null;
+  predecessorVersionId: string | null;
+  successorVersionId: string | null;
+  rollbackTargetVersionId: string | null;
+  eventHash: string;
+  occurredAt: string;
+};
+type GovernedConfigurationVersion = {
+  id: string;
+  version: number;
+  state: string;
+  active: boolean;
+  history: ConfigurationLifecycleEvent[];
+};
 type Finding = {
   id: string;
   expenseKey: string | null;
@@ -221,6 +242,9 @@ export function App() {
   );
   const [activeConfiguration, setActiveConfiguration] =
     useState<ActiveConfiguration | null>(null);
+  const [configurationLifecycle, setConfigurationLifecycle] = useState<
+    GovernedConfigurationVersion[]
+  >([]);
   const [validation, setValidation] = useState<ValidationRun | null>(null);
   const [findings, setFindings] = useState<Finding[]>([]);
   const [approvalPreview, setApprovalPreview] =
@@ -259,10 +283,16 @@ export function App() {
     );
     if (active.ok) setActiveConfiguration((await active.json()).configuration);
     if (role === "configuration_administrator") {
-      const response = await fetch(
-        `/api/configuration/draft?contractId=${CONTRACT_ID}`,
-      );
-      if (response.ok) setConfiguration((await response.json()).configuration);
+      const [draftResponse, lifecycleResponse] = await Promise.all([
+        fetch(`/api/configuration/draft?contractId=${CONTRACT_ID}`),
+        fetch(`/api/configuration/lifecycle?contractId=${CONTRACT_ID}`),
+      ]);
+      if (draftResponse.ok)
+        setConfiguration((await draftResponse.json()).configuration);
+      if (lifecycleResponse.ok)
+        setConfigurationLifecycle(
+          (await lifecycleResponse.json()).versions || [],
+        );
     }
   }, []);
   useEffect(() => {
@@ -331,6 +361,7 @@ export function App() {
     setGeneratedPackage(null);
     setSubmission(null);
     setReviewContext(null);
+    setConfigurationLifecycle([]);
     setMessage("Signed out. Choose a persona to continue.");
   }
   async function upload(event: FormEvent<HTMLFormElement>) {
@@ -411,22 +442,69 @@ export function App() {
     setConfiguration(result.configuration);
     setMessage("Configuration draft saved and validated.");
   }
-  async function activateConfiguration() {
-    const response = await fetch(
-      `/api/configuration/activate?contractId=${CONTRACT_ID}`,
-      { method: "POST" },
-    );
+  async function governConfiguration(
+    path: string,
+    payload: Record<string, string>,
+    successMessage: string,
+  ) {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     const result = await response.json();
     if (!response.ok) {
-      setMessage(result.detail || "Activation failed");
+      setMessage(result.detail || "Configuration governance action failed");
       return;
     }
-    setActiveConfiguration({
-      id: result.configuration.id,
-      version: result.configuration.version,
-      activatedAt: new Date().toISOString(),
-    });
-    setMessage(`Configuration v${result.configuration.version} activated.`);
+    await refreshConfiguration("configuration_administrator");
+    setMessage(successMessage);
+  }
+  async function testConfiguration(rationale: string) {
+    await governConfiguration(
+      `/api/configuration/test?contractId=${CONTRACT_ID}`,
+      { rationale },
+      "Immutable configuration test evidence recorded.",
+    );
+  }
+  async function approveConfiguration(versionId: string, rationale: string) {
+    await governConfiguration(
+      `/api/configuration/versions/${versionId}/approve`,
+      { rationale },
+      "Human configuration approval recorded.",
+    );
+  }
+  async function activateConfiguration(versionId: string, rationale: string) {
+    await governConfiguration(
+      "/api/configuration/activate",
+      { versionId, rationale },
+      "Approved configuration activated prospectively.",
+    );
+  }
+  async function supersedeConfiguration(
+    activeVersionId: string,
+    successorVersionId: string,
+    rationale: string,
+  ) {
+    await governConfiguration(
+      `/api/configuration/versions/${activeVersionId}/supersede`,
+      { successorVersionId, rationale },
+      "Active configuration superseded by its approved successor.",
+    );
+  }
+  async function retireConfiguration(versionId: string, rationale: string) {
+    await governConfiguration(
+      `/api/configuration/versions/${versionId}/retire`,
+      { rationale },
+      "Superseded configuration retired with retained history.",
+    );
+  }
+  async function rollbackConfiguration(versionId: string, rationale: string) {
+    await governConfiguration(
+      `/api/configuration/rollback?contractId=${CONTRACT_ID}`,
+      { targetVersionId: versionId, rationale },
+      "Rollback candidate tested; approval and supersession are still required.",
+    );
   }
   async function refreshFindings(invoiceId: string) {
     const response = await fetch(`/api/invoices/${invoiceId}/findings`);
@@ -593,6 +671,7 @@ export function App() {
         draft={draft}
         configuration={configuration}
         activeConfiguration={activeConfiguration}
+        configurationLifecycle={configurationLifecycle}
         validation={validation}
         findings={findings}
         revisionFeedback={revisionFeedback}
@@ -612,7 +691,12 @@ export function App() {
         onGeneratePackage={generatePackage}
         onSubmitInvoice={submitInvoice}
         onSaveConfiguration={saveConfiguration}
+        onTestConfiguration={testConfiguration}
+        onApproveConfiguration={approveConfiguration}
         onActivateConfiguration={activateConfiguration}
+        onSupersedeConfiguration={supersedeConfiguration}
+        onRetireConfiguration={retireConfiguration}
+        onRollbackConfiguration={rollbackConfiguration}
       />
     );
   return (
@@ -673,6 +757,7 @@ export function AuthenticatedWorkspace({
   draft,
   configuration,
   activeConfiguration,
+  configurationLifecycle,
   validation,
   findings,
   revisionFeedback,
@@ -692,7 +777,12 @@ export function AuthenticatedWorkspace({
   onGeneratePackage,
   onSubmitInvoice,
   onSaveConfiguration,
+  onTestConfiguration,
+  onApproveConfiguration,
   onActivateConfiguration,
+  onSupersedeConfiguration,
+  onRetireConfiguration,
+  onRollbackConfiguration,
 }: {
   user: User;
   jobs: Job[];
@@ -700,6 +790,7 @@ export function AuthenticatedWorkspace({
   draft: InvoiceDraft | null;
   configuration: Configuration | null;
   activeConfiguration: ActiveConfiguration | null;
+  configurationLifecycle: GovernedConfigurationVersion[];
   validation: ValidationRun | null;
   findings: Finding[];
   revisionFeedback: RevisionFeedback | null;
@@ -732,7 +823,16 @@ export function AuthenticatedWorkspace({
   onGeneratePackage: () => void;
   onSubmitInvoice: () => void;
   onSaveConfiguration: (value: Configuration) => void;
-  onActivateConfiguration: () => void;
+  onTestConfiguration: (rationale: string) => void;
+  onApproveConfiguration: (versionId: string, rationale: string) => void;
+  onActivateConfiguration: (versionId: string, rationale: string) => void;
+  onSupersedeConfiguration: (
+    activeVersionId: string,
+    successorVersionId: string,
+    rationale: string,
+  ) => void;
+  onRetireConfiguration: (versionId: string, rationale: string) => void;
+  onRollbackConfiguration: (versionId: string, rationale: string) => void;
 }) {
   return (
     <>
@@ -760,9 +860,15 @@ export function AuthenticatedWorkspace({
           <ConfigurationAdmin
             configuration={configuration}
             active={activeConfiguration}
+            versions={configurationLifecycle}
             message={message}
             onSave={onSaveConfiguration}
+            onTest={onTestConfiguration}
+            onApprove={onApproveConfiguration}
             onActivate={onActivateConfiguration}
+            onSupersede={onSupersedeConfiguration}
+            onRetire={onRetireConfiguration}
+            onRollback={onRollbackConfiguration}
           />
         )}{" "}
         {user.role === "ngo_preparer" && (
@@ -1248,17 +1354,37 @@ export function InvoiceDraftView({ draft }: { draft: InvoiceDraft }) {
 export function ConfigurationAdmin({
   configuration,
   active,
+  versions,
   message,
   onSave,
+  onTest,
+  onApprove,
   onActivate,
+  onSupersede,
+  onRetire,
+  onRollback,
 }: {
   configuration: Configuration;
   active: ActiveConfiguration | null;
+  versions: GovernedConfigurationVersion[];
   message: string;
   onSave: (value: Configuration) => void;
-  onActivate: () => void;
+  onTest: (rationale: string) => void;
+  onApprove: (versionId: string, rationale: string) => void;
+  onActivate: (versionId: string, rationale: string) => void;
+  onSupersede: (
+    activeVersionId: string,
+    successorVersionId: string,
+    rationale: string,
+  ) => void;
+  onRetire: (versionId: string, rationale: string) => void;
+  onRollback: (versionId: string, rationale: string) => void;
 }) {
   const [value, setValue] = useState(configuration);
+  const [rationale, setRationale] = useState("");
+  useEffect(() => setValue(configuration), [configuration]);
+  const activeVersion = versions.find((version) => version.active);
+  const canGovern = rationale.trim().length > 0;
   const category = (index: number, limit: string) =>
     setValue({
       ...value,
@@ -1286,9 +1412,6 @@ export function ConfigurationAdmin({
             {active ? `Active version ${active.version}` : "No active version"}
           </p>
         </div>
-        <button className="primary" onClick={onActivate}>
-          Activate numbered version
-        </button>
       </div>
       <h3>Categories and limits</h3>
       <div className="config-grid">
@@ -1407,6 +1530,120 @@ export function ConfigurationAdmin({
           <pre>{JSON.stringify(value, null, 2)}</pre>
         </details>
       </div>
+      <h3>Governed lifecycle</h3>
+      <p>
+        Saving remains editable. Testing creates an immutable numbered version;
+        a recorded human approval is required before prospective activation.
+      </p>
+      <label>
+        Governance rationale
+        <textarea
+          aria-label="Governance rationale"
+          value={rationale}
+          onChange={(event) => setRationale(event.target.value)}
+          placeholder="Explain the evidence and reason for this action"
+        />
+      </label>
+      <button
+        className="primary"
+        disabled={!canGovern}
+        onClick={() => onTest(rationale)}
+      >
+        Test draft and retain evidence
+      </button>
+      {versions.length === 0 ? (
+        <p>No governed versions yet.</p>
+      ) : (
+        <ol className="jobs">
+          {versions
+            .slice()
+            .sort((left, right) => right.version - left.version)
+            .map((version) => (
+              <li key={version.id}>
+                <div className="section-action">
+                  <div>
+                    <strong>Configuration v{version.version}</strong>{" "}
+                    <span className="role-badge">{version.state}</span>
+                    {version.active && <span> current active version</span>}
+                  </div>
+                  <div>
+                    {version.state === "tested" && (
+                      <button
+                        disabled={!canGovern}
+                        onClick={() => onApprove(version.id, rationale)}
+                      >
+                        Record human approval
+                      </button>
+                    )}
+                    {version.state === "approved" && !activeVersion && (
+                      <button
+                        disabled={!canGovern}
+                        onClick={() => onActivate(version.id, rationale)}
+                      >
+                        Activate approved version
+                      </button>
+                    )}
+                    {version.state === "approved" && activeVersion && (
+                      <button
+                        disabled={!canGovern}
+                        onClick={() =>
+                          onSupersede(activeVersion.id, version.id, rationale)
+                        }
+                      >
+                        Supersede active version
+                      </button>
+                    )}
+                    {version.state === "superseded" && (
+                      <button
+                        disabled={!canGovern}
+                        onClick={() => onRetire(version.id, rationale)}
+                      >
+                        Retire version
+                      </button>
+                    )}
+                    {(version.state === "superseded" ||
+                      version.state === "retired") && (
+                      <button
+                        disabled={!canGovern}
+                        onClick={() => onRollback(version.id, rationale)}
+                      >
+                        Prepare tested rollback
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <details>
+                  <summary>Immutable lifecycle evidence</summary>
+                  <ol>
+                    {version.history.map((event) => (
+                      <li key={event.eventHash}>
+                        <strong>{event.state}</strong> by {event.actorRole} at{" "}
+                        {event.occurredAt}: {event.rationale}
+                        <br />
+                        <small>
+                          evidence {event.testEvidenceId || "n/a"}; approval{" "}
+                          {event.approvalId || "n/a"}; event hash{" "}
+                          {event.eventHash}
+                        </small>
+                        {(event.predecessorVersionId ||
+                          event.successorVersionId ||
+                          event.rollbackTargetVersionId) && (
+                          <small>
+                            {" "}
+                            predecessor {event.predecessorVersionId || "n/a"};
+                            successor {event.successorVersionId || "n/a"};
+                            rollback target{" "}
+                            {event.rollbackTargetVersionId || "n/a"}
+                          </small>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              </li>
+            ))}
+        </ol>
+      )}
       <p aria-live="polite">{message}</p>
     </section>
   );

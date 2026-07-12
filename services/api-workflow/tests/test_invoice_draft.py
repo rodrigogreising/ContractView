@@ -6,7 +6,8 @@ import pytest
 
 from app.artifacts import store_artifact
 from app.authorization import Actor, ForbiddenError, Role
-from app.configuration import activate_draft,update_draft
+from app.configuration import update_draft
+from configuration_helpers import ensure_active_configuration
 from app.extraction import OcrResponse
 from app.extraction_review import list_extractions, review_field
 from app.ingestion import claim_next_job, create_upload_job, process_job
@@ -30,7 +31,7 @@ def complete_job(job,adapter=None):
 @pytest.fixture(scope="module",autouse=True)
 def setup_complete_sources():
     update_draft(ADMIN,CONTRACT,json.loads(Path("/app/fixtures/scenario.json").read_text())["initialConfiguration"])
-    activate_draft(ADMIN,CONTRACT)
+    ensure_active_configuration(ADMIN,CONTRACT)
     ledger=create_upload_job(PREPARER,CONTRACT,"assembly-ledger.csv","text/csv",(FILES/"ledger-june-2026.csv").read_bytes()); complete_job(ledger)
     for filename in ("payroll-june-2026.xlsx","vendor-invoice-exp-002.pdf","vendor-invoice-exp-004.png","vendor-invoice-exp-005.pdf"):
         path=FILES/filename

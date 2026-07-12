@@ -8,7 +8,7 @@ from app.ingestion import (
 )
 from app.runtime import database, object_store
 from app.settings import get_settings
-from app.configuration import activate_draft
+from configuration_helpers import ensure_active_configuration as ensure_active_configuration_for_contract
 
 CONTRACT = "contract-metro-harbor-2026"
 PREPARER = Actor("user-ngo-preparer", "org-ngo", Role.NGO_PREPARER)
@@ -18,10 +18,7 @@ ADMIN = Actor("user-config-admin", "org-operations", Role.CONFIGURATION_ADMINIST
 FIXTURES = Path("/app/fixtures/files")
 
 def ensure_active_configuration():
-    with database() as connection:
-        active = connection.execute("select 1 from configuration_versions where contract_id=%s limit 1", (CONTRACT,)).fetchone()
-    if not active:
-        activate_draft(ADMIN, CONTRACT)
+    return ensure_active_configuration_for_contract(ADMIN, CONTRACT)
 
 
 @pytest.mark.parametrize(("filename", "media_type", "job_type", "terminal_status"), [

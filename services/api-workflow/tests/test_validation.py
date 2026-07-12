@@ -9,7 +9,8 @@ import pytest
 from app.artifacts import store_artifact
 from app.authorization import Action,Actor,ForbiddenError,Role,is_allowed
 from app.access_scope import government_decision_scope
-from app.configuration import activate_draft,update_draft
+from app.configuration import update_draft
+from configuration_helpers import ensure_active_configuration
 from app.extraction import OcrResponse
 from app.extraction_review import list_extractions,review_field
 from app.ingestion import claim_next_job,create_upload_job,process_job
@@ -43,7 +44,7 @@ def complete(job,adapter=None):
 
 @pytest.fixture(scope="module")
 def invoice():
-    payload=json.loads(Path("/app/fixtures/scenario.json").read_text())["initialConfiguration"];update_draft(ADMIN,CONTRACT,payload);activate_draft(ADMIN,CONTRACT)
+    payload=json.loads(Path("/app/fixtures/scenario.json").read_text())["initialConfiguration"];update_draft(ADMIN,CONTRACT,payload);ensure_active_configuration(ADMIN,CONTRACT)
     complete(create_upload_job(PREPARER,CONTRACT,"validation-ledger.csv","text/csv",(FILES/"ledger-june-2026.csv").read_bytes()))
     for filename in ("payroll-june-2026.xlsx","vendor-invoice-exp-002.pdf","vendor-invoice-exp-004.png","vendor-invoice-exp-005.pdf"):
         media="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if filename.endswith("xlsx") else "image/png" if filename.endswith("png") else "application/pdf";store_artifact(PREPARER,CONTRACT,filename,media,(FILES/filename).read_bytes())

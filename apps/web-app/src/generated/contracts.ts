@@ -2,7 +2,7 @@
 
 export const ACTOR_ROLES = ["configuration_administrator","ngo_preparer","ngo_approver","government_reviewer","auditor"] as const;
 export const RESOURCE_KINDS = ["configuration","invoice","artifact","job","package","government_decision","audit"] as const;
-export const ACTIONS = ["read","create","update","activate","attest","submit","return","approve"] as const;
+export const ACTIONS = ["read","create","update","test","approve_configuration","activate","supersede","retire","rollback","attest","submit","return","approve"] as const;
 export const ARTIFACT_KINDS = ["original","generated"] as const;
 export const FIELD_TYPES = ["string","decimal","integer","boolean","date","datetime","identifier","reference"] as const;
 export const ENTITY_TYPES = ["contract","artifact","expense","invoice","invoice_line","validation_run","package","submission","decision"] as const;
@@ -15,7 +15,7 @@ export const RULE_SEVERITIES = ["blocker","warning","note"] as const;
 export const RULE_OUTCOMES = ["pass","fail","not_applicable"] as const;
 export const RULE_CODES = ["SERVICE_PERIOD","REQUIRED_EVIDENCE","BUDGET_AVAILABLE","TOTAL_RECONCILIATION","POSSIBLE_DUPLICATE"] as const;
 export const COMPONENT_KINDS = ["schema","mapping","rule","workflow","view","template"] as const;
-export const EVENT_TYPES = ["login_succeeded","login_failed","logout","config_activated","artifact_uploaded","extraction_drafted","extraction_failed","field_corrected","field_reviewed","validation_completed","invoice_line_corrected","finding_resolved","attested","package_generated","submitted","returned","revision_created","resubmitted","approved"] as const;
+export const EVENT_TYPES = ["login_succeeded","login_failed","logout","config_tested","config_approved","config_activated","config_superseded","config_retired","config_rollback_prepared","artifact_uploaded","extraction_drafted","extraction_failed","field_corrected","field_reviewed","validation_completed","invoice_line_corrected","finding_resolved","attested","package_generated","submitted","returned","revision_created","resubmitted","approved"] as const;
 
 export type ActorRole = typeof ACTOR_ROLES[number];
 export type ResourceKind = typeof RESOURCE_KINDS[number];
