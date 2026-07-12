@@ -1,5 +1,15 @@
 {
   "SUB-26": {
+    "reviewSkills": [
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-requirements-traceability",
+      "cv-review-implementation-tests",
+      "cv-review-journey-certification",
+      "cv-review-release-readiness"
+    ],
     "riskAndGateLabels": [
       "gate:adr",
       "gate:architecture",
@@ -30,6 +40,17 @@
     }
   },
   "SUB-53": {
+    "reviewSkills": [
+      "cv-review-operations-postmortem",
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-requirements-traceability",
+      "cv-review-implementation-tests",
+      "cv-review-journey-certification",
+      "cv-review-release-readiness"
+    ],
     "riskAndGateLabels": [
       "gate:adr",
       "gate:architecture",

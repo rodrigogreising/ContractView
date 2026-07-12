@@ -108,8 +108,11 @@ class CiCertificationTests(unittest.TestCase):
                     set(profile["riskAndGateLabels"]),
                     set(profile["riskCoverage"]),
                 )
+                self.assertTrue(profile["reviewSkills"])
         sub_26 = MANIFEST.load_evidence_coverage("SUB-26")
         self.assertIn("risk:human-authority", sub_26["riskAndGateLabels"])
+        sub_53 = MANIFEST.load_evidence_coverage("SUB-53")
+        self.assertIn("cv-review-operations-postmortem", sub_53["reviewSkills"])
 
     def test_stale_prerequisite_is_rejected(self) -> None:
         with self.assertRaisesRegex(SystemExit, "not an ancestor of the PR base"):

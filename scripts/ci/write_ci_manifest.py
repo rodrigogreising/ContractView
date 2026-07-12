@@ -16,16 +16,6 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REVIEW_SKILLS = [
-    "cv-review-adr-architecture",
-    "cv-review-boundary-review",
-    "cv-review-security-privacy",
-    "cv-review-ai-governance",
-    "cv-review-requirements-traceability",
-    "cv-review-implementation-tests",
-    "cv-review-journey-certification",
-    "cv-review-release-readiness",
-]
 ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 SHA = re.compile(r"^[a-f0-9]{40}$")
 
@@ -149,6 +139,7 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
         raise SystemExit(f"Evidence coverage is missing for {issue}")
     labels = profile.get("riskAndGateLabels")
     coverage = profile.get("riskCoverage")
+    review_skills = profile.get("reviewSkills")
     if (
         not isinstance(labels, list)
         or not labels
@@ -158,6 +149,16 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
         raise SystemExit(f"Evidence labels are invalid for {issue}")
     if not isinstance(coverage, dict) or set(coverage) != set(labels):
         raise SystemExit(f"Every risk/gate label must have exact evidence coverage for {issue}")
+    if (
+        not isinstance(review_skills, list)
+        or not review_skills
+        or any(
+            not isinstance(skill, str) or not skill.startswith("cv-review-")
+            for skill in review_skills
+        )
+        or len(review_skills) != len(set(review_skills))
+    ):
+        raise SystemExit(f"AI review skills are invalid for {issue}")
     for label, evidence in coverage.items():
         if (
             not isinstance(evidence, list)
@@ -165,7 +166,11 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
             or any(not isinstance(item, str) or not item.strip() for item in evidence)
         ):
             raise SystemExit(f"Evidence coverage is invalid for {issue} label {label}")
-    return {"riskAndGateLabels": labels, "riskCoverage": coverage}
+    return {
+        "riskAndGateLabels": labels,
+        "riskCoverage": coverage,
+        "reviewSkills": review_skills,
+    }
 
 
 def main() -> int:
@@ -241,7 +246,7 @@ def main() -> int:
         "certification": {
             "behaviorChanged": True,
             "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
-            "requiredReviewSkills": REVIEW_SKILLS,
+            "requiredReviewSkills": evidence_coverage["reviewSkills"],
             "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
             "riskCoverage": evidence_coverage["riskCoverage"],
             "cleanRuntimeRequired": True,
@@ -251,7 +256,7 @@ def main() -> int:
             "decision": "Pending",
             "reviewer": "Codex AI",
             "method": "ai",
-            "reviewSkills": REVIEW_SKILLS,
+            "reviewSkills": evidence_coverage["reviewSkills"],
             "reviewedBaseSha": args.base_sha,
             "reviewedHeadSha": args.head_sha,
             "evidenceAdequate": False,
