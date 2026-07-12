@@ -57,6 +57,15 @@ class PublicationCandidateTests(unittest.TestCase):
         )
         self.assertEqual(2, len(failures))
 
+    def test_container_digest_is_not_misclassified_as_email(self) -> None:
+        failures: list[str] = []
+        MODULE.verify_text(
+            Path("compose.yaml"),
+            "image: postgres:16-alpine@sha256:97ff59a4e30e08d1",
+            failures,
+        )
+        self.assertEqual([], failures)
+
     def test_build_has_no_history_and_a_hash_for_every_exported_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / MODULE.PUBLIC_SLUG

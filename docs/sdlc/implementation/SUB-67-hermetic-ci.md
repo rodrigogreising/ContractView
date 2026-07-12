@@ -6,10 +6,11 @@ Status: Build
 
 - Issue: `SUB-67` / REC-11
 - Branch: `codex/sub-67-hermetic-ci-evidence`
-- Base SHA: `45964570a986f7f87b772ba73d46b17c233c915e`
+- Review base SHA after prerequisite merge: `a6deabc4a8c3496dad94a4fc8f242b2401894bf1`
 - Project: ContractView / Build
 - Prerequisites: SUB-57 merge `44115b270e83cc03c8266a3db6c2f357cbe8a6cc`;
-  SUB-58 merge `08ae4ffef3f2ef386473149b596b6a5abbc147d8`
+  SUB-58 merge `08ae4ffef3f2ef386473149b596b6a5abbc147d8`;
+  SUB-79 merge `a6deabc4a8c3496dad94a4fc8f242b2401894bf1`
 - Human code review: not required. The gate is issue-proportionate executable
   evidence plus applicable immutable-diff AI reviews.
 
@@ -35,12 +36,12 @@ Status: Build
 ## Executable Evidence Before PR
 
 - Static gate: Python 3.12.2 local-compatible runtime, pinned Node 20.20.2,
-  99 typed application/script source files, 4 registries/21 contracts, 166 named persistence
-  statements, 45 table owners, 6 layers/9 capabilities, 49 policy/unit tests,
+  102 typed application/script source files, 4 registries/21 contracts, 166 named persistence
+  statements, 45 table owners, 6 layers/9 capabilities, 58 policy/unit tests,
   13 frontend tests, and production build all pass.
-- Two-pass Compose gate: 176 API tests pass independently in each pass; API,
+- Two-pass Compose gate: 178 API tests pass independently in each pass; API,
   web, worker, PostgreSQL, and MinIO health checks pass; both clean resets yield
-  `70853fc21eadabdba8432022954b3c6008386982742b02bd48742154a0099c53`.
+  `a308522d66582e70db7fff8198ee456dea8c0a89866fa39337193523b847c30e`.
 - Local artifacts are ignored working evidence. The GitHub run supplies the
   immutable PR-linked retained manifest and required check.
 
