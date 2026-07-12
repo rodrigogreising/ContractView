@@ -16,6 +16,16 @@ describe("web module boundaries", () => {
     expect(appSource).toContain("authorizedContracts");
   });
 
+  it("clears and epoch-guards every contract-scoped projection", () => {
+    expect(appSource).toContain("currentContract.current === requested");
+    for (const reset of [
+      "setJobs([])", "setExtractions([])", "setConfiguration(null)",
+      "setActiveConfiguration(null)", "setConfigurationLifecycle([])",
+      "setDraft(null)", "setValidation(null)", "setFindings([])",
+      "setRevisionFeedback(null)",
+    ]) expect(appSource).toContain(reset);
+  });
+
   it("isolates synthetic credentials behind the explicit demo/test boundary", () => {
     expect(demoMode).toBe(true);
     expect(demoPersonas).toHaveLength(5);

@@ -35,7 +35,7 @@ and a bundle scan proves they are absent.
 ## Executable Evidence
 
 - Static gate: 105 typed Python/script sources, 4 registries / 27 contracts, 47 table
-  owners / 174 statements, 63 policy tests, 18 frontend tests, and production
+  owners / 174 statements, 63 policy tests, 19 frontend tests, and production
   build pass.
 - Two independent fresh-volume Compose passes each run 180 API tests and yield
   fingerprint `7a4690eb63c89aba73fdee2a93f1a4e18737468e965a56ee9dedfb8691d590fb`.
@@ -44,7 +44,8 @@ and a bundle scan proves they are absent.
   logout rejection.
 - Frontend tests cover feature rendering, presentational role visibility,
   normalized API errors, accessible labels/live status, generated DTOs, demo
-  boundary, and absence of transport/fixed-contract/credential logic in App.
+  boundary, contract-switch projection/epoch isolation, and absence of
+  transport/fixed-contract/credential logic in App.
 - Default production `dist` contains no seeded password/email or synthetic
   contract identifier; explicit Compose demo builds retain the paced persona
   cards needed by Journey 11.

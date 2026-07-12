@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import type {
   ActiveConfigurationDto as ActiveConfiguration,
   ContractContextDto,
@@ -26,6 +26,7 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   const [contractContexts, setContractContexts] = useState<ContractContextDto[]>([]);
   const [contractId, setContractId] = useState<string | null>(null);
+  const currentContract = useRef<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("Checking session…");
@@ -49,27 +50,35 @@ export function App() {
     const contexts = (await authorizedContracts()).contracts;
     if (contexts.length === 0) throw new Error("No authorized contract context is assigned.");
     setContractContexts(contexts);
+    currentContract.current = contexts[0].contractId;
     setContractId(contexts[0].contractId);
     setUser(resolvedUser);
     setMessage("");
   }, []);
   const refreshJobs = useCallback(async () => {
-    if (contractId) setJobs((await listJobs(contractId)).jobs);
+    const requested = contractId;
+    if (requested) { const result = await listJobs(requested); if (currentContract.current === requested) setJobs(result.jobs); }
   }, [contractId]);
   const refreshExtractions = useCallback(async () => {
-    if (contractId) setExtractions((await listExtractions(contractId)).extractions);
+    const requested = contractId;
+    if (requested) { const result = await listExtractions(requested); if (currentContract.current === requested) setExtractions(result.extractions); }
   }, [contractId]);
   const refreshDraft = useCallback(async () => {
-    if (contractId) setDraft((await latestDraft(contractId)).invoice);
+    const requested = contractId;
+    if (requested) { const result = await latestDraft(requested); if (currentContract.current === requested) setDraft(result.invoice); }
   }, [contractId]);
   const refreshConfiguration = useCallback(async (role?: string) => {
-    if (!contractId) return;
-    setActiveConfiguration((await loadActiveConfiguration(contractId)).configuration);
+    const requested = contractId;
+    if (!requested) return;
+    const active = await loadActiveConfiguration(requested);
+    if (currentContract.current !== requested) return;
+    setActiveConfiguration(active.configuration);
     if (role === "configuration_administrator") {
       const [draftResult, history] = await Promise.all([
-        configurationDraft(contractId),
-        configurationHistory(contractId),
+        configurationDraft(requested),
+        configurationHistory(requested),
       ]);
+      if (currentContract.current !== requested) return;
       setConfiguration(draftResult.configuration);
       setConfigurationLifecycle(history.versions || []);
     }
@@ -85,7 +94,8 @@ export function App() {
   useEffect(() => {
     if (user?.role !== "ngo_preparer" || !contractId) return;
     refreshJobs(); refreshExtractions(); refreshDraft();
-    loadRevisionFeedback(contractId).then(({ feedback }) => setRevisionFeedback(feedback)).catch((e) => setMessage(errorText(e, "Revision feedback load failed")));
+    const requested = contractId;
+    loadRevisionFeedback(requested).then(({ feedback }) => { if (currentContract.current === requested) setRevisionFeedback(feedback); }).catch((e) => setMessage(errorText(e, "Revision feedback load failed")));
     const timer = window.setInterval(() => { refreshJobs(); refreshExtractions(); }, 500);
     return () => window.clearInterval(timer);
   }, [user, contractId, refreshJobs, refreshExtractions, refreshDraft]);
@@ -97,7 +107,7 @@ export function App() {
   }
   async function logout() {
     try { await logoutSession(); } finally {
-      setUser(null); setContractId(null); setContractContexts([]); setEmail(""); setPassword(""); setDraft(null);
+      currentContract.current = null; setUser(null); setContractId(null); setContractContexts([]); setEmail(""); setPassword(""); setDraft(null);
       setValidation(null); setFindings([]); setApprovalPreview(null); setAttestation(null);
       setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]);
       setMessage(demoMode ? "Signed out. Choose a persona to continue." : "Signed out.");
@@ -163,7 +173,9 @@ export function App() {
   }
 
   function selectContract(nextContractId: string) {
-    setContractId(nextContractId); setDraft(null); setValidation(null); setFindings([]);
+    currentContract.current = nextContractId; setContractId(nextContractId);
+    setJobs([]); setExtractions([]); setConfiguration(null); setActiveConfiguration(null); setConfigurationLifecycle([]);
+    setDraft(null); setValidation(null); setFindings([]);
     setApprovalPreview(null); setAttestation(null); setGeneratedPackage(null); setSubmission(null);
     setReviewContext(null); setQueue([]); setRevisionFeedback(null); setMessage("");
   }
