@@ -37,7 +37,7 @@ the reset completes so worker health cannot race schema replacement.
 
 ## Commands And Results
 
-- `bash scripts/ci/run_static.sh`: 72 repository tests and 23 frontend tests
+- `bash scripts/ci/run_static.sh`: 74 repository tests and 23 frontend tests
   passed; format, lint, type, ontology, ownership, architecture, SDLC, and
   production build gates passed.
 - `bash scripts/ci/run_hermetic.sh tmp/evidence/SUB-26/hermetic`: two isolated
