@@ -71,6 +71,18 @@ The clean containerized suite executes the real adapter on the immutable PDF fix
 
 The golden set is intentionally narrow because this is an engineering POC, not evidence of broad document accuracy or business validation.
 
+## SUB-64 Provenance Boundary
+
+Immutable lineage plus invoice snapshots and version references retain the
+extraction provider/model, prompt, parser, mapping, source location, and source
+artifact hashes that contributed to downstream draft fields. AI output remains draft
+evidence only: the typed relation graph can show support and derivation but
+cannot create validation findings, attestations, submissions, returns, or
+approvals. Those events require the canonical human actor and role, while
+deterministic validation owns rule outcomes. Snapshot and lineage tests prove a
+human correction appends a successor without rewriting the AI proposal or any
+prior invoice version.
+
 ## Privacy And Tenant Data
 
 - Only synthetic, non-branded fixtures are used.

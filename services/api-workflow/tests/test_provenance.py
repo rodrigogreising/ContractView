@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 from pathlib import Path
 import uuid
 
@@ -52,6 +53,40 @@ def test_all_canonical_material_event_types_are_appendable_and_ordered():
     audit = audit_query(PREPARER, CONTRACT, submitted=True)
     recorded = {event["eventType"] for event in audit["events"]}
     assert material <= recorded
+    emitted = [event for event in audit["events"] if event["id"] in ids]
+    assert all(event["schemaVersion"] == 1 for event in emitted)
+    assert all(event["actorId"] == PREPARER.user_id for event in emitted)
+    assert all(event["actorRole"] == Role.NGO_PREPARER.value for event in emitted)
+    assert all(event["actorOrganizationId"] == PREPARER.organization_id for event in emitted)
+    assert all(event["organizationId"] == PREPARER.organization_id for event in emitted)
+    assert all(event["versionReferences"] for event in emitted)
+    assert all(len(event["eventHash"]) == 64 for event in emitted)
+    for event in emitted:
+        envelope = {
+            "eventId": event["eventKey"],
+            "eventType": event["eventType"],
+            "schemaVersion": event["schemaVersion"],
+            "actorId": event["actorId"],
+            "actorRole": event["actorRole"],
+            "actorOrganizationId": event["actorOrganizationId"],
+            "organizationId": event["organizationId"],
+            "contractId": event["contractId"],
+            "aggregateType": event["aggregateType"],
+            "aggregateId": event["aggregateId"],
+            "payload": event["payload"],
+            "reasonCode": event["reasonCode"],
+            "versionReferences": event["versionReferences"],
+        }
+        canonical = json.dumps(envelope,sort_keys=True,separators=(",",":"),default=str)
+        assert event["eventHash"] == sha256(canonical.encode()).hexdigest()
+
+
+def test_database_rejects_an_incomplete_material_event_envelope():
+    with pytest.raises(psycopg.errors.RaiseException, match="material events require"):
+        with database() as connection:
+            connection.execute(
+                "insert into domain_events(event_type,aggregate_type,aggregate_id) values ('validation_completed','validation_run','incomplete')"
+            )
 
 
 def test_auditor_query_excludes_draft_only_events_after_contract_submission():

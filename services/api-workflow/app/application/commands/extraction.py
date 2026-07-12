@@ -62,7 +62,7 @@ def _record_failure(job: IngestionJob, artifact: Artifact, provider: str, model:
             (run_id,job.id,artifact.id,job.contract_id,job.organization_id,provider,model,PROMPT_VERSION,PARSER_VERSION,SCHEMA_VERSION,message),
         )
         append_event_tx(connection, "extraction_failed", "extraction_run", run_id,
-                        actor_id=None, organization_id=job.organization_id, contract_id=job.contract_id,
+                        actor_id=artifact.created_by, organization_id=job.organization_id, contract_id=job.contract_id,
                         payload={"artifactId": artifact.id, "error": message})
         connection.commit()
 
@@ -100,7 +100,7 @@ def extract_evidence(job: IngestionJob, artifact: Artifact, adapter: OcrAdapter 
             connection.extraction.execute(Statement.EXTRACTION_WRITE_EXTRACTION_FIELDS_003,
                 (field_id,run_id,name,value,response.confidence,response.source_location,proposed_lineage_id),
             )
-        append_event_tx(connection,"extraction_drafted","extraction_run",run_id,organization_id=job.organization_id,
+        append_event_tx(connection,"extraction_drafted","extraction_run",run_id,actor_id=artifact.created_by,organization_id=job.organization_id,
                         contract_id=job.contract_id,payload={"sourceArtifactId":artifact.id,"rawResponseArtifactId":raw_artifact.id,
                                                              "provider":response.provider,"model":response.model,"routingReason":routing})
         connection.commit()

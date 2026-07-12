@@ -5,6 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+import psycopg
 
 from app.artifacts import store_artifact
 from app.authorization import Action,Actor,ForbiddenError,Role,is_allowed
@@ -33,6 +34,11 @@ import zipfile
 CONTRACT="contract-metro-harbor-2026";FILES=Path("/app/fixtures/files")
 PREPARER=Actor("user-ngo-preparer","org-ngo",Role.NGO_PREPARER);APPROVER=Actor("user-ngo-approver","org-ngo",Role.NGO_APPROVER);ADMIN=Actor("user-config-admin","org-operations",Role.CONFIGURATION_ADMINISTRATOR)
 AUDITOR=Actor("user-auditor","org-oversight",Role.AUDITOR)
+
+
+def canonical_hash(value):
+    encoded=json.dumps(value,sort_keys=True,separators=(",",":"),default=str).encode()
+    return sha256(encoded).hexdigest()
 
 class Adapter:
     provider="validation-fixture-provider";model="validation-fixture-v1"
@@ -120,9 +126,14 @@ def test_blocker_correction_and_warning_dismissal_preserve_history_and_new_runs(
         resolutions=connection.execute("select action,actor_id,reason,new_validation_run_id,created_at is not null from finding_resolutions where invoice_version_id=%s order by created_at",(invoice["id"],)).fetchall()
         historical=connection.execute("select count(*) from validation_results where reason_code='POSSIBLE_DUPLICATE:EXP-005:EXP-002' and outcome='fail' and validation_run_id=%s",(dismissed["newValidationRunId"],)).fetchone()[0]
         events={row[0] for row in connection.execute("select event_type from domain_events where event_type in ('invoice_line_corrected','finding_resolved')").fetchall()}
+        expense_date_chain=connection.execute("""select corrected.field_name,predecessor.field_name
+            from field_lineage corrected join field_lineage predecessor on predecessor.id=corrected.predecessor_lineage_id
+            where corrected.invoice_version_id=%s and corrected.field_name='EXP-004.expenseDate'
+              and corrected.correction_actor_id=%s order by corrected.id desc limit 1""",(invoice["id"],PREPARER.user_id)).fetchone()
     assert correction==("2026-07-03","2026-06-30",PREPARER.user_id,"Service occurred on the documented June date",True)
     assert [row[0] for row in resolutions]==["correct","dismiss"] and all(row[1]==PREPARER.user_id and row[3] and row[4] for row in resolutions)
     assert historical==1 and events=={"invoice_line_corrected","finding_resolved"}
+    assert expense_date_chain==("EXP-004.expenseDate","EXP-004.expenseDate")
 
 def ensure_eligible(invoice):
     execute_validation(PREPARER,invoice["id"])
@@ -190,6 +201,12 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
           union select x.raw_response_artifact_id from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id join extraction_runs x on x.id=f.extraction_run_id where l.invoice_version_id=%s and x.raw_response_artifact_id is not null
         ) order by a.id""",(invoice["id"],invoice["id"],invoice["id"],invoice["id"])).fetchall()
         event=connection.execute("select payload->>'submissionId',payload->>'packageId' from domain_events where event_type='submitted' and aggregate_id=%s",(invoice["id"],)).fetchone()
+        snapshot_links=connection.execute("""select
+            (select s.stage from validation_runs r join invoice_snapshots s on s.id=r.invoice_snapshot_id where r.invoice_version_id=%s order by r.created_at desc limit 1),
+            (select s.stage from attestations a join invoice_snapshots s on s.id=a.invoice_snapshot_id where a.invoice_version_id=%s order by a.created_at desc limit 1),
+            (select s.stage from packages p join invoice_snapshots s on s.id=p.invoice_snapshot_id where p.id=%s),
+            (select s.stage from submissions u join invoice_snapshots s on s.id=u.invoice_snapshot_id where u.id=%s)
+        """,(invoice["id"],invoice["id"],submission["packageId"],submission["id"])).fetchone()
     assert row==("submitted","submitted",APPROVER.user_id,Role.NGO_APPROVER.value,True) and published
     assert submitted_sources and all(item[1] for item in submitted_sources)
     assert all(download_artifact(AUDITOR,item[0]) for item in submitted_sources)
@@ -197,6 +214,13 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert {"extraction_drafted","field_reviewed","validation_completed","attested","package_generated","submitted"} <= {item["eventType"] for item in auditor_evidence["events"]}
     assert any(item["invoiceVersionId"]==invoice["id"] for item in auditor_evidence["lineage"])
     assert event==(submission["id"],submission["packageId"])
+    assert snapshot_links==("validation","attestation","package","submission")
+    invoice_snapshots=[item for item in auditor_evidence["snapshots"] if item["invoiceVersionId"]==invoice["id"]]
+    assert {item["stage"] for item in invoice_snapshots}=={"validation","attestation","package","submission"}
+    assert all(item["snapshotHash"]==canonical_hash(item["payload"]) for item in invoice_snapshots)
+    assert {"supports","maps_to","validated_by","derived_from","submitted_as"} <= {
+        item["relationType"] for item in auditor_evidence["relations"]
+    }
     with pytest.raises(Exception,match="submitted invoice content is immutable"):
         with database() as connection:connection.execute("update invoice_lines set claimed_amount=1 where invoice_version_id=%s",(invoice["id"],))
 
@@ -214,6 +238,8 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert any(x["eventType"]=="submitted" for x in context["provenance"])
     assert list_queue(Actor("outside-reviewer","org-other",Role.GOVERNMENT_REVIEWER))==[]
     with pytest.raises(ForbiddenError):decide(PREPARER,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence",["EXP-004"])
+    with database() as connection:
+        v1_snapshots_before=connection.execute("select id,material_revision,stage,payload,snapshot_hash from invoice_snapshots where invoice_version_id=%s order by material_revision,stage",(invoice["id"],)).fetchall()
     returned=decide(government,item["id"],"returned","EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"])
     published_decision=government_decision_scope(PREPARER,item["id"])
     assert published_decision.published_to_ngo and is_allowed(PREPARER,Action.READ,published_decision)
@@ -242,5 +268,35 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
         link=connection.execute("select predecessor_invoice_version_id,successor_invoice_version_id,government_decision_id from invoice_version_links where successor_invoice_version_id=%s",(successor,)).fetchone()
         v1_feedback=connection.execute("select reason_code,note,line_keys from government_decisions where id=%s",(returned["id"],)).fetchone()
         final=connection.execute("select state from invoice_versions where id=%s",(successor,)).fetchone()[0]
+        v1_snapshots_after=connection.execute("select id,material_revision,stage,payload,snapshot_hash from invoice_snapshots where invoice_version_id=%s order by material_revision,stage",(invoice["id"],)).fetchall()
+        v2_snapshot_stages={row[0] for row in connection.execute("select stage from invoice_snapshots where invoice_version_id=%s",(successor,)).fetchall()}
+        description_chain=connection.execute("""select id,invoice_version_id,correction_actor_id,predecessor_lineage_id
+            from field_lineage where field_name='EXP-004.description'
+              and invoice_version_id in (%s,%s) order by id""",(invoice["id"],successor)).fetchall()
     assert v1_hashes==submission["packageHashes"] and link==(invoice["id"],successor,returned["id"])
     assert v1_feedback==("EVIDENCE_CORRECTION","Correct the service evidence and resubmit",["EXP-004"]) and final=="approved"
+    assert v1_snapshots_after==v1_snapshots_before
+    assert v2_snapshot_stages=={"validation","attestation","package","submission"}
+    assert len(description_chain)==3
+    assert description_chain[1][1]==successor and description_chain[1][3]==description_chain[0][0]
+    assert description_chain[2][1]==successor and description_chain[2][2]==PREPARER.user_id
+    assert description_chain[2][3]==description_chain[1][0]
+    auditor_final=audit_query(AUDITOR,CONTRACT,submitted=True)
+    assert {"supports","derived_from","maps_to","validated_by","submitted_as","returned_as","amends","approved_as"} <= {
+        item["relationType"] for item in auditor_final["relations"]
+    }
+    assert all(item["actorId"] and item["actorRole"] and item["actorOrganizationId"] for item in auditor_final["relations"])
+    for relation in auditor_final["relations"]:
+        relation_document={
+            "id":relation["id"],
+            "relationType":relation["relationType"],
+            "source":relation["source"],
+            "target":relation["target"],
+            "actor":{"userId":relation["actorId"],"organizationId":relation["actorOrganizationId"],"role":relation["actorRole"]},
+            "reasonCode":relation["reasonCode"],
+        }
+        assert relation["relationHash"]==canonical_hash(relation_document)
+    assert {invoice["id"],successor} <= {item["invoiceVersionId"] for item in auditor_final["snapshots"]}
+    with pytest.raises(psycopg.errors.RaiseException,match="append-only"):
+        with database() as connection:
+            connection.execute("update invoice_snapshots set payload='{}' where id=%s",(v1_snapshots_before[0][0],))

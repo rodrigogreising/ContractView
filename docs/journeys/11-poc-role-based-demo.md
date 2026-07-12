@@ -45,6 +45,13 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - Attestation actors and exact invoice/package versions.
 - Package manifests and distinct hashes for versions 1 and 2.
 - Return feedback, revision relation, resubmission, approval, and audit-query evidence.
+- Versioned event envelopes with canonical actor role/organization, resource
+  organization, reason, schema, immutable references, and event hashes.
+- Validation, attestation, package, and submission snapshots for both invoice
+  versions plus typed support/derivation/mapping/validation/submission/return/
+  amendment/approval relations.
+- A same-field correction chain from the immutable v1 mapping through the v2
+  clone to the corrected v2 value.
 
 ## Failure Modes
 
@@ -57,6 +64,10 @@ Certify the complete ContractView POC through one visible, recorded browser jour
 - A blocker does not prevent NGO approval/submission.
 - Return edits version 1 instead of creating a linked revision.
 - Version 1 changes after version 2 is created.
+- A material event lacks actor/version context, a relation crosses an invisible
+  tenant boundary, or an invoice snapshot/validation result can be mutated.
+- Expense-date lineage points to a claimed-amount predecessor or a v2 correction
+  skips the cloned same-field predecessor.
 - Auditor cannot reconstruct the claimed amount and both packages.
 - Playwright requires manual database changes or test-only role switching.
 
@@ -70,3 +81,6 @@ Certify the complete ContractView POC through one visible, recorded browser jour
   activation before downstream work begins.
 - Real ingestion, extraction, correction, validation, package generation, return, resubmission, approval, and audit paths execute.
 - Video, trace, and screenshots are retained as demo evidence.
+- The auditor reconstructs both snapshot sets, all eight typed relation kinds,
+  the return/correction/approval chain, and unchanged v1 snapshot/package
+  hashes after v2 approval.

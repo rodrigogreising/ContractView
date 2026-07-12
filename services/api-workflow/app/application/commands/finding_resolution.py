@@ -46,7 +46,7 @@ def resolve_finding(actor:Actor,finding_id:str,action:str,reason:str,correction_
             with database() as connection:
                 line=connection.invoices.execute(Statement.FINDING_RESOLUTION_READ_INVOICE_LINES_005,(finding[0],finding[1])).fetchone()
                 correction_id=f"line-correction-{uuid.uuid4().hex}"
-                predecessor=connection.provenance.execute(Statement.FINDING_RESOLUTION_READ_FIELD_LINEAGE_006,(finding[0],f"{finding[1]}.claimedAmount")).fetchone()
+                predecessor=connection.provenance.execute(Statement.FINDING_RESOLUTION_READ_FIELD_LINEAGE_006,(finding[0],f"{finding[1]}.expenseDate")).fetchone()
                 lineage=append_lineage_tx(connection,LineageInput(
                     connection.invoices.execute(Statement.FINDING_RESOLUTION_READ_INVOICE_VERSIONS_007,(finding[0],)).fetchone()[0],finding[5],f"{finding[1]}.expenseDate",corrected.isoformat(),line[2],line[3],
                     correction_actor_id=actor.user_id,correction_reason=reason,invoice_version_id=finding[0],predecessor_lineage_id=predecessor[0] if predecessor else None,

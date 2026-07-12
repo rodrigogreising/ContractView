@@ -39,6 +39,7 @@ Last updated: 2026-07-12
 | SUB-61 | Executable ontology, closed vocabulary, compatibility rules, and generated API/web contracts | 1-4 | 01-11 reference | Shared contract packages | Four versioned registries, two generated consumers, compatibility/drift/consumer tests |
 | SUB-62 | Physical module layers, capability repositories, table ownership, and explicit transactions | 1-4 | 01-11 reference | API/worker modular monolith | 39 table owners, 149 named statements, forbidden-import/ownership/transaction tests, clean Compose regression |
 | SUB-63 | Complete configuration lifecycle, immutable test evidence, human approval, supersession, retirement, and rollback | 2-4 | 11 | Configuration/web | Generated lifecycle DTOs, 43 table owners, 157 named statements, semantic/hash/lifecycle/API/UI/authorization/immutability tests, clean Compose regression |
+| SUB-64 | Versioned events and relations, exact invoice snapshots, corrected field lineage, immutable v1, reconstructable v2 | 1-4 | 11 | Provenance/invoices/workflow | 45 table owners, 167 named statements, envelope/trigger/relation/snapshot/lineage/auditor integration tests |
 
 ## Recovery Architecture Trace
 
@@ -50,6 +51,7 @@ Last updated: 2026-07-12
 | Physical dependency and transaction boundaries | ADR 0002 SUB-62 implementation note | Domain/application/persistence/integration/worker/HTTP layers | Boundary and implementation coverage | Machine module policy, named statement catalog, runtime wrong-owner rejection, clean regression |
 | Executable reimbursement ontology | ADR 0001 pillar 2 plus ADR 0002 SUB-59/SUB-61 amendments | Shared domain/config/rule/event contracts | Requirements coverage; Configuration governance; Deterministic validation; Provenance | Four `1.0.0` registries, generated Pydantic/TypeScript consumers, closed-vocabulary and additive-compatibility tests |
 | Governed configuration lifecycle | ADR 0002 SUB-63 implementation note | Configuration application commands and capability-owned persistence | Configuration governance; Security/privacy; Journey 11 | Immutable definition/test/approval/event tables, prospective active projection, normal-session HTTP path, deterministic rollback hashes, bounded administrator UI |
+| Versioned provenance and immutable invoice snapshots | ADR 0002 SUB-64 implementation note | Provenance event/relation writers, Invoices snapshot repository, submitted audit read model | Provenance; Security/privacy; Journey 11 | Required event envelope, all eight typed relations, stage snapshot foreign keys, exact expense-date and v1-to-v2 same-field lineage, append-only database tests |
 | Future extraction seams without distributed POC complexity | ADR 0002 | Capability application ports and events | Architecture coverage; Operational readiness when extraction occurs | Policy rejects shared tables and network-service expansion |
 
 ## Deferred And Canceled For POC

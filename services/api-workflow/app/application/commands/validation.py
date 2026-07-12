@@ -6,8 +6,9 @@ import uuid
 
 from .access_scope import invoice_scope
 from ...authorization import Action,Actor,execute_authorized,require_permission
-from .provenance import append_event_tx
+from .provenance import append_event_tx, append_relation_tx
 from .budget import calculate_budget
+from .invoice_snapshots import create_invoice_snapshot_tx
 from ...shared_contracts import RuleResult, ValidationRunDto
 
 from ..ports.statements import Statement
@@ -65,12 +66,21 @@ def execute_validation(actor:Actor,invoice_id:str)->dict:
                 else:results.append(_result("POSSIBLE_DUPLICATE",rules["POSSIBLE_DUPLICATE"]["severity"],"NO_POSSIBLE_DUPLICATE","pass","No configured duplicate candidate",{"tolerance":f"{tolerance:.2f}","window":window}))
             stable_results=sorted(results,key=lambda item:(item["ruleCode"],item["expenseKey"] or "",item["reasonCode"]))
             run_id=f"validation-{uuid.uuid4().hex}";input_hash=_hash(normalized);output_hash=_hash(stable_results)
-            connection.validation.execute(Statement.VALIDATION_WRITE_VALIDATION_RUNS_004,(run_id,invoice_id,invoice[1],ENGINE_VERSION,json.dumps(normalized),input_hash,output_hash,actor.user_id,invoice[4]))
+            snapshot=create_invoice_snapshot_tx(connection,actor,invoice_id,"validation")
+            connection.validation.execute(Statement.VALIDATION_WRITE_VALIDATION_RUNS_004,(run_id,invoice_id,invoice[1],ENGINE_VERSION,json.dumps(normalized),input_hash,output_hash,actor.user_id,invoice[4],snapshot["id"]))
+            append_relation_tx(connection,invoice[0],invoice[2],"validated_by",
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":invoice[4],"sha256":snapshot["sha256"]},
+                {"kind":"validation_run","id":run_id,"version":ENGINE_VERSION},actor=actor)
             for item in stable_results:
                 result_id=f"result-{uuid.uuid4().hex}"
                 connection.validation.execute(Statement.VALIDATION_WRITE_VALIDATION_RESULTS_005,(result_id,run_id,item["ruleCode"],item["ruleVersion"],item["severity"],item["reasonCode"],item["outcome"],item["expenseKey"],json.dumps(item["normalizedInput"]),item["message"]))
                 if item["outcome"]=="fail":connection.validation.execute(Statement.VALIDATION_WRITE_VALIDATION_FINDINGS_006,(f"validation-finding-{uuid.uuid4().hex}",result_id,invoice_id,run_id,item["expenseKey"],item["reasonCode"],item["severity"],item["message"]))
-            append_event_tx(connection,"validation_completed","validation_run",run_id,actor_id=actor.user_id,organization_id=invoice[2],contract_id=invoice[0],payload={"invoiceVersionId":invoice_id,"configurationVersionId":invoice[1],"engineVersion":ENGINE_VERSION,"inputHash":input_hash,"outputHash":output_hash})
+            append_event_tx(connection,"validation_completed","validation_run",run_id,actor_id=actor.user_id,organization_id=invoice[2],contract_id=invoice[0],payload={"invoiceVersionId":invoice_id,"configurationVersionId":invoice[1],"engineVersion":ENGINE_VERSION,"inputHash":input_hash,"outputHash":output_hash,"invoiceSnapshotId":snapshot["id"]},version_references=[
+                {"kind":"validation_run","id":run_id,"version":ENGINE_VERSION},
+                {"kind":"invoice_snapshot","id":snapshot["id"],"version":invoice[4],"sha256":snapshot["sha256"]},
+                {"kind":"invoice","id":invoice_id,"version":snapshot["payload"]["invoiceVersion"]},
+                {"kind":"configuration","id":invoice[1],"version":invoice[1]},
+            ])
             connection.commit()
         return get_validation(actor,run_id)
     return execute_authorized(actor,Action.CREATE,invoice_scope(actor,invoice_id),command)

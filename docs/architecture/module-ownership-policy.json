@@ -22,6 +22,7 @@
     "government_review.py": "workflow",
     "ingestion.py": "extraction",
     "invoice_draft.py": "invoices",
+    "invoice_snapshots.py": "invoices",
     "ledger_import.py": "extraction",
     "ledger_documents.py": "extraction",
     "package_generation.py": "workflow",
@@ -50,6 +51,8 @@
     "configuration_approvals": "configuration",
     "configuration_lifecycle_events": "configuration",
     "configuration_active_versions": "configuration",
+    "invoice_snapshots": "invoices",
+    "provenance_relations": "provenance",
     "artifacts": "artifacts",
     "artifact_relations": "artifacts",
     "ingestion_jobs": "extraction",
@@ -82,7 +85,7 @@
     "schema_migrations": "platform"
   },
   "sqlAllowedPaths": ["app/adapters/persistence/", "app/manage.py", "app/runtime.py"],
-  "declaredReadModels": ["access_scope", "attestation", "budget", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "provenance", "revision", "submission"],
+  "declaredReadModels": ["access_scope", "attestation", "budget", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "invoice_snapshots", "provenance", "revision", "submission"],
   "entrypointCapabilityDependencies": {
     "platform": ["extraction"]
   },

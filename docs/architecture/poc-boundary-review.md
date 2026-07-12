@@ -126,6 +126,16 @@ and supersession.
 
 `services/api-workflow/app/application/commands/provenance.py` owns the typed append-only material event and field-lineage contracts plus authorized audit reads. Transaction-aware writers let canonical commands and their evidence commit atomically. PostgreSQL triggers reject historical mutation; projections are not used as audit evidence.
 
+SUB-64 makes this contract executable rather than nominal. Material event
+envelopes require canonical actor/role/organization context, resource scope,
+contract, schema version, immutable version references, and an event hash.
+`provenance_relations` validates the shared relation ontology and records all
+eight POC relation types. `invoice_snapshots.py` captures immutable validation,
+attestation, package, and submission inputs through the Invoices repository;
+downstream records retain exact snapshot foreign keys. The auditor read model
+traverses only canonically visible invoice, snapshot, submission, decision, and
+relation records.
+
 ## Implemented Ingestion Job Contract
 
 `services/api-workflow/app/application/commands/ingestion.py` validates configured upload families, registers immutable artifacts, and creates idempotent PostgreSQL jobs. The worker exclusively claims queued rows with locking and owns running/completed/failed transitions. Browser clients only upload and poll; they cannot inject results or set job state.
@@ -189,3 +199,9 @@ decisions.
 ## Implemented Decision And Revision Contracts
 
 `services/api-workflow/app/application/commands/government_decision.py` owns provisioned-human Government Reviewer return/approval commands and their strict state machine. Decisions are append-only and version/package bound. A return creates a successor through `revision.py`; the NGO Preparer can edit only that draft successor. V2 then traverses the same deterministic validation, separate attestation, package, and submission boundaries before approval. The predecessor remains immutable.
+
+`revision.py` clones every v1 lineage record into v2 with an explicit
+predecessor edge before any correction. The correction command appends a new
+same-field successor and never overwrites the cloned record. The deterministic
+finding-resolution path resolves the expense-date predecessor by the exact
+`expenseDate` field, preventing the former claimed-amount cross-field edge.

@@ -253,3 +253,26 @@ the contracts and physical boundaries executable. CI must ultimately fail on:
 - configuration/runtime contract overlap;
 - an unknown or incompatible ontology/event contract;
 - HTTP or worker code bypassing an application command/query.
+
+## SUB-64 Provenance And Snapshot Enforcement
+
+The Invoices capability owns `invoice_snapshots` and exposes creation/query
+through application ports. Provenance owns append-only material events,
+`field_lineage`, and `provenance_relations`; other capabilities may request
+evidence writes but cannot mutate these tables directly. Cross-capability audit
+reconstruction is an explicit read model over submitted invoice state,
+snapshots, submissions, decisions, artifacts, and provenance records.
+
+The boundary distinguishes mutable workflow projections from durable evidence:
+
+- draft lines and lifecycle state may change only while authorized and editable;
+- each material revision/stage has one immutable content-addressed snapshot;
+- validation runs/results and all provenance records are append-only;
+- return creates a new invoice aggregate and clones lineage with predecessor
+  edges; correction appends a same-field successor;
+- auditor visibility is derived from canonical submitted/returned/approved
+  ownership, not a caller-provided flag.
+
+Migration `022_provenance_snapshots.sql` brings the current policy to 45
+single-owner tables and 167 named persistence statements. The ownership and
+statement fitness checks reject undeclared cross-capability SQL.
