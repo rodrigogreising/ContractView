@@ -49,6 +49,7 @@ describe("authentication shell", () => {
           version: 1,
           activatedAt: "2026-07-11",
         }}
+        configurationLifecycle={[]}
         validation={null}
         findings={[]}
         revisionFeedback={null}
@@ -68,7 +69,12 @@ describe("authentication shell", () => {
         onGeneratePackage={() => {}}
         onSubmitInvoice={() => {}}
         onSaveConfiguration={() => {}}
+        onTestConfiguration={() => {}}
+        onApproveConfiguration={() => {}}
         onActivateConfiguration={() => {}}
+        onSupersedeConfiguration={() => {}}
+        onRetireConfiguration={() => {}}
+        onRollbackConfiguration={() => {}}
       />,
     );
     expect(html).toContain("Upload ledger and evidence");
@@ -196,9 +202,48 @@ describe("authentication shell", () => {
           },
         }}
         active={{ id: "config-v1", version: 1, activatedAt: "now" }}
+        versions={[
+          {
+            id: "config-v2",
+            version: 2,
+            configuration: {},
+            state: "tested",
+            active: false,
+            history: [
+              {
+                state: "tested",
+                action: "test",
+                actorId: "admin",
+                actorRole: "configuration_administrator",
+                actorOrganizationId: "org-operations",
+                rationale: "Validated deterministic configuration",
+                testEvidenceId: "evidence-v2",
+                approvalId: null,
+                predecessorVersionId: "config-v1",
+                successorVersionId: null,
+                rollbackTargetVersionId: null,
+                eventHash: "abcdef123456",
+                occurredAt: "2026-07-12T12:00:00Z",
+              },
+            ],
+          },
+          {
+            id: "config-v1",
+            version: 1,
+            configuration: {},
+            state: "active",
+            active: true,
+            history: [],
+          },
+        ]}
         message=""
         onSave={() => {}}
+        onTest={() => {}}
+        onApprove={() => {}}
         onActivate={() => {}}
+        onSupersede={() => {}}
+        onRetire={() => {}}
+        onRollback={() => {}}
       />,
     );
     expect(html).toContain("Active version 1");
@@ -208,7 +253,107 @@ describe("authentication shell", () => {
     expect(html).toContain("Package label");
     expect(html).toContain("Preview configuration");
     expect(html).toContain("Save validated draft");
-    expect(html).toContain("Activate numbered version");
+    expect(html).toContain("Test draft and retain evidence");
+    expect(html).toContain("Record human approval");
+    expect(html).toContain("Immutable lifecycle evidence");
+    expect(html).toContain("Validated deterministic configuration");
+    expect(html).not.toContain("Activate numbered version");
+  });
+  it("renders every governed transition only for its valid lifecycle state", () => {
+    type AdminProps = Parameters<typeof ConfigurationAdmin>[0];
+    const configuration: AdminProps["configuration"] = {
+      servicePeriod: { start: "2026-06-01", end: "2026-06-30" },
+      categories: [
+        { code: "program", label: "Program", limit: "1000.00" },
+      ],
+      requiredEvidence: ["vendor_invoice"],
+      ledgerControlTotal: "100.00",
+      rules: [
+        "SERVICE_PERIOD",
+        "REQUIRED_EVIDENCE",
+        "BUDGET_AVAILABLE",
+        "TOTAL_RECONCILIATION",
+        "POSSIBLE_DUPLICATE",
+      ].map((code) => ({
+        code,
+        severity: code === "POSSIBLE_DUPLICATE" ? "warning" : "blocker",
+        enabled: true,
+        ...(code === "POSSIBLE_DUPLICATE"
+          ? { amountTolerance: "0.00", dayWindow: 1 }
+          : {}),
+      })),
+      workflowLabels: {
+        draft: "Draft",
+        submitted: "Submitted",
+        returned: "Returned",
+        approved: "Approved",
+      },
+      package: {
+        label: "Package",
+        invoiceTitle: "Invoice",
+        includeValidationSummary: true,
+        includeManifest: true,
+      },
+    };
+    const renderStates = (
+      versions: AdminProps["versions"],
+      active: AdminProps["active"],
+    ) =>
+      renderToString(
+        <ConfigurationAdmin
+          configuration={configuration}
+          versions={versions}
+          active={active}
+          message=""
+          onSave={() => {}}
+          onTest={() => {}}
+          onApprove={() => {}}
+          onActivate={() => {}}
+          onSupersede={() => {}}
+          onRetire={() => {}}
+          onRollback={() => {}}
+        />,
+      );
+    const version = (
+      id: string,
+      number: number,
+      state: AdminProps["versions"][number]["state"],
+      active = false,
+    ): AdminProps["versions"][number] => ({
+      id,
+      version: number,
+      configuration: {},
+      state,
+      active,
+      history: [],
+    });
+
+    const activate = renderStates([version("v1", 1, "approved")], null);
+    expect(activate).toContain("Activate approved version");
+    expect(activate).not.toContain("Supersede active version");
+
+    const supersede = renderStates(
+      [version("v1", 1, "active", true), version("v2", 2, "approved")],
+      { id: "v1", version: 1, activatedAt: "now" },
+    );
+    expect(supersede).toContain("Supersede active version");
+
+    const retiredControls = renderStates(
+      [version("v1", 1, "superseded"), version("v2", 2, "active", true)],
+      { id: "v2", version: 2, activatedAt: "now" },
+    );
+    expect(retiredControls).toContain("Retire version");
+    expect(retiredControls).toContain("Prepare tested rollback");
+
+    const rollback = renderStates(
+      [version("v1", 1, "retired"), version("v2", 2, "active", true)],
+      { id: "v2", version: 2, activatedAt: "now" },
+    );
+    expect(rollback).toContain("Prepare tested rollback");
+    expect(rollback).not.toContain("Retire version");
+    expect(rollback).toMatch(
+      /<button[^>]*disabled=""[^>]*>Test draft and retain evidence<\/button>/,
+    );
   });
   it("renders explainable blocker and warning with deterministic hashes and versions", () => {
     const html = renderToString(

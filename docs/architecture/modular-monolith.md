@@ -147,7 +147,11 @@ prove what actually happened.
 | Template definitions | Generated package bytes, manifest, and hashes |
 | Configuration bundle and lifecycle evidence | Invoice snapshot and exact configuration references |
 
-Configuration becomes immutable when approved/activated. Runtime records never
+Configuration becomes immutable when testing creates a numbered candidate.
+Immutable test evidence and a canonically assigned human approval are required
+before activation. The active projection changes prospectively; supersession
+and retirement append lifecycle evidence, while rollback creates a new tested
+candidate rather than mutating or reactivating a predecessor. Runtime records never
 embed a mutable "current configuration" object; they reference exact bundle,
 schema, mapping, rule, workflow, view, template, parser/model, and contract
 versions. Activation is prospective. Re-validation, re-generation, return, and

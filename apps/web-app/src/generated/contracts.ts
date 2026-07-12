@@ -2,7 +2,7 @@
 
 export const ACTOR_ROLES = ["configuration_administrator","ngo_preparer","ngo_approver","government_reviewer","auditor"] as const;
 export const RESOURCE_KINDS = ["configuration","invoice","artifact","job","package","government_decision","audit"] as const;
-export const ACTIONS = ["read","create","update","activate","attest","submit","return","approve"] as const;
+export const ACTIONS = ["read","create","update","test","approve_configuration","activate","supersede","retire","rollback","attest","submit","return","approve"] as const;
 export const ARTIFACT_KINDS = ["original","generated"] as const;
 export const FIELD_TYPES = ["string","decimal","integer","boolean","date","datetime","identifier","reference"] as const;
 export const ENTITY_TYPES = ["contract","artifact","expense","invoice","invoice_line","validation_run","package","submission","decision"] as const;
@@ -15,7 +15,7 @@ export const RULE_SEVERITIES = ["blocker","warning","note"] as const;
 export const RULE_OUTCOMES = ["pass","fail","not_applicable"] as const;
 export const RULE_CODES = ["SERVICE_PERIOD","REQUIRED_EVIDENCE","BUDGET_AVAILABLE","TOTAL_RECONCILIATION","POSSIBLE_DUPLICATE"] as const;
 export const COMPONENT_KINDS = ["schema","mapping","rule","workflow","view","template"] as const;
-export const EVENT_TYPES = ["login_succeeded","login_failed","logout","config_activated","artifact_uploaded","extraction_drafted","extraction_failed","field_corrected","field_reviewed","validation_completed","invoice_line_corrected","finding_resolved","attested","package_generated","submitted","returned","revision_created","resubmitted","approved"] as const;
+export const EVENT_TYPES = ["login_succeeded","login_failed","logout","config_tested","config_approved","config_activated","config_superseded","config_retired","config_rollback_prepared","artifact_uploaded","extraction_drafted","extraction_failed","field_corrected","field_reviewed","validation_completed","invoice_line_corrected","finding_resolved","attested","package_generated","submitted","returned","revision_created","resubmitted","approved"] as const;
 
 export type ActorRole = typeof ACTOR_ROLES[number];
 export type ResourceKind = typeof RESOURCE_KINDS[number];
@@ -35,7 +35,7 @@ export type RuleCode = typeof RULE_CODES[number];
 export type ComponentKind = typeof COMPONENT_KINDS[number];
 export type EventType = typeof EVENT_TYPES[number];
 
-export const CONTRACT_REQUIRED_FIELDS = {"VersionReference":["kind","id","version"],"ActorReference":["userId","organizationId","role"],"ArtifactContract":["id","contractId","organizationId","kind","mediaType","byteSize","sha256","version"],"TypedField":["name","fieldType","value","source"],"EntityContract":["id","entityType","version","fields"],"RelationContract":["id","relationType","source","target"],"IdentityDto":["id","displayName","email","organizationId","organizationName","role"],"RuleDefinition":["code","version","severity","enabled","parameters"],"RuleResult":["ruleCode","ruleVersion","severity","reasonCode","outcome","normalizedInput","message"],"ValidationRunContract":["id","invoiceVersion","configurationVersion","engineVersion","inputHash","outputHash","results"],"ValidationRunDto":["id","invoiceVersionId","configurationVersionId","engineVersion","normalizedInputs","inputHash","outputHash","status","results"],"WorkflowTransition":["fromState","toState","action","role"],"WorkflowContract":["id","version","states","transitions"],"ViewContract":["id","version","role","fields"],"TemplateContract":["id","version","mediaType","contentHash"],"ConfigurationBundleContract":["id","version","lifecycle","scope","schemas","mappings","rules","workflow","views","templates"],"ActiveConfigurationDto":["id","version","activatedAt"],"EventEnvelope":["eventId","eventType","schemaVersion","actor","organizationId","contractId","aggregate","occurredAt","payload","versionReferences"]} as const;
+export const CONTRACT_REQUIRED_FIELDS = {"VersionReference":["kind","id","version"],"ActorReference":["userId","organizationId","role"],"ArtifactContract":["id","contractId","organizationId","kind","mediaType","byteSize","sha256","version"],"TypedField":["name","fieldType","value","source"],"EntityContract":["id","entityType","version","fields"],"RelationContract":["id","relationType","source","target"],"IdentityDto":["id","displayName","email","organizationId","organizationName","role"],"RuleDefinition":["code","version","severity","enabled","parameters"],"RuleResult":["ruleCode","ruleVersion","severity","reasonCode","outcome","normalizedInput","message"],"ValidationRunContract":["id","invoiceVersion","configurationVersion","engineVersion","inputHash","outputHash","results"],"ValidationRunDto":["id","invoiceVersionId","configurationVersionId","engineVersion","normalizedInputs","inputHash","outputHash","status","results"],"WorkflowTransition":["fromState","toState","action","role"],"WorkflowContract":["id","version","states","transitions"],"ViewContract":["id","version","role","fields"],"TemplateContract":["id","version","mediaType","contentHash"],"ConfigurationBundleContract":["id","version","lifecycle","scope","schemas","mappings","rules","workflow","views","templates"],"ConfigurationLifecycleEventDto":["state","action","actorId","actorRole","actorOrganizationId","rationale","testEvidenceId","approvalId","predecessorVersionId","successorVersionId","rollbackTargetVersionId","eventHash","occurredAt"],"GovernedConfigurationVersionDto":["id","version","configuration","state","active","history"],"ConfigurationLifecycleResponseDto":["versions"],"ActiveConfigurationDto":["id","version","activatedAt"],"EventEnvelope":["eventId","eventType","schemaVersion","actor","organizationId","contractId","aggregate","occurredAt","payload","versionReferences"]} as const;
 
 export interface VersionReference {
   kind: VersionReferenceKind;
@@ -180,6 +180,35 @@ export interface ConfigurationBundleContract {
   approval?: ActorReference | null;
   predecessor?: VersionReference | null;
   rollbackTarget?: VersionReference | null;
+}
+
+export interface ConfigurationLifecycleEventDto {
+  state: ConfigurationLifecycle;
+  action: Action;
+  actorId: string;
+  actorRole: ActorRole;
+  actorOrganizationId: string;
+  rationale: string;
+  testEvidenceId: string | null;
+  approvalId: string | null;
+  predecessorVersionId: string | null;
+  successorVersionId: string | null;
+  rollbackTargetVersionId: string | null;
+  eventHash: string;
+  occurredAt: string;
+}
+
+export interface GovernedConfigurationVersionDto {
+  id: string;
+  version: number;
+  configuration: Record<string, unknown>;
+  state: ConfigurationLifecycle;
+  active: boolean;
+  history: ConfigurationLifecycleEventDto[];
+}
+
+export interface ConfigurationLifecycleResponseDto {
+  versions: GovernedConfigurationVersionDto[];
 }
 
 export interface ActiveConfigurationDto {

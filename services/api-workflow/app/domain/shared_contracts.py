@@ -39,7 +39,12 @@ class Action(StrEnum):
     READ = "read"
     CREATE = "create"
     UPDATE = "update"
+    TEST = "test"
+    APPROVE_CONFIGURATION = "approve_configuration"
     ACTIVATE = "activate"
+    SUPERSEDE = "supersede"
+    RETIRE = "retire"
+    ROLLBACK = "rollback"
     ATTEST = "attest"
     SUBMIT = "submit"
     RETURN = "return"
@@ -159,7 +164,12 @@ class EventType(StrEnum):
     LOGIN_SUCCEEDED = "login_succeeded"
     LOGIN_FAILED = "login_failed"
     LOGOUT = "logout"
+    CONFIG_TESTED = "config_tested"
+    CONFIG_APPROVED = "config_approved"
     CONFIG_ACTIVATED = "config_activated"
+    CONFIG_SUPERSEDED = "config_superseded"
+    CONFIG_RETIRED = "config_retired"
+    CONFIG_ROLLBACK_PREPARED = "config_rollback_prepared"
     ARTIFACT_UPLOADED = "artifact_uploaded"
     EXTRACTION_DRAFTED = "extraction_drafted"
     EXTRACTION_FAILED = "extraction_failed"
@@ -197,6 +207,9 @@ CONTRACT_REQUIRED_FIELDS = {
     'ViewContract': frozenset(['id', 'version', 'role', 'fields']),
     'TemplateContract': frozenset(['id', 'version', 'media_type', 'content_hash']),
     'ConfigurationBundleContract': frozenset(['id', 'version', 'lifecycle', 'scope', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates']),
+    'ConfigurationLifecycleEventDto': frozenset(['state', 'action', 'actor_id', 'actor_role', 'actor_organization_id', 'rationale', 'test_evidence_id', 'approval_id', 'predecessor_version_id', 'successor_version_id', 'rollback_target_version_id', 'event_hash', 'occurred_at']),
+    'GovernedConfigurationVersionDto': frozenset(['id', 'version', 'configuration', 'state', 'active', 'history']),
+    'ConfigurationLifecycleResponseDto': frozenset(['versions']),
     'ActiveConfigurationDto': frozenset(['id', 'version', 'activated_at']),
     'EventEnvelope': frozenset(['event_id', 'event_type', 'schema_version', 'actor', 'organization_id', 'contract_id', 'aggregate', 'occurred_at', 'payload', 'version_references']),
 }
@@ -345,6 +358,35 @@ class ConfigurationBundleContract(ContractModel):
     approval: ActorReference | None = None
     predecessor: VersionReference | None = None
     rollback_target: VersionReference | None = None
+
+
+class ConfigurationLifecycleEventDto(ContractModel):
+    state: ConfigurationLifecycle
+    action: Action
+    actor_id: str
+    actor_role: Role
+    actor_organization_id: str
+    rationale: str
+    test_evidence_id: str | None
+    approval_id: str | None
+    predecessor_version_id: str | None
+    successor_version_id: str | None
+    rollback_target_version_id: str | None
+    event_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    occurred_at: datetime
+
+
+class GovernedConfigurationVersionDto(ContractModel):
+    id: str
+    version: int = Field(ge=1)
+    configuration: dict[str, Any]
+    state: ConfigurationLifecycle
+    active: bool
+    history: list[ConfigurationLifecycleEventDto]
+
+
+class ConfigurationLifecycleResponseDto(ContractModel):
+    versions: list[GovernedConfigurationVersionDto]
 
 
 class ActiveConfigurationDto(ContractModel):

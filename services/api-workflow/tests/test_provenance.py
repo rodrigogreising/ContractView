@@ -8,7 +8,7 @@ import pytest
 from app.artifacts import store_artifact
 from app.authentication import authenticate, revoke_session
 from app.authorization import Actor, ForbiddenError, Role
-from app.configuration import activate_draft
+from configuration_helpers import ensure_active_configuration
 from app.provenance import EVENT_TYPES, LineageInput, append_event, append_lineage, audit_query
 from app.runtime import database
 
@@ -23,11 +23,11 @@ OTHER_NGO = Actor("outside-user", "org-outside", Role.NGO_PREPARER)
 def _ensure_submitted_contract() -> None:
     with database() as connection:
         config = connection.execute(
-            "select id from configuration_versions where contract_id=%s order by version desc limit 1",
+            "select configuration_version_id from configuration_active_versions where contract_id=%s",
             (CONTRACT,),
         ).fetchone()
     if not config:
-        config = (activate_draft(ADMIN, CONTRACT)["id"],)
+        config = (ensure_active_configuration(ADMIN, CONTRACT)["id"],)
     with database() as connection:
         version = connection.execute(
             "select coalesce(max(version),0)+1 from invoice_versions where contract_id=%s",
@@ -58,7 +58,7 @@ def test_auditor_query_excludes_draft_only_events_after_contract_submission():
     _ensure_submitted_contract()
     with database() as connection:
         config = connection.execute(
-            "select id from configuration_versions where contract_id=%s order by version desc limit 1",
+            "select configuration_version_id from configuration_active_versions where contract_id=%s",
             (CONTRACT,),
         ).fetchone()[0]
         version = connection.execute(
@@ -92,7 +92,7 @@ def test_authentication_and_logout_append_domain_events():
 
 def test_field_lineage_connects_source_extraction_correction_rule_invoice_and_package():
     _ensure_submitted_contract()
-    active = activate_draft(ADMIN, CONTRACT)
+    active = ensure_active_configuration(ADMIN, CONTRACT)
     source = store_artifact(PREPARER, CONTRACT, "receipt.png", "image/png", b"receipt-source")
     package = store_artifact(PREPARER, CONTRACT, "package.zip", "application/zip", b"package-v1", artifact_kind="generated")
     with database() as connection:

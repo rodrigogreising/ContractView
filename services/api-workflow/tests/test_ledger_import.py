@@ -2,7 +2,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from app.authorization import Actor, Role
-from app.configuration import activate_draft
+from configuration_helpers import ensure_active_configuration
 from app.ingestion import claim_next_job, create_upload_job, list_jobs, process_job
 from app.ledger_import import parse_ledger
 from app.runtime import database
@@ -14,10 +14,7 @@ FILES = Path("/app/fixtures/files")
 
 
 def ensure_active():
-    with database() as connection:
-        exists = connection.execute("select 1 from configuration_versions where contract_id=%s limit 1", (CONTRACT,)).fetchone()
-    if not exists:
-        activate_draft(ADMIN, CONTRACT)
+    ensure_active_configuration(ADMIN, CONTRACT)
 
 
 def test_golden_csv_and_xlsx_parse_to_identical_canonical_rows_and_total():

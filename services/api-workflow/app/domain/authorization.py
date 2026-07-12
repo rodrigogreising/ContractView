@@ -51,7 +51,15 @@ def is_allowed(actor: Actor, action: Action, resource: ResourceScope) -> bool:
 
     if actor.role is Role.CONFIGURATION_ADMINISTRATOR:
         return resource.actor_assigned and resource.kind is ResourceKind.CONFIGURATION and action in {
-            Action.READ, Action.CREATE, Action.UPDATE, Action.ACTIVATE
+            Action.READ,
+            Action.CREATE,
+            Action.UPDATE,
+            Action.TEST,
+            Action.APPROVE_CONFIGURATION,
+            Action.ACTIVATE,
+            Action.SUPERSEDE,
+            Action.RETIRE,
+            Action.ROLLBACK,
         }
 
     if actor.role in {Role.NGO_PREPARER, Role.NGO_APPROVER}:
