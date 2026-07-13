@@ -11,12 +11,28 @@ import io
 import json
 from pathlib import Path
 import re
+import sys
 import zipfile
 
 from openpyxl import Workbook
 from PIL import Image, ImageDraw, ImageFont
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+
+ROOT = Path(__file__).resolve().parents[1]
+SERVICE_ROOT = ROOT / "services" / "api-workflow"
+if SERVICE_ROOT.exists():
+    sys.path.insert(0, str(SERVICE_ROOT))
+
+from app.domain.document_intake import (  # noqa: E402
+    EVALUATION_SUITE_VERSION,
+    FINGERPRINT_SPECIFICATION_VERSION,
+    PARSER_VERSION as PROFILE_PARSER_VERSION,
+    analyze_profile,
+    content_hash,
+    evaluate_profile,
+    profile_content_hash,
+)
 
 
 FIXED_TIME = datetime(2000, 1, 1, tzinfo=timezone.utc)
@@ -142,6 +158,122 @@ def vendor_png(path: Path, invoice: dict[str, str]) -> None:
     image.save(path, format="PNG", optimize=False, compress_level=9)
 
 
+def text_pdf(path: Path, text: str, title: str) -> None:
+    document = canvas.Canvas(
+        str(path), pagesize=letter, pageCompression=1, invariant=1
+    )
+    document.setAuthor(GENERATOR)
+    document.setCreator(GENERATOR)
+    document.setTitle(title)
+    document.setSubject("Closed synthetic document-intake fixture")
+    document._doc.info.producer = GENERATOR
+    y = letter[1] - 60
+    for index, value in enumerate(text.splitlines()):
+        document.setFont("Helvetica-Bold" if index == 0 else "Helvetica", 16 if index == 0 else 11)
+        document.drawString(60, y, value)
+        y -= 28 if index == 0 else 22
+    document.showPage()
+    document.save()
+
+
+def document_intake_catalog(scenario: dict, files: Path) -> dict:
+    source = scenario["documentIntake"]
+    fixtures = {item["id"]: item for item in source["fixtures"]}
+    negatives = [
+        item for item in source["fixtures"]
+        if item["expectedOutcome"] == "needs_profile_review"
+    ]
+    for fixture in source["fixtures"]:
+        target = files / fixture["filename"]
+        if fixture["caseKind"] != "supported_layout" or not target.exists():
+            text_pdf(target, fixture["ocrText"], "Synthetic document-intake fixture")
+
+    profiles = []
+    for source_profile in source["profiles"]:
+        supported = [fixtures[fixture_id] for fixture_id in source_profile["fixtureIds"]]
+        definition = {
+            key: value for key, value in source_profile.items() if key != "fixtureIds"
+        }
+        definition.update(
+            {
+                "contractId": scenario["contract"]["id"],
+                "fingerprintSpecification": source["fingerprintSpecification"],
+            }
+        )
+        definition.update(
+            {
+                "acceptedFingerprints": sorted(
+                    {
+                        analyze_profile(
+                            definition,
+                            fixture["ocrText"],
+                            fixture["mediaType"],
+                        ).fingerprint
+                        for fixture in supported
+                    }
+                ),
+            }
+        )
+        fixture_set_id = f"fixture-set-{definition['profileKey']}-v1"
+        fixture_set_body = {
+            "id": fixture_set_id,
+            "version": "1",
+            "cases": supported + negatives,
+        }
+        fixture_set_body["contentHash"] = content_hash(fixture_set_body)
+        evaluation_id = f"profile-evaluation-{definition['profileKey']}-v1"
+        definition.update(
+            {
+                "lifecycle": "approved",
+                "fixtureSet": {
+                    "kind": "profile_fixture_set",
+                    "id": fixture_set_id,
+                    "version": "1",
+                    "sha256": fixture_set_body["contentHash"],
+                },
+                "evaluationEvidence": None,
+            }
+        )
+        definition["contentHash"] = profile_content_hash(definition)
+        evaluation = evaluate_profile(
+            definition,
+            fixture_set_body["cases"],
+            ocr_version="fixture-transcript-v1",
+        )
+        evidence = {
+            "id": evaluation_id,
+            "profileVersion": {
+                "kind": "document_profile",
+                "id": definition["id"],
+                "version": definition["version"],
+                "sha256": definition["contentHash"],
+            },
+            "fixtureSet": definition["fixtureSet"],
+            **evaluation,
+        }
+        definition["evaluationEvidence"] = {
+            "kind": "profile_evaluation",
+            "id": evaluation_id,
+            "version": EVALUATION_SUITE_VERSION,
+            "sha256": evidence["resultHash"],
+        }
+        profiles.append(
+            {
+                "profile": definition,
+                "fixtureSet": fixture_set_body,
+                "evaluationEvidence": evidence,
+            }
+        )
+    return {
+        "catalogVersion": source["catalogVersion"],
+        "fingerprintSpecificationVersion": FINGERPRINT_SPECIFICATION_VERSION,
+        "parserVersion": PROFILE_PARSER_VERSION,
+        "evaluationSuiteVersion": EVALUATION_SUITE_VERSION,
+        "profiles": profiles,
+        "negativeFixtureIds": [item["id"] for item in negatives],
+    }
+
+
 def generate(root: Path) -> dict[str, str]:
     scenario_path = root / "scenario.json"
     scenario = json.loads(scenario_path.read_text(encoding="utf-8"))
@@ -169,6 +301,11 @@ def generate(root: Path) -> dict[str, str]:
         vendor_pdf(files / f"vendor-invoice-{expense}.pdf", invoice)
         if invoice["expense_id"] == "EXP-004":
             vendor_png(files / f"vendor-invoice-{expense}.png", invoice)
+
+    catalog = document_intake_catalog(scenario, files)
+    (root / "document-intake-catalog.json").write_text(
+        json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
     hashes = {
         path.name: sha256(path.read_bytes()).hexdigest()

@@ -1,6 +1,6 @@
 {
   "package": "domain-types",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "compatibility": {
     "policy": "semver-additive",
     "minor": "May add optional fields; may not remove or reinterpret fields or closed vocabulary values.",
@@ -17,8 +17,9 @@
     "relationTypes": {"python": "RelationType", "typescript": "RelationType", "constant": "RELATION_TYPES", "values": ["supports", "derived_from", "maps_to", "validated_by", "submitted_as", "returned_as", "amends", "approved_as"]},
     "invoiceLifecycle": {"python": "InvoiceLifecycle", "typescript": "InvoiceLifecycle", "constant": "INVOICE_LIFECYCLES", "values": ["draft", "submitted", "returned", "approved"]},
     "configurationLifecycle": {"python": "ConfigurationLifecycle", "typescript": "ConfigurationLifecycle", "constant": "CONFIGURATION_LIFECYCLES", "values": ["draft", "tested", "approved", "active", "superseded", "retired"]},
+    "documentRouteOutcomes": {"python": "DocumentRouteOutcome", "typescript": "DocumentRouteOutcome", "constant": "DOCUMENT_ROUTE_OUTCOMES", "values": ["recognized_profile_draft", "needs_profile_review", "extraction_failed"]},
     "reasonCodes": {"python": "ReasonCode", "typescript": "ReasonCode", "constant": "REASON_CODES", "parameterized": true, "values": ["SERVICE_PERIOD", "IN_SERVICE_PERIOD", "REQUIRED_EVIDENCE", "EVIDENCE_PRESENT", "BUDGET_AVAILABLE", "TOTAL_RECONCILIATION", "TOTAL_RECONCILED", "POSSIBLE_DUPLICATE", "NO_POSSIBLE_DUPLICATE", "EVIDENCE_CORRECTION", "AMOUNT_CORRECTION", "CLARIFICATION", "APPROVED_AS_CORRECTED"]},
-    "versionReferenceKinds": {"python": "VersionReferenceKind", "typescript": "VersionReferenceKind", "constant": "VERSION_REFERENCE_KINDS", "values": ["contract", "artifact", "schema", "mapping", "rule", "workflow", "view", "template", "configuration", "test_evidence", "invoice", "invoice_snapshot", "validation_run", "package", "package_manifest", "event", "entity", "submission", "decision"]}
+    "versionReferenceKinds": {"python": "VersionReferenceKind", "typescript": "VersionReferenceKind", "constant": "VERSION_REFERENCE_KINDS", "values": ["contract", "artifact", "schema", "mapping", "rule", "workflow", "view", "template", "configuration", "test_evidence", "document_profile", "profile_fixture_set", "profile_evaluation", "document_fingerprint", "cluster_projection", "extraction_run", "invoice", "invoice_snapshot", "validation_run", "package", "package_manifest", "event", "entity", "submission", "decision"]}
   },
   "contracts": {
     "VersionReference": {"model": "VersionReference", "fields": [
@@ -48,7 +49,8 @@
       {"name": "fieldType", "type": "FieldType", "required": true},
       {"name": "value", "type": "any", "required": true},
       {"name": "source", "type": "VersionReference", "required": true},
-      {"name": "confidence", "type": "number", "required": false, "nullable": true, "minimum": 0, "maximum": 1}
+      {"name": "confidence", "type": "number", "required": false, "nullable": true, "minimum": 0, "maximum": 1},
+      {"name": "sourceLocation", "type": "string", "required": false, "nullable": true}
     ]},
     "Entity": {"model": "EntityContract", "fields": [
       {"name": "id", "type": "string", "required": true},

@@ -11,6 +11,9 @@ The configuration registry owns versioned reimbursement configuration: schemas, 
 - Record activation approvals, test evidence, affected contract scope, and activation time.
 - Provide explicit configuration versions to validation, workflow, package generation, extraction, and views.
 - Preserve historical configuration references for submitted invoices.
+- Own immutable document profile versions, fixture/evaluation evidence, human
+  approvals, lifecycle events, prospective active assignments, and draft
+  cluster associations.
 
 ## Explicit Non-Responsibilities
 
@@ -27,6 +30,8 @@ The configuration registry owns versioned reimbursement configuration: schemas, 
 - Rule definition metadata.
 - Workflow, view, and template configuration contracts.
 - Configuration bundle contracts and lifecycle events.
+- Document profile definitions, fixture sets, evaluation evidence, exact
+  profile references, and lifecycle contracts.
 
 ## Allowed Dependencies
 
@@ -56,6 +61,8 @@ Future tests must certify:
 - New configuration applies prospectively by default.
 - Historical submitted invoices retain original configuration bundle versions.
 - Existing draft invoices require explicit authorized re-validation when applying a new configuration.
+- Profile activation requires exact id/version/hash, successful immutable
+  fixture evidence, assigned-human approval, and prospective bundle activation.
 
 ## Related Certifiable Journeys
 

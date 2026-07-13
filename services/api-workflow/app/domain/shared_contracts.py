@@ -106,6 +106,12 @@ class ConfigurationLifecycle(StrEnum):
     RETIRED = "retired"
 
 
+class DocumentRouteOutcome(StrEnum):
+    RECOGNIZED_PROFILE_DRAFT = "recognized_profile_draft"
+    NEEDS_PROFILE_REVIEW = "needs_profile_review"
+    EXTRACTION_FAILED = "extraction_failed"
+
+
 ReasonCode = Annotated[str, StringConstraints(pattern=r'^(?:SERVICE_PERIOD|IN_SERVICE_PERIOD|REQUIRED_EVIDENCE|EVIDENCE_PRESENT|BUDGET_AVAILABLE|TOTAL_RECONCILIATION|TOTAL_RECONCILED|POSSIBLE_DUPLICATE|NO_POSSIBLE_DUPLICATE|EVIDENCE_CORRECTION|AMOUNT_CORRECTION|CLARIFICATION|APPROVED_AS_CORRECTED)(?::[A-Za-z0-9_.-]+)*$')]
 
 
@@ -120,6 +126,12 @@ class VersionReferenceKind(StrEnum):
     TEMPLATE = "template"
     CONFIGURATION = "configuration"
     TEST_EVIDENCE = "test_evidence"
+    DOCUMENT_PROFILE = "document_profile"
+    PROFILE_FIXTURE_SET = "profile_fixture_set"
+    PROFILE_EVALUATION = "profile_evaluation"
+    DOCUMENT_FINGERPRINT = "document_fingerprint"
+    CLUSTER_PROJECTION = "cluster_projection"
+    EXTRACTION_RUN = "extraction_run"
     INVOICE = "invoice"
     INVOICE_SNAPSHOT = "invoice_snapshot"
     VALIDATION_RUN = "validation_run"
@@ -158,6 +170,30 @@ class ComponentKind(StrEnum):
     WORKFLOW = "workflow"
     VIEW = "view"
     TEMPLATE = "template"
+    DOCUMENT_PROFILE = "document_profile"
+
+
+class ProfileFixtureCaseKind(StrEnum):
+    SUPPORTED_LAYOUT = "supported_layout"
+    CHANGED_LAYOUT = "changed_layout"
+    UNKNOWN_LAYOUT = "unknown_layout"
+
+
+class ProfileMatchKind(StrEnum):
+    EXACT = "exact"
+    NONE = "none"
+
+
+class LedgerMatchOutcome(StrEnum):
+    MATCHED = "matched"
+    UNMATCHED = "unmatched"
+    AMBIGUOUS = "ambiguous"
+    NOT_EVALUATED = "not_evaluated"
+
+
+class ClusterSuggestionStatus(StrEnum):
+    SUGGESTED = "suggested"
+    CONFIRMED_AS_DRAFT = "confirmed_as_draft"
 
 
 class EventType(StrEnum):
@@ -170,7 +206,16 @@ class EventType(StrEnum):
     CONFIG_SUPERSEDED = "config_superseded"
     CONFIG_RETIRED = "config_retired"
     CONFIG_ROLLBACK_PREPARED = "config_rollback_prepared"
+    PROFILE_DRAFTED = "profile_drafted"
+    PROFILE_TESTED = "profile_tested"
+    PROFILE_APPROVED = "profile_approved"
+    PROFILE_ACTIVATED = "profile_activated"
+    PROFILE_ROLLBACK_ACTIVATED = "profile_rollback_activated"
+    PROFILE_SUPERSEDED = "profile_superseded"
+    PROFILE_RETIRED = "profile_retired"
+    CLUSTER_CONFIRMED = "cluster_confirmed"
     ARTIFACT_UPLOADED = "artifact_uploaded"
+    DOCUMENT_ROUTED = "document_routed"
     EXTRACTION_DRAFTED = "extraction_drafted"
     EXTRACTION_FAILED = "extraction_failed"
     FIELD_CORRECTED = "field_corrected"
@@ -213,6 +258,15 @@ CONTRACT_REQUIRED_FIELDS = {
     'PackageBuildInputContract': frozenset(['schema_version', 'package_id', 'invoice_snapshot', 'attestation_id', 'validation_run', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'configuration_version', 'template', 'invoice_payload', 'validation_summary', 'claims', 'evidence']),
     'PackageReproductionManifestContract': frozenset(['schema_version', 'build_input_hash', 'package_manifest_hash', 'archive_sha256', 'archive_byte_size', 'files', 'template', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'invoice_snapshot']),
     'ConfigurationBundleContract': frozenset(['id', 'version', 'lifecycle', 'scope', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates']),
+    'DocumentProfileFieldContract': frozenset(['name', 'field_type', 'required', 'source_labels', 'normalization']),
+    'LedgerMatchRuleContract': frozenset(['source_reference_field', 'amount_field', 'date_field', 'vendor_field', 'required']),
+    'FingerprintSpecificationContract': frozenset(['id', 'version', 'algorithm', 'signals']),
+    'ProfileFixtureCaseContract': frozenset(['id', 'case_kind', 'filename', 'media_type', 'ocr_text', 'expected_outcome', 'expected_fields', 'expected_source_locations']),
+    'ProfileFixtureSetContract': frozenset(['id', 'version', 'cases', 'content_hash']),
+    'ProfileEvaluationResultContract': frozenset(['fixture_id', 'passed', 'outcome', 'fingerprint', 'normalized_fields_hash', 'source_locations_hash']),
+    'ProfileEvaluationEvidenceContract': frozenset(['id', 'profile_version', 'fixture_set', 'suite_version', 'ocr_version', 'parser_version', 'results', 'supported_field_exactness', 'source_location_exactness', 'unknown_safe_routing_rate', 'passed', 'result_hash']),
+    'DocumentProfileVersionContract': frozenset(['id', 'contract_id', 'profile_key', 'version', 'lifecycle', 'artifact_class', 'language_tag', 'vendor_aliases', 'required_fields', 'ledger_match_rule', 'fingerprint_specification', 'accepted_fingerprints', 'fixture_set', 'evaluation_evidence', 'content_hash']),
+    'ProfileAssociationDto': frozenset(['id', 'contract_id', 'cluster_projection', 'profile_key', 'status', 'confirmed_by', 'rationale', 'created_at']),
     'ConfigurationLifecycleEventDto': frozenset(['state', 'action', 'actor_id', 'actor_role', 'actor_organization_id', 'rationale', 'test_evidence_id', 'approval_id', 'predecessor_version_id', 'successor_version_id', 'rollback_target_version_id', 'event_hash', 'occurred_at']),
     'ConfigurationDraftDto': frozenset(['configuration', 'revision', 'payload_hash', 'updated_at']),
     'ConfigurationTestCheckDto': frozenset(['code', 'passed']),
@@ -226,6 +280,12 @@ CONTRACT_REQUIRED_FIELDS = {
     'ConfigurationReferencesDto': frozenset(['configuration_version_id', 'references', 'projection_hash', 'canonical']),
     'ConfigurationActivationImpactDto': frozenset(['configuration_version_id', 'contract_id', 'would_supersede_version_id', 'historical_reference_version_id', 'reference_counts', 'application_scope', 'historical_references_preserved', 'projection_hash', 'canonical']),
     'ActiveConfigurationDto': frozenset(['id', 'version', 'activated_at']),
+    'SourceLocationContract': frozenset(['page', 'line', 'label', 'canonical']),
+    'ExtractedFieldProposalContract': frozenset(['name', 'field_type', 'value', 'source_location', 'confidence']),
+    'DocumentFingerprintContract': frozenset(['id', 'artifact', 'specification_version', 'algorithm', 'language_tag', 'signals', 'sha256']),
+    'DocumentClusterProjectionContract': frozenset(['id', 'contract_id', 'fingerprint', 'language_tag', 'member_artifacts', 'status', 'canonical', 'projection_hash']),
+    'ProfileMatchResultContract': frozenset(['id', 'outcome', 'match_kind', 'profile_version', 'configuration_version', 'fingerprint', 'ledger_match_outcome', 'reason', 'result_hash']),
+    'DocumentIntakeResultDto': frozenset(['extraction_run_id', 'source_artifact', 'raw_ocr_artifact', 'ocr_version', 'parser_version', 'fingerprint', 'match', 'cluster', 'fields', 'human_review_required']),
     'EventEnvelope': frozenset(['event_id', 'event_type', 'schema_version', 'actor', 'organization_id', 'contract_id', 'aggregate', 'occurred_at', 'payload', 'version_references']),
     'AuditEventDto': frozenset(['id', 'event', 'event_hash']),
     'AuditLineageDto': frozenset(['id', 'field_name', 'field_value', 'recorded_at']),
@@ -268,6 +328,7 @@ class TypedField(ContractModel):
     value: Any
     source: VersionReference
     confidence: float | None = Field(default=None, ge=0, le=1)
+    source_location: str | None = None
 
 
 class EntityContract(ContractModel):
@@ -385,6 +446,9 @@ class ExtractionComponentVersionContract(ContractModel):
     prompt_version: str
     parser_version: str
     schema_version: str
+    document_profile: VersionReference | None = None
+    document_fingerprint: VersionReference | None = None
+    configuration_version: VersionReference | None = None
 
 
 class ValidationInputManifestContract(ContractModel):
@@ -453,6 +517,103 @@ class ConfigurationBundleContract(ContractModel):
     approval: ActorReference | None = None
     predecessor: VersionReference | None = None
     rollback_target: VersionReference | None = None
+    document_profiles: list[VersionReference] | None = None
+
+
+class DocumentProfileFieldContract(ContractModel):
+    name: str
+    field_type: FieldType
+    required: bool
+    source_labels: list[str]
+    normalization: str
+
+
+class LedgerMatchRuleContract(ContractModel):
+    source_reference_field: str
+    amount_field: str
+    date_field: str
+    vendor_field: str
+    required: bool
+
+
+class FingerprintSpecificationContract(ContractModel):
+    id: str
+    version: str
+    algorithm: str
+    signals: list[str]
+
+
+class ProfileFixtureCaseContract(ContractModel):
+    id: str
+    case_kind: ProfileFixtureCaseKind
+    filename: str
+    media_type: str
+    ocr_text: str
+    expected_outcome: DocumentRouteOutcome
+    expected_fields: dict[str, str]
+    expected_source_locations: dict[str, str]
+
+
+class ProfileFixtureSetContract(ContractModel):
+    id: str
+    version: str
+    cases: list[ProfileFixtureCaseContract]
+    content_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class ProfileEvaluationResultContract(ContractModel):
+    fixture_id: str
+    passed: bool
+    outcome: str
+    fingerprint: str = Field(pattern='^[a-f0-9]{64}$')
+    normalized_fields_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    source_locations_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class ProfileEvaluationEvidenceContract(ContractModel):
+    id: str
+    profile_version: VersionReference
+    fixture_set: VersionReference
+    suite_version: str
+    ocr_version: str
+    parser_version: str
+    results: list[ProfileEvaluationResultContract]
+    supported_field_exactness: float = Field(ge=0, le=1)
+    source_location_exactness: float = Field(ge=0, le=1)
+    unknown_safe_routing_rate: float = Field(ge=0, le=1)
+    passed: bool
+    result_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class DocumentProfileVersionContract(ContractModel):
+    id: str
+    contract_id: str
+    profile_key: str
+    version: int = Field(ge=1)
+    lifecycle: ConfigurationLifecycle
+    artifact_class: str
+    language_tag: str
+    vendor_aliases: list[str]
+    required_fields: list[DocumentProfileFieldContract]
+    ledger_match_rule: LedgerMatchRuleContract
+    fingerprint_specification: FingerprintSpecificationContract
+    accepted_fingerprints: list[str]
+    fixture_set: VersionReference
+    evaluation_evidence: VersionReference | None
+    predecessor: VersionReference | None = None
+    successor: VersionReference | None = None
+    content_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class ProfileAssociationDto(ContractModel):
+    id: str
+    contract_id: str
+    cluster_projection: VersionReference
+    profile_key: str
+    status: str
+    confirmed_by: ActorReference
+    rationale: str
+    created_at: datetime
 
 
 class ConfigurationLifecycleEventDto(ContractModel):
@@ -573,6 +734,68 @@ class ActiveConfigurationDto(ContractModel):
     id: str
     version: int
     activated_at: str
+
+
+class SourceLocationContract(ContractModel):
+    page: int = Field(ge=1)
+    line: int = Field(ge=1)
+    label: str
+    canonical: str
+
+
+class ExtractedFieldProposalContract(ContractModel):
+    name: str
+    field_type: FieldType
+    value: str
+    source_location: SourceLocationContract
+    confidence: float = Field(ge=0, le=1)
+
+
+class DocumentFingerprintContract(ContractModel):
+    id: str
+    artifact: VersionReference
+    specification_version: str
+    algorithm: str
+    language_tag: str
+    signals: dict[str, Any]
+    sha256: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class DocumentClusterProjectionContract(ContractModel):
+    id: str
+    contract_id: str
+    fingerprint: VersionReference
+    language_tag: str
+    member_artifacts: list[VersionReference]
+    status: ClusterSuggestionStatus
+    canonical: bool
+    projection_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class ProfileMatchResultContract(ContractModel):
+    id: str
+    outcome: DocumentRouteOutcome
+    match_kind: ProfileMatchKind
+    profile_version: VersionReference | None
+    configuration_version: VersionReference | None
+    fingerprint: VersionReference
+    ledger_match_outcome: LedgerMatchOutcome
+    ledger_expense_key: str | None = None
+    reason: str
+    result_hash: str = Field(pattern='^[a-f0-9]{64}$')
+
+
+class DocumentIntakeResultDto(ContractModel):
+    extraction_run_id: str
+    source_artifact: VersionReference
+    raw_ocr_artifact: VersionReference
+    ocr_version: str
+    parser_version: str
+    fingerprint: DocumentFingerprintContract
+    match: ProfileMatchResultContract
+    cluster: DocumentClusterProjectionContract | None
+    fields: list[ExtractedFieldProposalContract]
+    human_review_required: bool
 
 
 class EventEnvelope(ContractModel):

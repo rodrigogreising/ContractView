@@ -67,7 +67,152 @@
       "invoiceTitle": "Synthetic reimbursement invoice",
       "includeValidationSummary": true,
       "includeManifest": true
-    }
+    },
+    "documentProfiles": [
+      {
+        "kind": "document_profile",
+        "id": "profile-vendor-invoice-en-v1",
+        "version": 1,
+        "sha256": "dde2f78bb390d7d7208d1bc75a033b05a1caa6c6f19ff58a41f1a71995287694"
+      },
+      {
+        "kind": "document_profile",
+        "id": "profile-vendor-invoice-es-v1",
+        "version": 1,
+        "sha256": "76760da57985f26e6461b8c62ce86ce1998df556df68c697bace3fbf9cf829d7"
+      }
+    ]
+  },
+  "documentIntake": {
+    "catalogVersion": "document-intake-catalog-v1",
+    "fingerprintSpecification": {
+      "id": "document-layout-signals",
+      "version": "document-layout-signals-v1",
+      "algorithm": "sha256-canonical-json-v1",
+      "signals": [
+        "artifact_media_type",
+        "language_tag",
+        "normalized_text_tokens",
+        "page_geometry",
+        "anchor_positions"
+      ]
+    },
+    "profiles": [
+      {
+        "id": "profile-vendor-invoice-en-v1",
+        "profileKey": "vendor_invoice_en",
+        "version": 1,
+        "artifactClass": "vendor_invoice",
+        "languageTag": "en",
+        "vendorAliases": [
+          "Synthetic Facilities Vendor A",
+          "Synthetic Program Supplies Vendor B",
+          "Synthetic Workshop Goods A",
+          "Synthetic Learning Materials B"
+        ],
+        "requiredFields": [
+          {"name": "vendor", "fieldType": "string", "required": true, "sourceLabels": ["Vendor"], "normalization": "trim"},
+          {"name": "date", "fieldType": "date", "required": true, "sourceLabels": ["Date", "Invoice date"], "normalization": "iso_date"},
+          {"name": "amount", "fieldType": "decimal", "required": true, "sourceLabels": ["Amount", "Total amount"], "normalization": "decimal"},
+          {"name": "sourceReference", "fieldType": "identifier", "required": true, "sourceLabels": ["Expense reference"], "normalization": "identifier"}
+        ],
+        "ledgerMatchRule": {
+          "sourceReferenceField": "sourceReference",
+          "amountField": "amount",
+          "dateField": "date",
+          "vendorField": "vendor",
+          "required": false
+        },
+        "fixtureIds": ["profile-en-supported-1", "profile-en-supported-2"]
+      },
+      {
+        "id": "profile-vendor-invoice-es-v1",
+        "profileKey": "vendor_invoice_es",
+        "version": 1,
+        "artifactClass": "vendor_invoice",
+        "languageTag": "es",
+        "vendorAliases": [
+          "Synthetic Materiales Comunitarios A",
+          "Synthetic Suministros Educativos B"
+        ],
+        "requiredFields": [
+          {"name": "vendor", "fieldType": "string", "required": true, "sourceLabels": ["Proveedor"], "normalization": "trim"},
+          {"name": "date", "fieldType": "date", "required": true, "sourceLabels": ["Fecha de factura"], "normalization": "iso_date"},
+          {"name": "amount", "fieldType": "decimal", "required": true, "sourceLabels": ["Importe total"], "normalization": "decimal"},
+          {"name": "sourceReference", "fieldType": "identifier", "required": true, "sourceLabels": ["Referencia de gasto"], "normalization": "identifier"}
+        ],
+        "ledgerMatchRule": {
+          "sourceReferenceField": "sourceReference",
+          "amountField": "amount",
+          "dateField": "date",
+          "vendorField": "vendor",
+          "required": false
+        },
+        "fixtureIds": ["profile-es-supported-1", "profile-es-supported-2"]
+      }
+    ],
+    "fixtures": [
+      {
+        "id": "profile-en-supported-1",
+        "caseKind": "supported_layout",
+        "filename": "vendor-invoice-exp-002.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "Synthetic Facilities Vendor A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-FAC-0610\nDate: 2026-06-10\nVENDOR INVOICE\nDescription: June facility services\nAmount: $1,850.00\nPrinted subtotal: $1,850.00\nApproved claim total: $1,850.00\nAPPROVAL NOTE\nApproved in full for the synthetic June reimbursement package.\nExpense reference: VENDOR-INVOICE-EXP-002\n",
+        "expectedOutcome": "recognized_profile_draft",
+        "expectedFields": {"vendor": "Synthetic Facilities Vendor A", "date": "2026-06-10", "amount": "1850.00", "sourceReference": "VENDOR-INVOICE-EXP-002"},
+        "expectedSourceLocations": {"vendor": "page=1;line=1;label=vendor_alias", "date": "page=1;line=4;label=date", "amount": "page=1;line=7;label=amount", "sourceReference": "page=1;line=12;label=expense reference"}
+      },
+      {
+        "id": "profile-en-supported-2",
+        "caseKind": "supported_layout",
+        "filename": "vendor-invoice-exp-003.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "Synthetic Program Supplies Vendor B\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-SUP-0618\nDate: 2026-06-18\nVENDOR INVOICE\nDescription: Workshop materials and learning kits\nAmount: $1,820.00\nPrinted subtotal: $1,820.00\nApproved adjustment: $-540.00\nApproved claim total: $1,280.00\nAPPROVAL NOTE\nClaim only the approved adjusted total; exclude the non-program materials adjustment.\nExpense reference: VENDOR-INVOICE-EXP-003\n",
+        "expectedOutcome": "recognized_profile_draft",
+        "expectedFields": {"vendor": "Synthetic Program Supplies Vendor B", "date": "2026-06-18", "amount": "1820.00", "sourceReference": "VENDOR-INVOICE-EXP-003"},
+        "expectedSourceLocations": {"vendor": "page=1;line=1;label=vendor_alias", "date": "page=1;line=4;label=date", "amount": "page=1;line=7;label=amount", "sourceReference": "page=1;line=13;label=expense reference"}
+      },
+      {
+        "id": "profile-es-supported-1",
+        "caseKind": "supported_layout",
+        "filename": "synthetic-vendor-invoice-es-001.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Materiales Comunitarios A\nFecha de factura: 2026-06-20\nImporte total: USD 740.00\nReferencia de gasto: EXP-ES-001\nIdioma de origen: es\n",
+        "expectedOutcome": "recognized_profile_draft",
+        "expectedFields": {"vendor": "Synthetic Materiales Comunitarios A", "date": "2026-06-20", "amount": "740.00", "sourceReference": "EXP-ES-001"},
+        "expectedSourceLocations": {"vendor": "page=1;line=3;label=proveedor", "date": "page=1;line=4;label=fecha de factura", "amount": "page=1;line=5;label=importe total", "sourceReference": "page=1;line=6;label=referencia de gasto"}
+      },
+      {
+        "id": "profile-es-supported-2",
+        "caseKind": "supported_layout",
+        "filename": "synthetic-vendor-invoice-es-002.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Suministros Educativos B\nFecha de factura: 2026-06-24\nImporte total: USD 915.50\nReferencia de gasto: EXP-ES-002\nIdioma de origen: es\n",
+        "expectedOutcome": "recognized_profile_draft",
+        "expectedFields": {"vendor": "Synthetic Suministros Educativos B", "date": "2026-06-24", "amount": "915.50", "sourceReference": "EXP-ES-002"},
+        "expectedSourceLocations": {"vendor": "page=1;line=3;label=proveedor", "date": "page=1;line=4;label=fecha de factura", "amount": "page=1;line=5;label=importe total", "sourceReference": "page=1;line=6;label=referencia de gasto"}
+      },
+      {
+        "id": "profile-changed-layout",
+        "caseKind": "changed_layout",
+        "filename": "synthetic-vendor-invoice-changed-layout.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "Synthetic Workshop Goods A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-CHANGED-0625\nUNDECLARED LAYOUT ROW 1\nUNDECLARED LAYOUT ROW 2\nUNDECLARED LAYOUT ROW 3\nDate: 2026-06-25\nVENDOR INVOICE\nDescription: Shifted deterministic layout\nAmount: $325.00\nPrinted subtotal: $325.00\nApproved claim total: $325.00\nAPPROVAL NOTE\nThe labels remain valid but their layout positions changed.\nExpense reference: EXP-CHANGED-001\n",
+        "expectedOutcome": "needs_profile_review",
+        "expectedFields": {},
+        "expectedSourceLocations": {}
+      },
+      {
+        "id": "profile-unknown-layout",
+        "caseKind": "unknown_layout",
+        "filename": "synthetic-unknown-supporting-document.pdf",
+        "mediaType": "application/pdf",
+        "ocrText": "SYNTHETIC SUPPORTING DOCUMENT\nReference table for deterministic review routing.\nEntry A 2026-06-27 USD 111.00\nNo declared vendor-invoice layout is present.\n",
+        "expectedOutcome": "needs_profile_review",
+        "expectedFields": {},
+        "expectedSourceLocations": {}
+      }
+    ]
   },
   "expected": {
     "version1LedgerTotal": "10130.00",

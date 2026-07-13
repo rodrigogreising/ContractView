@@ -61,6 +61,7 @@ build input and are absent from the default production bundle.
 | Rule contracts | Rule input/output interfaces, severity taxonomy, reason-code conventions, deterministic execution contract. |
 | Event contracts | Event names, payload requirements, lineage references, and version reference shapes. |
 | Configuration contracts | Schema, mapping, workflow, view, template, and configuration bundle definitions. |
+| Extraction contracts | Deterministic profile-route, fingerprint, cluster, ledger-match, source-location, and intake-result definitions. |
 | Infrastructure | Deployment topology, environment configuration contracts, resource provisioning definitions, and operational wiring for runtime units. |
 | Persistence | Relational schema and migration definitions, cache key/TTL contracts, transaction boundaries, and storage adapter interfaces. |
 | Test fixtures | Certified sample contracts, ledgers, artifacts, users, rule sets, and journey data. |
@@ -132,3 +133,9 @@ Changed or unknown layouts produce `needs_profile_review` and no canonical
 expense. Cluster projections may suggest families but cannot assign, approve,
 or activate a profile. SUB-75 and SUB-76 must extend executable shared
 contracts, table ownership, and named statements before runtime data is added.
+
+SUB-76 implements this extension in the existing API and worker composition.
+Configuration-to-Extraction collaboration is a named immutable query port for
+the exact active configuration and profile versions. It grants no Configuration
+write authority. Extraction returns a versioned intake result DTO and persists
+only its owned OCR/fingerprint/cluster/match/draft records.

@@ -98,6 +98,7 @@
       ],
       "allowedApplicationDependencies": [
         "artifacts",
+        "configuration",
         "identity",
         "provenance"
       ]

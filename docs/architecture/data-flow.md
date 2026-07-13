@@ -266,3 +266,31 @@ trusts a client projection or lifecycle label alone; it revalidates the exact
 stored payload/test/approval evidence. Diff, impact, and reference responses
 are recomputable views with `canonical=false` and deterministic projection
 hashes. They are display and audit evidence, never command inputs.
+
+## SUB-76 Executable Intake Evidence Flow
+
+The implementation resolves the active configuration and exact content-hashed
+profile versions before parsing. Pinned local OCR output is retained as an
+immutable generated artifact. The deterministic parser emits source-located
+typed fields and a canonical fingerprint. Exact matches append route evidence
+and proposed fields; nonmatches append the same artifact/OCR/fingerprint/route
+evidence plus a noncanonical cluster projection but no fields or canonical
+expense.
+
+The fingerprint consumes the approved fixed specification: value-free line
+shape tokens, non-empty-line count, and whitespace-normalized anchor positions.
+The raw OCR line numbers remain source-location evidence but blank-line noise is
+not layout identity. Inserted, removed, or reordered non-empty rows therefore
+route to review even when all labels and values remain parseable. Ledger
+reconciliation reads the exact field names from the active profile contract.
+
+The validation-input manifest reads only immutable extraction references and
+records the exact configuration version, profile version/hash, fingerprint
+specification/result, OCR model, parser, and source artifacts. Re-execution
+with the same declared inputs reproduces normalized fields, fingerprint, match
+result, and downstream manifest identity.
+
+Before a configuration test record is created, Configuration resolves each
+profile id/version/hash and reproduces its profile hash, fixture hash,
+case-class metrics, evaluation result, and human approval. Reference syntax
+alone cannot create passing test evidence.

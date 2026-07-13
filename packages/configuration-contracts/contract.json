@@ -1,10 +1,11 @@
 {
   "package": "configuration-contracts",
-  "version": "1.2.0",
-  "dependsOn": {"domain-types": "^1.0.0", "rule-contracts": "^1.0.0"},
+  "version": "2.0.0",
+  "dependsOn": {"domain-types": "^2.0.0", "rule-contracts": "^2.0.0"},
   "vocabularies": {
-    "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template"]},
-    "lifecycle": {"values": ["draft", "tested", "approved", "active", "superseded", "retired"]}
+    "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template", "document_profile"]},
+    "lifecycle": {"values": ["draft", "tested", "approved", "active", "superseded", "retired"]},
+    "profileFixtureCaseKinds": {"python": "ProfileFixtureCaseKind", "typescript": "ProfileFixtureCaseKind", "constant": "PROFILE_FIXTURE_CASE_KINDS", "values": ["supported_layout", "changed_layout", "unknown_layout"]}
   },
   "contracts": {
     "WorkflowTransition": {"model": "WorkflowTransition", "fields": [
@@ -39,7 +40,10 @@
       {"name": "model", "type": "string", "required": true},
       {"name": "promptVersion", "type": "string", "required": true},
       {"name": "parserVersion", "type": "string", "required": true},
-      {"name": "schemaVersion", "type": "string", "required": true}
+      {"name": "schemaVersion", "type": "string", "required": true},
+      {"name": "documentProfile", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "documentFingerprint", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "configurationVersion", "type": "VersionReference", "required": false, "nullable": true}
     ]},
     "ValidationInputManifest": {"model": "ValidationInputManifestContract", "fields": [
       {"name": "schemaVersion", "type": "string", "required": true},
@@ -102,7 +106,95 @@
       {"name": "testEvidence", "type": "VersionReference", "required": false, "nullable": true},
       {"name": "approval", "type": "ActorReference", "required": false, "nullable": true},
       {"name": "predecessor", "type": "VersionReference", "required": false, "nullable": true},
-      {"name": "rollbackTarget", "type": "VersionReference", "required": false, "nullable": true}
+      {"name": "rollbackTarget", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "documentProfiles", "type": "VersionReference[]", "required": false}
+    ]},
+    "DocumentProfileField": {"model": "DocumentProfileFieldContract", "fields": [
+      {"name": "name", "type": "string", "required": true},
+      {"name": "fieldType", "type": "FieldType", "required": true},
+      {"name": "required", "type": "boolean", "required": true},
+      {"name": "sourceLabels", "type": "string[]", "required": true},
+      {"name": "normalization", "type": "string", "required": true}
+    ]},
+    "LedgerMatchRule": {"model": "LedgerMatchRuleContract", "fields": [
+      {"name": "sourceReferenceField", "type": "string", "required": true},
+      {"name": "amountField", "type": "string", "required": true},
+      {"name": "dateField", "type": "string", "required": true},
+      {"name": "vendorField", "type": "string", "required": true},
+      {"name": "required", "type": "boolean", "required": true}
+    ]},
+    "FingerprintSpecification": {"model": "FingerprintSpecificationContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "string", "required": true},
+      {"name": "algorithm", "type": "string", "required": true},
+      {"name": "signals", "type": "string[]", "required": true}
+    ]},
+    "ProfileFixtureCase": {"model": "ProfileFixtureCaseContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "caseKind", "type": "ProfileFixtureCaseKind", "required": true},
+      {"name": "filename", "type": "string", "required": true},
+      {"name": "mediaType", "type": "string", "required": true},
+      {"name": "ocrText", "type": "string", "required": true},
+      {"name": "expectedOutcome", "type": "DocumentRouteOutcome", "required": true},
+      {"name": "expectedFields", "type": "map<string,string>", "required": true},
+      {"name": "expectedSourceLocations", "type": "map<string,string>", "required": true}
+    ]},
+    "ProfileFixtureSet": {"model": "ProfileFixtureSetContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "version", "type": "string", "required": true},
+      {"name": "cases", "type": "ProfileFixtureCaseContract[]", "required": true},
+      {"name": "contentHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "ProfileEvaluationResult": {"model": "ProfileEvaluationResultContract", "fields": [
+      {"name": "fixtureId", "type": "string", "required": true},
+      {"name": "passed", "type": "boolean", "required": true},
+      {"name": "outcome", "type": "string", "required": true},
+      {"name": "fingerprint", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "normalizedFieldsHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "sourceLocationsHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "ProfileEvaluationEvidence": {"model": "ProfileEvaluationEvidenceContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "profileVersion", "type": "VersionReference", "required": true},
+      {"name": "fixtureSet", "type": "VersionReference", "required": true},
+      {"name": "suiteVersion", "type": "string", "required": true},
+      {"name": "ocrVersion", "type": "string", "required": true},
+      {"name": "parserVersion", "type": "string", "required": true},
+      {"name": "results", "type": "ProfileEvaluationResultContract[]", "required": true},
+      {"name": "supportedFieldExactness", "type": "number", "required": true, "minimum": 0, "maximum": 1},
+      {"name": "sourceLocationExactness", "type": "number", "required": true, "minimum": 0, "maximum": 1},
+      {"name": "unknownSafeRoutingRate", "type": "number", "required": true, "minimum": 0, "maximum": 1},
+      {"name": "passed", "type": "boolean", "required": true},
+      {"name": "resultHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "DocumentProfileVersion": {"model": "DocumentProfileVersionContract", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "profileKey", "type": "string", "required": true},
+      {"name": "version", "type": "integer", "required": true, "minimum": 1},
+      {"name": "lifecycle", "type": "ConfigurationLifecycle", "required": true},
+      {"name": "artifactClass", "type": "string", "required": true},
+      {"name": "languageTag", "type": "string", "required": true},
+      {"name": "vendorAliases", "type": "string[]", "required": true},
+      {"name": "requiredFields", "type": "DocumentProfileFieldContract[]", "required": true},
+      {"name": "ledgerMatchRule", "type": "LedgerMatchRuleContract", "required": true},
+      {"name": "fingerprintSpecification", "type": "FingerprintSpecificationContract", "required": true},
+      {"name": "acceptedFingerprints", "type": "string[]", "required": true},
+      {"name": "fixtureSet", "type": "VersionReference", "required": true},
+      {"name": "evaluationEvidence", "type": "VersionReference", "required": true, "nullable": true},
+      {"name": "predecessor", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "successor", "type": "VersionReference", "required": false, "nullable": true},
+      {"name": "contentHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+    ]},
+    "ProfileAssociation": {"model": "ProfileAssociationDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "clusterProjection", "type": "VersionReference", "required": true},
+      {"name": "profileKey", "type": "string", "required": true},
+      {"name": "status", "type": "string", "required": true},
+      {"name": "confirmedBy", "type": "ActorReference", "required": true},
+      {"name": "rationale", "type": "string", "required": true},
+      {"name": "createdAt", "type": "datetime", "required": true}
     ]},
     "ConfigurationLifecycleEventDto": {"model": "ConfigurationLifecycleEventDto", "fields": [
       {"name": "state", "type": "ConfigurationLifecycle", "required": true},

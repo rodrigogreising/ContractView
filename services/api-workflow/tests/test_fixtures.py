@@ -25,6 +25,8 @@ def test_scenario_is_synthetic_and_complete() -> None:
     }
     assert scenario["initialConfiguration"]["status"] == "draft"
     assert scenario["expected"]["finalState"] == "government_approved"
+    assert {item["languageTag"] for item in scenario["documentIntake"]["profiles"]} == {"en", "es"}
+    assert len(scenario["initialConfiguration"]["documentProfiles"]) == 2
 
 def test_ledger_totals_match_machine_readable_expectations() -> None:
     expected = json.loads((FIXTURES / "expected.json").read_text())
@@ -77,23 +79,36 @@ def test_fixture_identities_match_the_closed_synthetic_catalog() -> None:
     )
 
 
-def test_binary_fixture_metadata_and_text_are_explicitly_synthetic() -> None:
+def test_binary_fixture_metadata_and_text_match_the_closed_synthetic_catalog() -> None:
+    scenario = json.loads((FIXTURES / "scenario.json").read_text())
     expected_vendors = {
         invoice["vendor"]
-        for invoice in json.loads((FIXTURES / "scenario.json").read_text())["fixtureData"]["vendorInvoices"]
+        for invoice in scenario["fixtureData"]["vendorInvoices"]
     }
+    intake_by_filename = {
+        item["filename"]: item
+        for item in scenario["documentIntake"]["fixtures"]
+    }
+    expected_pdf_names = {
+        f"vendor-invoice-{invoice['expense_id'].lower()}.pdf"
+        for invoice in scenario["fixtureData"]["vendorInvoices"]
+    } | set(intake_by_filename)
+    assert {path.name for path in (FIXTURES / "files").glob("*.pdf")} == expected_pdf_names
     pdf_text = []
     for path in sorted((FIXTURES / "files").glob("*.pdf")):
         result = subprocess.run(
             ["pdftotext", str(path), "-"], check=True, capture_output=True, text=True
         )
         pdf_text.append(result.stdout)
-        assert "Test fixture only" in result.stdout
-        assert "no real organization" in result.stdout.lower()
+        if path.name in intake_by_filename:
+            expected = intake_by_filename[path.name]["ocrText"].splitlines()
+            assert result.stdout.splitlines()[0].strip() == expected[0]
+        else:
+            assert result.stdout.splitlines()[0].strip() in expected_vendors
         metadata = subprocess.run(
             ["pdfinfo", str(path)], check=True, capture_output=True, text=True
         ).stdout
-        assert "Title:           Synthetic vendor invoice" in metadata
+        assert re.search(r"^Title:\s+Synthetic (?:vendor invoice|document-intake fixture)$", metadata, re.M)
         assert "Author:          Synthetic Fixture Generator" in metadata
         assert "Creator:         Synthetic Fixture Generator" in metadata
         assert "Producer:        Synthetic Fixture Generator" in metadata
@@ -103,6 +118,25 @@ def test_binary_fixture_metadata_and_text_are_explicitly_synthetic() -> None:
         for line in combined_pdf_text.splitlines()
         if line.strip().startswith("Synthetic ")
     }
+
+
+def test_document_intake_catalog_has_exact_profile_and_evaluation_evidence() -> None:
+    catalog = json.loads((FIXTURES / "document-intake-catalog.json").read_text())
+    scenario = json.loads((FIXTURES / "scenario.json").read_text())
+    assert catalog["catalogVersion"] == scenario["documentIntake"]["catalogVersion"]
+    assert {item["profile"]["languageTag"] for item in catalog["profiles"]} == {"en", "es"}
+    assert catalog["negativeFixtureIds"] == ["profile-changed-layout", "profile-unknown-layout"]
+    for item in catalog["profiles"]:
+        kinds = [case["caseKind"] for case in item["fixtureSet"]["cases"]]
+        assert kinds.count("supported_layout") >= 2
+        assert "changed_layout" in kinds and "unknown_layout" in kinds
+        evidence = item["evaluationEvidence"]
+        assert evidence["passed"] is True
+        assert evidence["supportedFieldExactness"] == 1.0
+        assert evidence["sourceLocationExactness"] == 1.0
+        assert evidence["unknownSafeRoutingRate"] == 1.0
+        assert len(evidence["resultHash"]) == 64
+        assert all(result["passed"] for result in evidence["results"])
 
     for path in sorted((FIXTURES / "files").glob("*.xlsx")):
         with zipfile.ZipFile(path) as archive:

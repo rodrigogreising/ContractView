@@ -239,3 +239,36 @@ not evaluate compliance, assign a profile, make a validation finding, or grant
 authority. Replaying unchanged immutable inputs produces identical projection
 hashes. Profile fixture evaluation and the pinned local OCR behavior remain
 deferred to SUB-76 under the stricter Journey 12 metrics already defined above.
+
+## SUB-76 Deterministic Extraction And Evaluation Decision
+
+SUB-76 adds no runtime AI. `tesseract-5.5.0-eng+spa` is a pinned local OCR
+adapter whose output is untrusted draft input. Profile parsing, normalization,
+fingerprinting, cluster projection, exact matching, ledger reconciliation,
+safe routing, fixture evaluation, validation, and package inputs are
+deterministic shared-contract behavior.
+
+The closed evaluation suite records fixture-set, expected fields/source
+locations, OCR model, parser, fingerprint specification, profile version,
+configuration reference, exact metrics, and content hashes. Supported English
+and Spanish cases require 100% field and source-location exactness;
+changed/unknown cases require 100% safe routing and zero canonical mutation.
+Identical declared inputs reproduce fingerprint, normalized draft, match, and
+result hashes.
+
+Evaluation cannot manufacture 100% results from empty denominators. The closed
+fixture-kind vocabulary requires at least two supported layouts plus explicit
+changed and unknown cases; supported field/source metrics and negative routing
+metrics use separate denominators. Fingerprint execution accepts only the
+approved fixed specification, while profile-declared normalization and ledger
+field mappings remain deterministic executable inputs rather than prose.
+
+Cluster projections remain noncanonical and cannot assign profiles. System and
+AI actors still have no create, test, approve, activate, supersede, retire,
+validate, attest, submit, return, or approve authority. Any hosted model,
+model-assisted profile drafting, fuzzy automatic assignment, or expanded data
+class requires a new governance decision and evaluation gate.
+
+Configuration rollback remains deterministic human-governed execution. It may
+reactivate an exact historical profile only through a newly tested and approved
+configuration version and an append-only `profile_rollback_activated` event.

@@ -1,0 +1,441 @@
+{
+  "catalogVersion": "document-intake-catalog-v1",
+  "evaluationSuiteVersion": "document-profile-fixtures-v1",
+  "fingerprintSpecificationVersion": "document-layout-signals-v1",
+  "negativeFixtureIds": [
+    "profile-changed-layout",
+    "profile-unknown-layout"
+  ],
+  "parserVersion": "deterministic-document-profile-parser-v1",
+  "profiles": [
+    {
+      "evaluationEvidence": {
+        "fixtureSet": {
+          "id": "fixture-set-vendor_invoice_en-v1",
+          "kind": "profile_fixture_set",
+          "sha256": "f4fa4ae4a1e0d7b3a43f52a6d5ee261b49cb8f1928588605806746794253174d",
+          "version": "1"
+        },
+        "id": "profile-evaluation-vendor_invoice_en-v1",
+        "ocrVersion": "fixture-transcript-v1",
+        "parserVersion": "deterministic-document-profile-parser-v1",
+        "passed": true,
+        "profileVersion": {
+          "id": "profile-vendor-invoice-en-v1",
+          "kind": "document_profile",
+          "sha256": "dde2f78bb390d7d7208d1bc75a033b05a1caa6c6f19ff58a41f1a71995287694",
+          "version": 1
+        },
+        "resultHash": "752e5e19a559d60c1478f6c224bfdc5df2f7a5c3210832983e0adc5d7af7515d",
+        "results": [
+          {
+            "fingerprint": "5c60002a8b3218b0df474b0f4bb294572d17eb0ffc36cb3f19520d79972f5ed6",
+            "fixtureId": "profile-en-supported-1",
+            "normalizedFieldsHash": "3e1cf939a64fd716f1315f37a9e44f9dc5eed25139b00b103d6308b83ecc0628",
+            "outcome": "recognized_profile_draft",
+            "passed": true,
+            "sourceLocationsHash": "d0b0e7e608d55b437aacef6651f1838afabed002868073aeda5c7a81e7991e2c"
+          },
+          {
+            "fingerprint": "395e3f6f40cd0526e7a68fa6b5ee0c22b7db227c4b0ad10c7fb98f37908327b7",
+            "fixtureId": "profile-en-supported-2",
+            "normalizedFieldsHash": "48bd1e48663c6f1055a3f9045541a874c66019b61c43e958469829bb4cf9ca29",
+            "outcome": "recognized_profile_draft",
+            "passed": true,
+            "sourceLocationsHash": "fb06893806d1e8c15c0f42e42a687e8f188db8255c3b794a65d7394b960f2f1a"
+          },
+          {
+            "fingerprint": "fea041f5bdf2babea689633e744ead73e3106bac19eba2aaf3dcc2c50f09129e",
+            "fixtureId": "profile-changed-layout",
+            "normalizedFieldsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "outcome": "needs_profile_review",
+            "passed": true,
+            "sourceLocationsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "fingerprint": "24ea22838c9a4ce85582603fcfce5a914fd39e4eae06443c6ce3176bb99b9c82",
+            "fixtureId": "profile-unknown-layout",
+            "normalizedFieldsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "outcome": "needs_profile_review",
+            "passed": true,
+            "sourceLocationsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          }
+        ],
+        "sourceLocationExactness": 1.0,
+        "suiteVersion": "document-profile-fixtures-v1",
+        "supportedFieldExactness": 1.0,
+        "unknownSafeRoutingRate": 1.0
+      },
+      "fixtureSet": {
+        "cases": [
+          {
+            "caseKind": "supported_layout",
+            "expectedFields": {
+              "amount": "1850.00",
+              "date": "2026-06-10",
+              "sourceReference": "VENDOR-INVOICE-EXP-002",
+              "vendor": "Synthetic Facilities Vendor A"
+            },
+            "expectedOutcome": "recognized_profile_draft",
+            "expectedSourceLocations": {
+              "amount": "page=1;line=7;label=amount",
+              "date": "page=1;line=4;label=date",
+              "sourceReference": "page=1;line=12;label=expense reference",
+              "vendor": "page=1;line=1;label=vendor_alias"
+            },
+            "filename": "vendor-invoice-exp-002.pdf",
+            "id": "profile-en-supported-1",
+            "mediaType": "application/pdf",
+            "ocrText": "Synthetic Facilities Vendor A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-FAC-0610\nDate: 2026-06-10\nVENDOR INVOICE\nDescription: June facility services\nAmount: $1,850.00\nPrinted subtotal: $1,850.00\nApproved claim total: $1,850.00\nAPPROVAL NOTE\nApproved in full for the synthetic June reimbursement package.\nExpense reference: VENDOR-INVOICE-EXP-002\n"
+          },
+          {
+            "caseKind": "supported_layout",
+            "expectedFields": {
+              "amount": "1820.00",
+              "date": "2026-06-18",
+              "sourceReference": "VENDOR-INVOICE-EXP-003",
+              "vendor": "Synthetic Program Supplies Vendor B"
+            },
+            "expectedOutcome": "recognized_profile_draft",
+            "expectedSourceLocations": {
+              "amount": "page=1;line=7;label=amount",
+              "date": "page=1;line=4;label=date",
+              "sourceReference": "page=1;line=13;label=expense reference",
+              "vendor": "page=1;line=1;label=vendor_alias"
+            },
+            "filename": "vendor-invoice-exp-003.pdf",
+            "id": "profile-en-supported-2",
+            "mediaType": "application/pdf",
+            "ocrText": "Synthetic Program Supplies Vendor B\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-SUP-0618\nDate: 2026-06-18\nVENDOR INVOICE\nDescription: Workshop materials and learning kits\nAmount: $1,820.00\nPrinted subtotal: $1,820.00\nApproved adjustment: $-540.00\nApproved claim total: $1,280.00\nAPPROVAL NOTE\nClaim only the approved adjusted total; exclude the non-program materials adjustment.\nExpense reference: VENDOR-INVOICE-EXP-003\n"
+          },
+          {
+            "caseKind": "changed_layout",
+            "expectedFields": {},
+            "expectedOutcome": "needs_profile_review",
+            "expectedSourceLocations": {},
+            "filename": "synthetic-vendor-invoice-changed-layout.pdf",
+            "id": "profile-changed-layout",
+            "mediaType": "application/pdf",
+            "ocrText": "Synthetic Workshop Goods A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-CHANGED-0625\nUNDECLARED LAYOUT ROW 1\nUNDECLARED LAYOUT ROW 2\nUNDECLARED LAYOUT ROW 3\nDate: 2026-06-25\nVENDOR INVOICE\nDescription: Shifted deterministic layout\nAmount: $325.00\nPrinted subtotal: $325.00\nApproved claim total: $325.00\nAPPROVAL NOTE\nThe labels remain valid but their layout positions changed.\nExpense reference: EXP-CHANGED-001\n"
+          },
+          {
+            "caseKind": "unknown_layout",
+            "expectedFields": {},
+            "expectedOutcome": "needs_profile_review",
+            "expectedSourceLocations": {},
+            "filename": "synthetic-unknown-supporting-document.pdf",
+            "id": "profile-unknown-layout",
+            "mediaType": "application/pdf",
+            "ocrText": "SYNTHETIC SUPPORTING DOCUMENT\nReference table for deterministic review routing.\nEntry A 2026-06-27 USD 111.00\nNo declared vendor-invoice layout is present.\n"
+          }
+        ],
+        "contentHash": "f4fa4ae4a1e0d7b3a43f52a6d5ee261b49cb8f1928588605806746794253174d",
+        "id": "fixture-set-vendor_invoice_en-v1",
+        "version": "1"
+      },
+      "profile": {
+        "acceptedFingerprints": [
+          "395e3f6f40cd0526e7a68fa6b5ee0c22b7db227c4b0ad10c7fb98f37908327b7",
+          "5c60002a8b3218b0df474b0f4bb294572d17eb0ffc36cb3f19520d79972f5ed6"
+        ],
+        "artifactClass": "vendor_invoice",
+        "contentHash": "dde2f78bb390d7d7208d1bc75a033b05a1caa6c6f19ff58a41f1a71995287694",
+        "contractId": "contract-synthetic-agency-ngo-2026",
+        "evaluationEvidence": {
+          "id": "profile-evaluation-vendor_invoice_en-v1",
+          "kind": "profile_evaluation",
+          "sha256": "752e5e19a559d60c1478f6c224bfdc5df2f7a5c3210832983e0adc5d7af7515d",
+          "version": "document-profile-fixtures-v1"
+        },
+        "fingerprintSpecification": {
+          "algorithm": "sha256-canonical-json-v1",
+          "id": "document-layout-signals",
+          "signals": [
+            "artifact_media_type",
+            "language_tag",
+            "normalized_text_tokens",
+            "page_geometry",
+            "anchor_positions"
+          ],
+          "version": "document-layout-signals-v1"
+        },
+        "fixtureSet": {
+          "id": "fixture-set-vendor_invoice_en-v1",
+          "kind": "profile_fixture_set",
+          "sha256": "f4fa4ae4a1e0d7b3a43f52a6d5ee261b49cb8f1928588605806746794253174d",
+          "version": "1"
+        },
+        "id": "profile-vendor-invoice-en-v1",
+        "languageTag": "en",
+        "ledgerMatchRule": {
+          "amountField": "amount",
+          "dateField": "date",
+          "required": false,
+          "sourceReferenceField": "sourceReference",
+          "vendorField": "vendor"
+        },
+        "lifecycle": "approved",
+        "profileKey": "vendor_invoice_en",
+        "requiredFields": [
+          {
+            "fieldType": "string",
+            "name": "vendor",
+            "normalization": "trim",
+            "required": true,
+            "sourceLabels": [
+              "Vendor"
+            ]
+          },
+          {
+            "fieldType": "date",
+            "name": "date",
+            "normalization": "iso_date",
+            "required": true,
+            "sourceLabels": [
+              "Date",
+              "Invoice date"
+            ]
+          },
+          {
+            "fieldType": "decimal",
+            "name": "amount",
+            "normalization": "decimal",
+            "required": true,
+            "sourceLabels": [
+              "Amount",
+              "Total amount"
+            ]
+          },
+          {
+            "fieldType": "identifier",
+            "name": "sourceReference",
+            "normalization": "identifier",
+            "required": true,
+            "sourceLabels": [
+              "Expense reference"
+            ]
+          }
+        ],
+        "vendorAliases": [
+          "Synthetic Facilities Vendor A",
+          "Synthetic Program Supplies Vendor B",
+          "Synthetic Workshop Goods A",
+          "Synthetic Learning Materials B"
+        ],
+        "version": 1
+      }
+    },
+    {
+      "evaluationEvidence": {
+        "fixtureSet": {
+          "id": "fixture-set-vendor_invoice_es-v1",
+          "kind": "profile_fixture_set",
+          "sha256": "32f5672479c7175d5b4ae06d6b62f7f31e6d0f928ff6e170f6697c7ab144b125",
+          "version": "1"
+        },
+        "id": "profile-evaluation-vendor_invoice_es-v1",
+        "ocrVersion": "fixture-transcript-v1",
+        "parserVersion": "deterministic-document-profile-parser-v1",
+        "passed": true,
+        "profileVersion": {
+          "id": "profile-vendor-invoice-es-v1",
+          "kind": "document_profile",
+          "sha256": "76760da57985f26e6461b8c62ce86ce1998df556df68c697bace3fbf9cf829d7",
+          "version": 1
+        },
+        "resultHash": "777285f8afc72a1394af5824a12d5b194b49bb458ff937c642fb3405f5118821",
+        "results": [
+          {
+            "fingerprint": "8661050cab05c2fd4f76dffb339c9eee6bc2028b078bd5b48ab3acca585ec563",
+            "fixtureId": "profile-es-supported-1",
+            "normalizedFieldsHash": "b486eaaa13c190846c52ab685b1832ffc575e4be484a10aa5eb34ca5ecbda63d",
+            "outcome": "recognized_profile_draft",
+            "passed": true,
+            "sourceLocationsHash": "c8f722eee8f79f5ce0cd6e57db915a526299a848156459c75658a11b82d591f2"
+          },
+          {
+            "fingerprint": "8661050cab05c2fd4f76dffb339c9eee6bc2028b078bd5b48ab3acca585ec563",
+            "fixtureId": "profile-es-supported-2",
+            "normalizedFieldsHash": "e7cacd18b5d0b9ad5d9d9ca5b19ba491cecaa11084db238e20b793cfeb377296",
+            "outcome": "recognized_profile_draft",
+            "passed": true,
+            "sourceLocationsHash": "c8f722eee8f79f5ce0cd6e57db915a526299a848156459c75658a11b82d591f2"
+          },
+          {
+            "fingerprint": "925c86e34a0b98ba125c06107bc870aac5d7a27bde74317cfd3c0ec3feb1f9fb",
+            "fixtureId": "profile-changed-layout",
+            "normalizedFieldsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "outcome": "needs_profile_review",
+            "passed": true,
+            "sourceLocationsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          },
+          {
+            "fingerprint": "d8ec73ba7ba005d2985695265738411300b29a81daa3c83123df440c40299d06",
+            "fixtureId": "profile-unknown-layout",
+            "normalizedFieldsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+            "outcome": "needs_profile_review",
+            "passed": true,
+            "sourceLocationsHash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+          }
+        ],
+        "sourceLocationExactness": 1.0,
+        "suiteVersion": "document-profile-fixtures-v1",
+        "supportedFieldExactness": 1.0,
+        "unknownSafeRoutingRate": 1.0
+      },
+      "fixtureSet": {
+        "cases": [
+          {
+            "caseKind": "supported_layout",
+            "expectedFields": {
+              "amount": "740.00",
+              "date": "2026-06-20",
+              "sourceReference": "EXP-ES-001",
+              "vendor": "Synthetic Materiales Comunitarios A"
+            },
+            "expectedOutcome": "recognized_profile_draft",
+            "expectedSourceLocations": {
+              "amount": "page=1;line=5;label=importe total",
+              "date": "page=1;line=4;label=fecha de factura",
+              "sourceReference": "page=1;line=6;label=referencia de gasto",
+              "vendor": "page=1;line=3;label=proveedor"
+            },
+            "filename": "synthetic-vendor-invoice-es-001.pdf",
+            "id": "profile-es-supported-1",
+            "mediaType": "application/pdf",
+            "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Materiales Comunitarios A\nFecha de factura: 2026-06-20\nImporte total: USD 740.00\nReferencia de gasto: EXP-ES-001\nIdioma de origen: es\n"
+          },
+          {
+            "caseKind": "supported_layout",
+            "expectedFields": {
+              "amount": "915.50",
+              "date": "2026-06-24",
+              "sourceReference": "EXP-ES-002",
+              "vendor": "Synthetic Suministros Educativos B"
+            },
+            "expectedOutcome": "recognized_profile_draft",
+            "expectedSourceLocations": {
+              "amount": "page=1;line=5;label=importe total",
+              "date": "page=1;line=4;label=fecha de factura",
+              "sourceReference": "page=1;line=6;label=referencia de gasto",
+              "vendor": "page=1;line=3;label=proveedor"
+            },
+            "filename": "synthetic-vendor-invoice-es-002.pdf",
+            "id": "profile-es-supported-2",
+            "mediaType": "application/pdf",
+            "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Suministros Educativos B\nFecha de factura: 2026-06-24\nImporte total: USD 915.50\nReferencia de gasto: EXP-ES-002\nIdioma de origen: es\n"
+          },
+          {
+            "caseKind": "changed_layout",
+            "expectedFields": {},
+            "expectedOutcome": "needs_profile_review",
+            "expectedSourceLocations": {},
+            "filename": "synthetic-vendor-invoice-changed-layout.pdf",
+            "id": "profile-changed-layout",
+            "mediaType": "application/pdf",
+            "ocrText": "Synthetic Workshop Goods A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-CHANGED-0625\nUNDECLARED LAYOUT ROW 1\nUNDECLARED LAYOUT ROW 2\nUNDECLARED LAYOUT ROW 3\nDate: 2026-06-25\nVENDOR INVOICE\nDescription: Shifted deterministic layout\nAmount: $325.00\nPrinted subtotal: $325.00\nApproved claim total: $325.00\nAPPROVAL NOTE\nThe labels remain valid but their layout positions changed.\nExpense reference: EXP-CHANGED-001\n"
+          },
+          {
+            "caseKind": "unknown_layout",
+            "expectedFields": {},
+            "expectedOutcome": "needs_profile_review",
+            "expectedSourceLocations": {},
+            "filename": "synthetic-unknown-supporting-document.pdf",
+            "id": "profile-unknown-layout",
+            "mediaType": "application/pdf",
+            "ocrText": "SYNTHETIC SUPPORTING DOCUMENT\nReference table for deterministic review routing.\nEntry A 2026-06-27 USD 111.00\nNo declared vendor-invoice layout is present.\n"
+          }
+        ],
+        "contentHash": "32f5672479c7175d5b4ae06d6b62f7f31e6d0f928ff6e170f6697c7ab144b125",
+        "id": "fixture-set-vendor_invoice_es-v1",
+        "version": "1"
+      },
+      "profile": {
+        "acceptedFingerprints": [
+          "8661050cab05c2fd4f76dffb339c9eee6bc2028b078bd5b48ab3acca585ec563"
+        ],
+        "artifactClass": "vendor_invoice",
+        "contentHash": "76760da57985f26e6461b8c62ce86ce1998df556df68c697bace3fbf9cf829d7",
+        "contractId": "contract-synthetic-agency-ngo-2026",
+        "evaluationEvidence": {
+          "id": "profile-evaluation-vendor_invoice_es-v1",
+          "kind": "profile_evaluation",
+          "sha256": "777285f8afc72a1394af5824a12d5b194b49bb458ff937c642fb3405f5118821",
+          "version": "document-profile-fixtures-v1"
+        },
+        "fingerprintSpecification": {
+          "algorithm": "sha256-canonical-json-v1",
+          "id": "document-layout-signals",
+          "signals": [
+            "artifact_media_type",
+            "language_tag",
+            "normalized_text_tokens",
+            "page_geometry",
+            "anchor_positions"
+          ],
+          "version": "document-layout-signals-v1"
+        },
+        "fixtureSet": {
+          "id": "fixture-set-vendor_invoice_es-v1",
+          "kind": "profile_fixture_set",
+          "sha256": "32f5672479c7175d5b4ae06d6b62f7f31e6d0f928ff6e170f6697c7ab144b125",
+          "version": "1"
+        },
+        "id": "profile-vendor-invoice-es-v1",
+        "languageTag": "es",
+        "ledgerMatchRule": {
+          "amountField": "amount",
+          "dateField": "date",
+          "required": false,
+          "sourceReferenceField": "sourceReference",
+          "vendorField": "vendor"
+        },
+        "lifecycle": "approved",
+        "profileKey": "vendor_invoice_es",
+        "requiredFields": [
+          {
+            "fieldType": "string",
+            "name": "vendor",
+            "normalization": "trim",
+            "required": true,
+            "sourceLabels": [
+              "Proveedor"
+            ]
+          },
+          {
+            "fieldType": "date",
+            "name": "date",
+            "normalization": "iso_date",
+            "required": true,
+            "sourceLabels": [
+              "Fecha de factura"
+            ]
+          },
+          {
+            "fieldType": "decimal",
+            "name": "amount",
+            "normalization": "decimal",
+            "required": true,
+            "sourceLabels": [
+              "Importe total"
+            ]
+          },
+          {
+            "fieldType": "identifier",
+            "name": "sourceReference",
+            "normalization": "identifier",
+            "required": true,
+            "sourceLabels": [
+              "Referencia de gasto"
+            ]
+          }
+        ],
+        "vendorAliases": [
+          "Synthetic Materiales Comunitarios A",
+          "Synthetic Suministros Educativos B"
+        ],
+        "version": 1
+      }
+    }
+  ]
+}

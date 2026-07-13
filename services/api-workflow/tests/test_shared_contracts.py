@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+import os
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ from app.shared_contracts import (
     ConfigurationReferencesDto,
     ContractContextDto, FieldType, IdentityDto, RelationContract, RelationType, RuleDefinition, RuleSeverity,
     PackageBuildInputContract, PackageReproductionManifestContract, TemplateContract,
+    DocumentProfileVersionContract, DocumentIntakeResultDto,
     TypedField, ValidationInputManifestContract, VersionReference, ViewContract,
     WorkflowContract,
 )
@@ -137,6 +139,15 @@ def test_configuration_read_models_are_additive_typed_noncanonical_projections()
     assert diff.model_dump(by_alias=True)["canonical"] is False
     assert references.model_dump(by_alias=True)["references"][0]["resourceId"] == "invoice-1"
     assert impact.model_dump(by_alias=True)["historicalReferencesPreserved"] is True
+
+
+def test_document_profile_and_intake_runtime_contracts_are_generated_together():
+    fixture_root = Path(os.environ.get("FIXTURE_ROOT", "/app/fixtures"))
+    catalog = __import__("json").loads((fixture_root / "document-intake-catalog.json").read_text())
+    profile = DocumentProfileVersionContract.model_validate(catalog["profiles"][0]["profile"])
+    assert profile.fixture_set.kind == "profile_fixture_set"
+    assert profile.evaluation_evidence.kind == "profile_evaluation"
+    assert "DocumentIntakeResultDto" in shared_contracts.CONTRACT_REQUIRED_FIELDS
 
 
 def test_python_requiredness_matches_every_canonical_field_definition():

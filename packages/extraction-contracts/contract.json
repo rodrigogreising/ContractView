@@ -1,0 +1,105 @@
+{
+  "package": "extraction-contracts",
+  "version": "1.0.0",
+  "dependsOn": {
+    "domain-types": "^2.0.0",
+    "configuration-contracts": "^2.0.0"
+  },
+  "vocabularies": {
+    "profileMatchKinds": {
+      "python": "ProfileMatchKind",
+      "typescript": "ProfileMatchKind",
+      "constant": "PROFILE_MATCH_KINDS",
+      "values": ["exact", "none"]
+    },
+    "ledgerMatchOutcomes": {
+      "python": "LedgerMatchOutcome",
+      "typescript": "LedgerMatchOutcome",
+      "constant": "LEDGER_MATCH_OUTCOMES",
+      "values": ["matched", "unmatched", "ambiguous", "not_evaluated"]
+    },
+    "clusterSuggestionStatuses": {
+      "python": "ClusterSuggestionStatus",
+      "typescript": "ClusterSuggestionStatus",
+      "constant": "CLUSTER_SUGGESTION_STATUSES",
+      "values": ["suggested", "confirmed_as_draft"]
+    }
+  },
+  "contracts": {
+    "SourceLocation": {
+      "model": "SourceLocationContract",
+      "fields": [
+        {"name": "page", "type": "integer", "required": true, "minimum": 1},
+        {"name": "line", "type": "integer", "required": true, "minimum": 1},
+        {"name": "label", "type": "string", "required": true},
+        {"name": "canonical", "type": "string", "required": true}
+      ]
+    },
+    "ExtractedFieldProposal": {
+      "model": "ExtractedFieldProposalContract",
+      "fields": [
+        {"name": "name", "type": "string", "required": true},
+        {"name": "fieldType", "type": "FieldType", "required": true},
+        {"name": "value", "type": "string", "required": true},
+        {"name": "sourceLocation", "type": "SourceLocationContract", "required": true},
+        {"name": "confidence", "type": "number", "required": true, "minimum": 0, "maximum": 1}
+      ]
+    },
+    "DocumentFingerprint": {
+      "model": "DocumentFingerprintContract",
+      "fields": [
+        {"name": "id", "type": "string", "required": true},
+        {"name": "artifact", "type": "VersionReference", "required": true},
+        {"name": "specificationVersion", "type": "string", "required": true},
+        {"name": "algorithm", "type": "string", "required": true},
+        {"name": "languageTag", "type": "string", "required": true},
+        {"name": "signals", "type": "map<string,any>", "required": true},
+        {"name": "sha256", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+      ]
+    },
+    "DocumentClusterProjection": {
+      "model": "DocumentClusterProjectionContract",
+      "fields": [
+        {"name": "id", "type": "string", "required": true},
+        {"name": "contractId", "type": "string", "required": true},
+        {"name": "fingerprint", "type": "VersionReference", "required": true},
+        {"name": "languageTag", "type": "string", "required": true},
+        {"name": "memberArtifacts", "type": "VersionReference[]", "required": true},
+        {"name": "status", "type": "ClusterSuggestionStatus", "required": true},
+        {"name": "canonical", "type": "boolean", "required": true},
+        {"name": "projectionHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+      ]
+    },
+    "ProfileMatchResult": {
+      "model": "ProfileMatchResultContract",
+      "fields": [
+        {"name": "id", "type": "string", "required": true},
+        {"name": "outcome", "type": "DocumentRouteOutcome", "required": true},
+        {"name": "matchKind", "type": "ProfileMatchKind", "required": true},
+        {"name": "profileVersion", "type": "VersionReference", "required": true, "nullable": true},
+        {"name": "configurationVersion", "type": "VersionReference", "required": true, "nullable": true},
+        {"name": "fingerprint", "type": "VersionReference", "required": true},
+        {"name": "ledgerMatchOutcome", "type": "LedgerMatchOutcome", "required": true},
+        {"name": "ledgerExpenseKey", "type": "string", "required": false, "nullable": true},
+        {"name": "reason", "type": "string", "required": true},
+        {"name": "resultHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"}
+      ]
+    },
+    "DocumentIntakeResult": {
+      "model": "DocumentIntakeResultDto",
+      "fields": [
+        {"name": "extractionRunId", "type": "string", "required": true},
+        {"name": "sourceArtifact", "type": "VersionReference", "required": true},
+        {"name": "rawOcrArtifact", "type": "VersionReference", "required": true},
+        {"name": "ocrVersion", "type": "string", "required": true},
+        {"name": "parserVersion", "type": "string", "required": true},
+        {"name": "fingerprint", "type": "DocumentFingerprintContract", "required": true},
+        {"name": "match", "type": "ProfileMatchResultContract", "required": true},
+        {"name": "cluster", "type": "DocumentClusterProjectionContract", "required": true, "nullable": true},
+        {"name": "fields", "type": "ExtractedFieldProposalContract[]", "required": true},
+        {"name": "humanReviewRequired", "type": "boolean", "required": true}
+      ]
+    }
+  },
+  "determinism": "The exact artifact hash, OCR/parser/profile/configuration/fingerprint versions, and canonical signals produce the same route, normalized proposals, locations, ledger match, and hashes or the same explicit failure."
+}

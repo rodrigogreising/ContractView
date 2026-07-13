@@ -11,6 +11,10 @@ The extraction pipeline converts uploaded artifacts into draft structured data w
 - Record parser, importer, model, prompt, and extraction-plan versions.
 - Route low-confidence or review-required fields to human review.
 - Preserve original extraction and correction history.
+- Compute versioned deterministic document fingerprints and noncanonical
+  cluster projections.
+- Match only exact active profile fingerprints and route changed/unknown input
+  to `needs_profile_review` without canonical mutation.
 
 ## Explicit Non-Responsibilities
 
@@ -25,12 +29,15 @@ The extraction pipeline converts uploaded artifacts into draft structured data w
 - Source-location references: page, row, cell, bounding box, or section.
 - Confidence and review-trigger contracts.
 - Parser/model/prompt version contracts.
+- `packages/extraction-contracts` route, fingerprint, match, cluster, ledger,
+  source-location, and intake-result contracts.
 
 ## Allowed Dependencies
 
 - `packages/domain-types`.
 - `packages/configuration-contracts`.
 - `packages/event-contracts`.
+- `packages/extraction-contracts`.
 - Artifact references from ingestion.
 - Provenance/event API contracts.
 - Test fixtures for extraction certification.
@@ -54,6 +61,12 @@ Future tests must certify:
 - Human correction creates lineage without deleting original extraction history.
 - Deterministic validation runs against reviewed/current field values, not opaque model output.
 - Tenant privacy controls are respected for evaluation and future tuning datasets.
+- English/Spanish closed fixtures reproduce exact fields/source locations and
+  changed/unknown fixtures create no canonical expense or assignment.
+
+For the current MVP, pinned local OCR is the only extraction adapter. Runtime
+LLMs, hosted model calls, opaque classification, and automatic profile
+assignment are prohibited by ADR 0003.
 
 ## Related Certifiable Journeys
 
