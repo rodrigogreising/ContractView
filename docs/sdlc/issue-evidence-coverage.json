@@ -260,6 +260,43 @@
       ]
     }
   },
+  "SUB-77": {
+    "projectStatus": "Build",
+    "certificationRationale": "The administrator workspace must make configuration/profile governance useful and inspectable without duplicating server authority, hiding lifecycle distinctions, activating suggestions, or exposing raw fixture/configuration internals.",
+    "includeJourneyInCleanRuntime": true,
+    "reviewSkills": [
+      "cv-review-requirements-traceability",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-implementation-tests",
+      "cv-review-journey-certification"
+    ],
+    "riskAndGateLabels": [
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:config-governance",
+      "risk:human-authority",
+      "risk:configuration-drift"
+    ],
+    "riskCoverage": {
+      "gate:architecture": [
+        "Feature transport, application orchestration, workspace adaptation, and presentation remain separate; the UI consumes existing Configuration/Extraction seams and creates no canonical owner"
+      ],
+      "gate:security-privacy": [
+        "Normal sessions and canonical server assignment scope protect every read/command; fixture transcripts are not rendered and unauthorized states are explicit"
+      ],
+      "gate:config-governance": [
+        "Typed editing, immutable evidence/history, separate fixture test and approval, exact profile-reference staging, and explicit prospective activation preserve the governed lifecycle"
+      ],
+      "risk:human-authority": [
+        "The administrator must explicitly approve, confirm impact, and confirm draft associations; browser visibility never substitutes for server authorization"
+      ],
+      "risk:configuration-drift": [
+        "Exact ids/versions/hashes, draft revision, evaluation evidence, impact, references, and lifecycle provenance remain visible and are submitted through typed server commands"
+      ]
+    }
+  },
   "SUB-80": {
     "projectStatus": "Design Review",
     "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",

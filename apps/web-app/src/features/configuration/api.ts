@@ -6,8 +6,14 @@ import type {
   ConfigurationDraftDto,
   ConfigurationReferencesDto,
   GovernedConfigurationVersionDto,
+  ProfileAssociationDto,
 } from "../../generated/contracts";
 import type { Configuration } from "../../domain/types";
+import type {
+  DocumentClusterView,
+  DocumentProfileView,
+  ProfileDraftCommand,
+} from "./types";
 
 export interface ConfigurationEvidenceView {
   detail: GovernedConfigurationVersionDto;
@@ -29,3 +35,70 @@ export const configurationActivationImpact = (versionId: string) => apiRequest<C
 export const configurationReferences = (versionId: string) => apiRequest<ConfigurationReferencesDto>(`/api/configuration/versions/${encodeURIComponent(versionId)}/references`);
 export const saveConfigurationDraft = (contractId: string, expectedRevision: number, value: Configuration) => apiRequest<ConfigurationDraftResponse>(`/api/configuration/draft?${contractQuery(contractId)}&expectedRevision=${expectedRevision}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(value) });
 export const governConfiguration = (path: string, payload: Record<string, string | number>) => apiRequest<unknown>(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+
+export const configurationProfiles = (contractId: string) =>
+  apiRequest<{ profiles: DocumentProfileView[] }>(
+    `/api/configuration/profiles?${contractQuery(contractId)}`,
+  );
+
+export const documentClusters = (contractId: string) =>
+  apiRequest<{ clusters: DocumentClusterView[] }>(
+    `/api/configuration/document-clusters?${contractQuery(contractId)}`,
+  );
+
+export const createProfileDraft = (
+  contractId: string,
+  command: ProfileDraftCommand,
+) =>
+  apiRequest<{ profile: DocumentProfileView }>(
+    `/api/configuration/profiles/draft?${contractQuery(contractId)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(command),
+    },
+  );
+
+export const governProfile = (profileId: string, action: "test" | "approve" | "retire", rationale: string) =>
+  apiRequest<{ profile: DocumentProfileView }>(
+    `/api/configuration/profiles/${encodeURIComponent(profileId)}/${action}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rationale }),
+    },
+  );
+
+export const confirmDocumentCluster = (
+  clusterId: string,
+  profileKey: string,
+  rationale: string,
+) =>
+  apiRequest<{ association: ProfileAssociationDto }>(
+    `/api/configuration/document-clusters/${encodeURIComponent(clusterId)}/confirm`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profileKey, rationale }),
+    },
+  );
+
+export async function configurationEvidence(
+  versions: GovernedConfigurationVersionDto[],
+  targetVersionId: string,
+): Promise<ConfigurationEvidenceView> {
+  const ordered = versions.slice().sort((left, right) => left.version - right.version);
+  const targetIndex = ordered.findIndex((version) => version.id === targetVersionId);
+  if (targetIndex < 0) throw new Error("Configuration version is not in the authorized history");
+  const target = ordered[targetIndex];
+  const base = ordered[Math.max(0, targetIndex - 1)];
+  const [detail, diff, impact] = await Promise.all([
+    configurationVersion(target.id),
+    compareConfigurationVersions(base.id, target.id),
+    configurationActivationImpact(target.id),
+  ]);
+  const references = await configurationReferences(
+    impact.historicalReferenceVersionId || target.id,
+  );
+  return { detail: detail.configurationVersion, diff, impact, references };
+}

@@ -16,16 +16,24 @@ import { listExtractions, listJobs, reviewExtraction, uploadEvidence } from "./f
 import { assembleDraft, latestDraft } from "./features/invoices/api";
 import {
   activeConfiguration as loadActiveConfiguration,
-  compareConfigurationVersions,
-  configurationActivationImpact,
   configurationDraft,
+  configurationEvidence as loadConfigurationEvidence,
   configurationHistory,
-  configurationReferences,
-  configurationVersion,
+  configurationProfiles as loadConfigurationProfiles,
+  confirmDocumentCluster,
+  createProfileDraft,
+  documentClusters as loadDocumentClusters,
   governConfiguration as governConfigurationRequest,
+  governProfile,
   saveConfigurationDraft,
   type ConfigurationEvidenceView,
 } from "./features/configuration/api";
+import type {
+  DocumentClusterView,
+  DocumentProfileView,
+  ProfileDraftCommand,
+  StagedProfileReference,
+} from "./features/configuration/types";
 import { findings as loadFindings, latestValidation, resolveFinding as resolveFindingRequest, runValidation } from "./features/validation/api";
 import { approvalPreview as loadApprovalPreview, attestInvoice, generateInvoicePackage, submitInvoice as submitInvoiceRequest } from "./features/approval/api";
 import { decideGovernmentQueue, governmentQueue, inspectGovernmentQueue } from "./features/government/api";
@@ -51,6 +59,8 @@ export function App() {
   const [activeConfiguration, setActiveConfiguration] = useState<ActiveConfiguration | null>(null);
   const [configurationLifecycle, setConfigurationLifecycle] = useState<GovernedConfigurationVersion[]>([]);
   const [configurationEvidence, setConfigurationEvidence] = useState<ConfigurationEvidenceView | null>(null);
+  const [configurationProfiles, setConfigurationProfiles] = useState<DocumentProfileView[]>([]);
+  const [documentClusters, setDocumentClusters] = useState<DocumentClusterView[]>([]);
   const [validation, setValidation] = useState<ValidationRun | null>(null);
   const [findings, setFindings] = useState<Finding[]>([]);
   const [approvalPreview, setApprovalPreview] = useState<ApprovalPreview | null>(null);
@@ -90,28 +100,24 @@ export function App() {
     if (currentContract.current !== requested) return;
     setActiveConfiguration(active.configuration);
     if (role === "configuration_administrator") {
-      const [draftResult, history] = await Promise.all([
+      const [draftResult, history, profiles, clusters] = await Promise.all([
         configurationDraft(requested),
         configurationHistory(requested),
+        loadConfigurationProfiles(requested),
+        loadDocumentClusters(requested),
       ]);
       if (currentContract.current !== requested) return;
       setConfiguration(draftResult.configuration);
       setConfigurationDraftRevision(draftResult.revision);
       setConfigurationLifecycle(history.versions || []);
+      setConfigurationProfiles(profiles.profiles || []);
+      setDocumentClusters(clusters.clusters || []);
       const ordered = (history.versions || []).slice().sort((left, right) => left.version - right.version);
       const target = ordered.at(-1);
       if (target) {
-        const base = ordered.at(-2) || target;
-        const [detail, diff, impact] = await Promise.all([
-          configurationVersion(target.id),
-          compareConfigurationVersions(base.id, target.id),
-          configurationActivationImpact(target.id),
-        ]);
-        const references = await configurationReferences(
-          impact.historicalReferenceVersionId || target.id,
-        );
+        const resolvedEvidence = await loadConfigurationEvidence(ordered, target.id);
         if (currentContract.current !== requested) return;
-        setConfigurationEvidence({ detail: detail.configurationVersion, diff, impact, references });
+        setConfigurationEvidence(resolvedEvidence);
       } else {
         setConfigurationEvidence(null);
       }
@@ -150,7 +156,7 @@ export function App() {
     try { await logoutSession(); } finally {
       currentContract.current = null; setUser(null); setContractId(null); setContractContexts([]); setEmail(""); setPassword(""); setDraft(null);
       setValidation(null); setFindings([]); setApprovalPreview(null); setAttestation(null);
-      setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]); setConfigurationEvidence(null); setConfigurationDraftRevision(0); setAuditTimeline(null);
+      setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]); setConfigurationEvidence(null); setConfigurationProfiles([]); setDocumentClusters([]); setConfigurationDraftRevision(0); setAuditTimeline(null);
       setMessage(demoMode ? "Signed out. Choose a persona to continue." : "Signed out.");
     }
   }
@@ -184,6 +190,78 @@ export function App() {
   const supersedeConfiguration = (activeVersionId: string, successorVersionId: string, rationale: string) => govern(`/api/configuration/versions/${activeVersionId}/supersede`, { successorVersionId, rationale }, "Active configuration superseded by its approved successor.");
   const retireConfiguration = (versionId: string, rationale: string) => govern(`/api/configuration/versions/${versionId}/retire`, { rationale }, "Superseded configuration retired with retained history.");
   const rollbackConfiguration = (versionId: string, rationale: string) => contractId ? govern(`/api/configuration/rollback?contractId=${encodeURIComponent(contractId)}`, { targetVersionId: versionId, rationale }, "Rollback candidate tested; approval and supersession are still required.") : Promise.resolve();
+  async function selectConfigurationVersion(versionId: string) {
+    try {
+      setConfigurationEvidence(
+        await loadConfigurationEvidence(configurationLifecycle, versionId),
+      );
+      setMessage("Read-only configuration history and prospective impact loaded.");
+    } catch (error) {
+      setMessage(errorText(error, "Configuration evidence load failed"));
+    }
+  }
+  async function createDocumentProfile(command: ProfileDraftCommand) {
+    if (!contractId) return;
+    try {
+      await createProfileDraft(contractId, command);
+      await refreshConfiguration("configuration_administrator");
+      setMessage("Immutable profile draft created from governed fixture inputs.");
+    } catch (error) {
+      setMessage(errorText(error, "Profile draft creation failed"));
+    }
+  }
+  async function runProfileAction(
+    profileId: string,
+    action: "test" | "approve" | "retire",
+    rationale: string,
+  ) {
+    try {
+      await governProfile(profileId, action, rationale);
+      await refreshConfiguration("configuration_administrator");
+      setMessage(
+        action === "test"
+          ? "Immutable profile fixture evaluation recorded."
+          : action === "approve"
+            ? "Human profile approval recorded."
+            : "Profile version retired with history preserved.",
+      );
+    } catch (error) {
+      setMessage(errorText(error, `Profile ${action} failed`));
+    }
+  }
+  function stageProfileReference(staged: StagedProfileReference) {
+    setConfiguration((current) => {
+      if (!current) return current;
+      const existing = Array.isArray(current.documentProfiles)
+        ? current.documentProfiles as StagedProfileReference["reference"][]
+        : [];
+      const retained = existing.filter((reference) => {
+        const known = configurationProfiles.find(
+          (item) => item.profile.id === reference.id,
+        );
+        return !known || known.profile.profileKey !== staged.profileKey;
+      });
+      return { ...current, documentProfiles: [...retained, staged.reference] };
+    });
+    setMessage(
+      `Exact ${staged.profileKey} profile reference staged in the editable draft; save and test before activation.`,
+    );
+  }
+  async function confirmCluster(
+    clusterId: string,
+    profileKey: string,
+    rationale: string,
+  ) {
+    try {
+      await confirmDocumentCluster(clusterId, profileKey, rationale);
+      await refreshConfiguration("configuration_administrator");
+      setMessage(
+        "Cluster suggestion confirmed as a draft association only; no profile was assigned or activated.",
+      );
+    } catch (error) {
+      setMessage(errorText(error, "Cluster confirmation failed"));
+    }
+  }
   async function refreshFindings(invoiceId: string) { setFindings((await loadFindings(invoiceId)).findings); }
   async function validate() {
     if (!draft) return;
@@ -215,14 +293,14 @@ export function App() {
 
   function selectContract(nextContractId: string) {
     currentContract.current = nextContractId; setContractId(nextContractId);
-    setJobs([]); setExtractions([]); setConfiguration(null); setConfigurationDraftRevision(0); setActiveConfiguration(null); setConfigurationLifecycle([]); setConfigurationEvidence(null);
+    setJobs([]); setExtractions([]); setConfiguration(null); setConfigurationDraftRevision(0); setActiveConfiguration(null); setConfigurationLifecycle([]); setConfigurationEvidence(null); setConfigurationProfiles([]); setDocumentClusters([]);
     setDraft(null); setValidation(null); setFindings([]);
     setApprovalPreview(null); setAttestation(null); setGeneratedPackage(null); setSubmission(null);
     setReviewContext(null); setQueue([]); setRevisionFeedback(null); setAuditTimeline(null); setMessage("");
   }
 
   if (user?.role === "government_reviewer") return <GovernmentWorkspace user={user} activeConfiguration={activeConfiguration} queue={queue} review={reviewContext} onInspect={inspectQueue} onDecision={decideQueue} message={message} onLogout={logout} />;
-  if (user) return <AuthenticatedWorkspace user={user} contractContexts={contractContexts} contractId={contractId || ""} onSelectContract={selectContract} jobs={jobs} extractions={extractions} draft={draft} configuration={configuration} configurationDraftRevision={configurationDraftRevision} configurationEvidence={configurationEvidence} activeConfiguration={activeConfiguration} configurationLifecycle={configurationLifecycle} validation={validation} findings={findings} revisionFeedback={revisionFeedback} auditTimeline={auditTimeline} approvalPreview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onLogout={logout} onUpload={upload} onReview={review} onAssemble={assemble} onValidate={validate} onResolveFinding={resolveFinding} onCorrectRevision={correctReturnedRevision} onAttest={submitAttestation} onGeneratePackage={generatePackage} onSubmitInvoice={submitInvoice} onSaveConfiguration={saveConfiguration} onTestConfiguration={testConfiguration} onApproveConfiguration={approveConfiguration} onActivateConfiguration={activateConfiguration} onSupersedeConfiguration={supersedeConfiguration} onRetireConfiguration={retireConfiguration} onRollbackConfiguration={rollbackConfiguration} />;
+  if (user) return <AuthenticatedWorkspace user={user} contractContexts={contractContexts} contractId={contractId || ""} onSelectContract={selectContract} jobs={jobs} extractions={extractions} draft={draft} configuration={configuration} configurationDraftRevision={configurationDraftRevision} configurationEvidence={configurationEvidence} configurationProfiles={configurationProfiles} documentClusters={documentClusters} activeConfiguration={activeConfiguration} configurationLifecycle={configurationLifecycle} validation={validation} findings={findings} revisionFeedback={revisionFeedback} auditTimeline={auditTimeline} approvalPreview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onLogout={logout} onUpload={upload} onReview={review} onAssemble={assemble} onValidate={validate} onResolveFinding={resolveFinding} onCorrectRevision={correctReturnedRevision} onAttest={submitAttestation} onGeneratePackage={generatePackage} onSubmitInvoice={submitInvoice} onSaveConfiguration={saveConfiguration} onTestConfiguration={testConfiguration} onApproveConfiguration={approveConfiguration} onActivateConfiguration={activateConfiguration} onSupersedeConfiguration={supersedeConfiguration} onRetireConfiguration={retireConfiguration} onRollbackConfiguration={rollbackConfiguration} onSelectConfigurationVersion={selectConfigurationVersion} onCreateProfile={createDocumentProfile} onTestProfile={(id, rationale) => runProfileAction(id, "test", rationale)} onApproveProfile={(id, rationale) => runProfileAction(id, "approve", rationale)} onRetireProfile={(id, rationale) => runProfileAction(id, "retire", rationale)} onStageProfile={stageProfileReference} onConfirmCluster={confirmCluster} />;
   return <main>
     <p className="eyebrow">Synthetic role-based POC</p><h1>Sign in</h1>
     <p className="summary">{demoMode ? "Select a seeded persona. The card fills credentials; the normal server login still runs." : "Use your assigned account. Contract context is resolved by the authenticated server session."}</p>

@@ -11,6 +11,10 @@ main {
   margin: 0 auto;
   padding: 12vh 28px;
 }
+.workspace-shell {
+  max-width: 1180px;
+  padding-top: 64px;
+}
 .eyebrow {
   color: #51725b;
   font-weight: 700;
@@ -80,11 +84,19 @@ label {
   gap: 7px;
   font-weight: 700;
 }
-input {
+input,
+select,
+textarea {
   font: inherit;
   padding: 12px;
   border: 1px solid #aeb8ac;
   border-radius: 9px;
+  background: #fff;
+  color: inherit;
+}
+textarea {
+  min-height: 86px;
+  resize: vertical;
 }
 .primary,
 .identity button {
@@ -317,6 +329,197 @@ input {
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 12px;
 }
+.admin-workspace {
+  max-width: 1120px;
+}
+.admin-workspace details {
+  max-width: none;
+}
+.admin-workspace > .section-action {
+  align-items: flex-start;
+}
+.admin-workspace .eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+}
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d6d9d0;
+}
+.admin-nav button,
+.button-row button,
+.admin-card button,
+.cluster-confirmation button {
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 13px;
+  border: 1px solid #294d37;
+  border-radius: 9px;
+  background: #fff;
+  color: #294d37;
+  cursor: pointer;
+}
+.admin-nav button[aria-pressed="true"] {
+  background: #294d37;
+  color: #fff;
+}
+.admin-nav button:disabled,
+.button-row button:disabled,
+.admin-card button:disabled,
+.cluster-confirmation button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+.admin-card button.primary {
+  border-color: #294d37;
+  background: #294d37;
+  color: #fff;
+}
+.admin-section-stack {
+  display: grid;
+  gap: 18px;
+}
+.admin-card {
+  padding: 20px;
+  border: 1px solid #d6d9d0;
+  border-radius: 12px;
+  background: #fbfcf8;
+}
+.admin-card h3,
+.admin-card h4,
+.profile-card h4,
+.cluster-card h4 {
+  margin-top: 0;
+}
+.admin-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+}
+.admin-overview > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 76px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #edf0e8;
+}
+.admin-overview span,
+.admin-facts dt {
+  color: #657267;
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.admin-overview strong {
+  font-size: 1.08rem;
+}
+.next-action {
+  border-left: 5px solid #51725b;
+}
+.status-guide,
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e7ebe4;
+  color: #33463a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.status-draft,
+.status-suggested { background: #eee9d8; color: #6d5b1f; }
+.status-tested { background: #e4edf3; color: #31586d; }
+.status-approved { background: #e2eee4; color: #294d37; }
+.status-active { background: #294d37; color: #fff; }
+.status-superseded,
+.status-retired { background: #ecebea; color: #5b5a58; }
+.status-confirmed_as_draft { background: #e4edf3; color: #31586d; }
+.version-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  padding: 0;
+}
+.version-list > li,
+.profile-card,
+.cluster-card {
+  padding: 16px;
+  border: 1px solid #d6d9d0;
+  border-radius: 10px;
+  background: #fff;
+}
+.admin-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 8px;
+}
+.admin-facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.admin-facts dd {
+  margin: 0;
+}
+.admin-facts code,
+.profile-card code,
+.cluster-card code {
+  overflow-wrap: anywhere;
+}
+.activation-confirmation {
+  margin-top: 18px;
+  padding: 16px;
+  border: 2px solid #294d37;
+  border-radius: 10px;
+  background: #edf0e8;
+}
+.confirmation-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  margin: 12px 0;
+}
+.confirmation-check input {
+  width: auto;
+}
+.profile-grid,
+.cluster-list {
+  display: grid;
+  gap: 12px;
+}
+.profile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+}
+.metric-list {
+  padding-left: 20px;
+}
+.evidence-pass,
+.evidence-fail { overflow-wrap: anywhere; font-weight: 700; }
+.evidence-pass { color: #287245; }
+.evidence-fail { color: #a33d2c; }
+.cluster-confirmation {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
 .rule-row {
   display: grid;
   grid-template-columns: 1.4fr repeat(4, 1fr);
@@ -353,6 +556,9 @@ pre {
   .section-action {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .cluster-confirmation {
+    grid-template-columns: 1fr;
   }
 }
 .validation-action {
