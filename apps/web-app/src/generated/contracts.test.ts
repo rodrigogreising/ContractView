@@ -21,6 +21,9 @@ describe("generated shared contracts", () => {
   it("retains canonical requiredness and closed reason vocabulary metadata", () => {
     expect(CONTRACT_REQUIRED_FIELDS.ArtifactContract).not.toContain("submitted");
     expect(CONTRACT_REQUIRED_FIELDS.RuleResult).toContain("normalizedInput");
+    expect(CONTRACT_REQUIRED_FIELDS.ConfigurationDraftDto).toContain("revision");
+    expect(CONTRACT_REQUIRED_FIELDS.ConfigurationDiffDto).toContain("projectionHash");
+    expect(CONTRACT_REQUIRED_FIELDS.ConfigurationActivationImpactDto).toContain("historicalReferencesPreserved");
     expect(REASON_CODES).toContain("SERVICE_PERIOD");
     expect(REASON_CODES).not.toContain("UNKNOWN_REASON");
   });

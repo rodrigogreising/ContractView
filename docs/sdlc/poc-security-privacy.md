@@ -432,3 +432,41 @@ retention or deletion claim is made, and release remains blocked for hosted or
 production use. Residual risks are conservative false review routing for benign
 layout changes and the certified POC's local-only identity, malware-scanning,
 backup, legal-hold, penetration-test, SSO, and MFA exclusions.
+
+## SUB-75 Configuration Lifecycle And Provenance Security Decision
+
+SUB-75 changes configuration governance behavior without expanding the
+approved synthetic/local data boundary. Draft payloads, test reports,
+approvals, version details, diffs, impacts, runtime references, UI output, and
+retained test evidence contain only the existing closed synthetic fixture and
+reserved-domain identities.
+
+Every full-history read and mutation resolves the configuration version or
+contract from persisted ownership, then checks the actor's explicit
+Configuration Administrator assignment. Caller-provided organization or role
+claims never become scope. NGO and Government personas receive only the
+existing scoped active summary; Auditor data continues through its explicit
+submitted, read-only audit projection. Direct version detail, diff, impact,
+reference, and mutation attempts by wrong-role or unassigned actors are denied
+before mutation.
+
+Editable drafts carry a server-stored positive revision. Save and test compare
+the expected revision under the owner transaction. Stale, cross-scope,
+unauthorized, invalid-transition, failed-evidence, or incorrectly bound
+approval requests append no configuration version, test, approval, lifecycle,
+active pointer, or domain event. Activation and supersession recompute exact
+payload/test/result/approval hashes and require the current pinned deterministic
+suite to pass.
+
+The runtime-reference join is a declared, read-only projection over stable ids
+and immutable records. It is reachable only through the read-model repository,
+owns no table, exposes no raw SQL/query builder, and cannot mutate source
+owners. Projection responses state `canonical=false` and are content hashed.
+Migration 024 adds read-support indexes and draft concurrency only; it creates
+no duplicate canonical state.
+
+Residual risk is unchanged from the local MVP boundary: the UI is not a
+production configuration console, sessions lack production SSO/MFA controls,
+and retained evidence has no hosted retention/legal-hold claim. These changes
+do not authorize real data, public writes, external credentials, production
+activation, or cross-tenant disclosure.

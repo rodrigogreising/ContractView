@@ -8,7 +8,9 @@ import app.shared_contracts as shared_contracts
 from app.authorization import ResourceKind, Role
 from app.shared_contracts import (
     ActorReference, ArtifactContract, ArtifactKind, ConfigurationBundleContract,
+    ConfigurationActivationImpactDto, ConfigurationDiffDto, ConfigurationDraftDto,
     ConfigurationLifecycle, EntityContract, EntityType, EventEnvelope, EventType,
+    ConfigurationReferencesDto,
     ContractContextDto, FieldType, IdentityDto, RelationContract, RelationType, RuleDefinition, RuleSeverity,
     PackageBuildInputContract, PackageReproductionManifestContract, TemplateContract,
     TypedField, ValidationInputManifestContract, VersionReference, ViewContract,
@@ -84,6 +86,57 @@ def test_reproducibility_manifests_are_executable_shared_contracts():
     assert manifest.model_dump(by_alias=True)["templates"][0]["parameters"]["rendererVersion"]=="v1"
     assert build.model_dump(by_alias=True)["validationInputManifestId"]=="input-1"
     assert reproduction.model_dump(by_alias=True)["archiveSha256"]=="5"*64
+
+
+def test_configuration_read_models_are_additive_typed_noncanonical_projections():
+    now = datetime.now(UTC)
+    draft = ConfigurationDraftDto(
+        configuration={"status": "draft"},
+        revision=2,
+        payload_hash="1" * 64,
+        updated_at=now,
+    )
+    diff = ConfigurationDiffDto(
+        contract_id="contract-1",
+        base_version_id="config-1",
+        target_version_id="config-2",
+        changes=[{
+            "path": "/package/label",
+            "changeType": "changed",
+            "before": "one",
+            "after": "two",
+            "description": "Package label changed",
+        }],
+        projection_hash="2" * 64,
+        canonical=False,
+    )
+    references = ConfigurationReferencesDto(
+        configuration_version_id="config-1",
+        references=[{
+            "resourceKind": "invoice",
+            "resourceId": "invoice-1",
+            "resourceVersion": "1",
+            "state": "submitted",
+            "recordedAt": now,
+        }],
+        projection_hash="3" * 64,
+        canonical=False,
+    )
+    impact = ConfigurationActivationImpactDto(
+        configuration_version_id="config-2",
+        contract_id="contract-1",
+        would_supersede_version_id="config-1",
+        historical_reference_version_id="config-1",
+        reference_counts={"invoice": 1},
+        application_scope="future-intake-only",
+        historical_references_preserved=True,
+        projection_hash="4" * 64,
+        canonical=False,
+    )
+    assert draft.model_dump(by_alias=True)["revision"] == 2
+    assert diff.model_dump(by_alias=True)["canonical"] is False
+    assert references.model_dump(by_alias=True)["references"][0]["resourceId"] == "invoice-1"
+    assert impact.model_dump(by_alias=True)["historicalReferencesPreserved"] is True
 
 
 def test_python_requiredness_matches_every_canonical_field_definition():

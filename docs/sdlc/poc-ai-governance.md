@@ -218,3 +218,24 @@ baseline. It neither authorizes nor supplies runtime AI behavior for Journey
 12. Any future proposal to add model-assisted profile drafting or hosted
 extraction is a new scoped governance decision with separate data approval,
 evaluation, failure thresholds, human-review rules, and release gate.
+
+## SUB-75 Deterministic Configuration Evidence Decision
+
+SUB-75 adds no provider, model, prompt, parser, confidence threshold, hosted
+call, profile classifier, or AI-generated configuration. The applicable
+configuration suite remains `configuration-governance-v1`, and every check is
+deterministic over the exact canonical JSON payload. Testing retains the suite,
+individual checks, payload hash, and result hash as immutable evidence.
+
+Approval remains a canonical human Configuration Administrator action bound to
+the exact test-evidence id. Activation and supersession independently
+recompute the payload hash, expected report, result hash, suite version, and
+approval hash. A system/AI actor, stale client, lifecycle label, failed report,
+or unbound approval cannot activate a version.
+
+Human-readable diff, prospective impact, and runtime-reference responses are
+deterministic noncanonical projections. They explain retained evidence but do
+not evaluate compliance, assign a profile, make a validation finding, or grant
+authority. Replaying unchanged immutable inputs produces identical projection
+hashes. Profile fixture evaluation and the pinned local OCR behavior remain
+deferred to SUB-76 under the stricter Journey 12 metrics already defined above.

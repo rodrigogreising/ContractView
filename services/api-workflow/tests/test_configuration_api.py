@@ -49,10 +49,22 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
             "ngoOrganizationName": "Synthetic Community Nonprofit",
         }]
 
+        initial_draft = client.get(f"/configuration/draft?contractId={CONTRACT}")
+        assert initial_draft.status_code == 200
+        initial_revision = initial_draft.json()["revision"]
         saved = client.put(
-            f"/configuration/draft?contractId={CONTRACT}", json=payload
+            f"/configuration/draft?contractId={CONTRACT}&expectedRevision={initial_revision}", json=payload
         )
         assert saved.status_code == 200
+        assert saved.json()["revision"] == initial_revision + 1
+        assert len(saved.json()["payloadHash"]) == 64
+
+        stale_before = _governance_count()
+        stale = client.put(
+            f"/configuration/draft?contractId={CONTRACT}&expectedRevision={initial_revision}", json=payload
+        )
+        assert stale.status_code == 409
+        assert _governance_count() == stale_before
 
         before = _governance_count()
         prohibited = client.post(f"/configuration/activate?contractId={CONTRACT}")
@@ -61,7 +73,10 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
 
         tested = client.post(
             f"/configuration/test?contractId={CONTRACT}",
-            json={"rationale": "HTTP deterministic suite passed"},
+            json={
+                "rationale": "HTTP deterministic suite passed",
+                "expectedDraftRevision": saved.json()["revision"],
+            },
         )
         assert tested.status_code == 200
         candidate = tested.json()["configurationVersion"]
@@ -75,6 +90,25 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         }[candidate["id"]]
         assert tested_version["active"] is False
         assert tested_version["state"] == "tested"
+        assert tested_version["testEvidence"]["passed"] is True
+
+        detail = client.get(f"/configuration/versions/{candidate['id']}")
+        assert detail.status_code == 200
+        assert detail.json()["configurationVersion"]["payloadHash"] == candidate["testEvidence"]["payloadHash"]
+
+        compared = client.get(
+            "/configuration/compare",
+            params={"baseVersionId": candidate["id"], "targetVersionId": candidate["id"]},
+        )
+        assert compared.status_code == 200
+        assert compared.json()["canonical"] is False
+        assert compared.json()["changes"] == []
+
+        impact = client.get(f"/configuration/versions/{candidate['id']}/activation-impact")
+        references = client.get(f"/configuration/versions/{candidate['id']}/references")
+        assert impact.status_code == references.status_code == 200
+        assert impact.json()["applicationScope"] == "future-intake-only"
+        assert references.json()["canonical"] is False
 
         approved = client.post(
             f"/configuration/versions/{candidate['id']}/approve",
@@ -120,3 +154,21 @@ def test_normal_session_drives_configuration_api_without_direct_activation_short
         assert client.post("/auth/logout").status_code == 204
         assert client.get("/auth/contracts").status_code == 401
         assert client.get(f"/configuration/lifecycle?contractId={CONTRACT}").status_code == 401
+
+        preparer_login = client.post(
+            "/auth/login",
+            json={
+                "email": "ngo.preparer@example.test",
+                "password": "Demo-Prepare-2026!",
+            },
+        )
+        assert preparer_login.status_code == 200
+        assert client.get(f"/configuration/active?contractId={CONTRACT}").status_code == 200
+        assert client.get(f"/configuration/versions/{candidate['id']}").status_code == 403
+        before_denied = _governance_count()
+        denied = client.put(
+            f"/configuration/draft?contractId={CONTRACT}&expectedRevision={saved.json()['revision']}",
+            json=payload,
+        )
+        assert denied.status_code == 403
+        assert _governance_count() == before_denied

@@ -35,7 +35,7 @@ export type RuleCode = typeof RULE_CODES[number];
 export type ComponentKind = typeof COMPONENT_KINDS[number];
 export type EventType = typeof EVENT_TYPES[number];
 
-export const CONTRACT_REQUIRED_FIELDS = {"VersionReference":["kind","id","version"],"ActorReference":["userId","organizationId","role"],"ArtifactContract":["id","contractId","organizationId","kind","mediaType","byteSize","sha256","version"],"TypedField":["name","fieldType","value","source"],"EntityContract":["id","entityType","version","fields"],"RelationContract":["id","relationType","source","target"],"IdentityDto":["id","displayName","email","organizationId","organizationName","role"],"ContractContextDto":["contractId","contractName","agencyOrganizationId","agencyOrganizationName","ngoOrganizationId","ngoOrganizationName"],"RuleDefinition":["code","version","severity","enabled","parameters"],"RuleResult":["ruleCode","ruleVersion","severity","reasonCode","outcome","normalizedInput","message"],"ValidationRunContract":["id","invoiceVersion","configurationVersion","engineVersion","inputHash","outputHash","results"],"ValidationRunDto":["id","invoiceVersionId","configurationVersionId","engineVersion","normalizedInputs","inputHash","outputHash","status","results"],"WorkflowTransition":["fromState","toState","action","role"],"WorkflowContract":["id","version","states","transitions"],"ViewContract":["id","version","role","fields"],"TemplateContract":["id","version","mediaType","contentHash"],"ExtractionComponentVersionContract":["sourceArtifact","provider","model","promptVersion","parserVersion","schemaVersion"],"ValidationInputManifestContract":["schemaVersion","engineVersion","normalizedInputs","invoiceSnapshot","artifacts","schemas","mappings","rules","workflow","views","templates","configurationVersion","extractionComponents"],"PackageFileDigestContract":["path","sha256","byteSize"],"PackageBuildInputContract":["schemaVersion","packageId","invoiceSnapshot","attestationId","validationRun","validationInputManifestId","validationInputManifestHash","configurationVersion","template","invoicePayload","validationSummary","claims","evidence"],"PackageReproductionManifestContract":["schemaVersion","buildInputHash","packageManifestHash","archiveSha256","archiveByteSize","files","template","validationInputManifestId","validationInputManifestHash","invoiceSnapshot"],"ConfigurationBundleContract":["id","version","lifecycle","scope","schemas","mappings","rules","workflow","views","templates"],"ConfigurationLifecycleEventDto":["state","action","actorId","actorRole","actorOrganizationId","rationale","testEvidenceId","approvalId","predecessorVersionId","successorVersionId","rollbackTargetVersionId","eventHash","occurredAt"],"GovernedConfigurationVersionDto":["id","version","configuration","state","active","history"],"ConfigurationLifecycleResponseDto":["versions"],"ActiveConfigurationDto":["id","version","activatedAt"],"EventEnvelope":["eventId","eventType","schemaVersion","actor","organizationId","contractId","aggregate","occurredAt","payload","versionReferences"],"AuditEventDto":["id","event","eventHash"],"AuditLineageDto":["id","fieldName","fieldValue","recordedAt"],"AuditRelationDto":["id","relationType","source","target","actor","relationHash","createdAt"],"AuditSnapshotDto":["id","invoiceVersionId","invoiceVersion","materialRevision","stage","payload","snapshotHash","actor","createdAt"],"AuditPackageDto":["packageId","invoiceVersionId","invoiceVersion","reproductionManifestId","validationInputManifestId","validationInputManifestHash","buildInputHash","packageManifestHash","archiveSha256","reproductionManifestHash","templateId","templateVersion","templateHash","manifest","buildInput"],"ClaimedAmountTrailDto":["expenseKey","claimedAmount","sourceArtifactId","sourceLocation","validationRunId","invoiceSnapshotId","invoiceVersionId","invoiceVersion","packageId","packageManifestHash","archiveSha256"],"AuditTimelineDto":["contractId","events","lineage","relations","snapshots","packages","claimedAmountTrails"]} as const;
+export const CONTRACT_REQUIRED_FIELDS = {"VersionReference":["kind","id","version"],"ActorReference":["userId","organizationId","role"],"ArtifactContract":["id","contractId","organizationId","kind","mediaType","byteSize","sha256","version"],"TypedField":["name","fieldType","value","source"],"EntityContract":["id","entityType","version","fields"],"RelationContract":["id","relationType","source","target"],"IdentityDto":["id","displayName","email","organizationId","organizationName","role"],"ContractContextDto":["contractId","contractName","agencyOrganizationId","agencyOrganizationName","ngoOrganizationId","ngoOrganizationName"],"RuleDefinition":["code","version","severity","enabled","parameters"],"RuleResult":["ruleCode","ruleVersion","severity","reasonCode","outcome","normalizedInput","message"],"ValidationRunContract":["id","invoiceVersion","configurationVersion","engineVersion","inputHash","outputHash","results"],"ValidationRunDto":["id","invoiceVersionId","configurationVersionId","engineVersion","normalizedInputs","inputHash","outputHash","status","results"],"WorkflowTransition":["fromState","toState","action","role"],"WorkflowContract":["id","version","states","transitions"],"ViewContract":["id","version","role","fields"],"TemplateContract":["id","version","mediaType","contentHash"],"ExtractionComponentVersionContract":["sourceArtifact","provider","model","promptVersion","parserVersion","schemaVersion"],"ValidationInputManifestContract":["schemaVersion","engineVersion","normalizedInputs","invoiceSnapshot","artifacts","schemas","mappings","rules","workflow","views","templates","configurationVersion","extractionComponents"],"PackageFileDigestContract":["path","sha256","byteSize"],"PackageBuildInputContract":["schemaVersion","packageId","invoiceSnapshot","attestationId","validationRun","validationInputManifestId","validationInputManifestHash","configurationVersion","template","invoicePayload","validationSummary","claims","evidence"],"PackageReproductionManifestContract":["schemaVersion","buildInputHash","packageManifestHash","archiveSha256","archiveByteSize","files","template","validationInputManifestId","validationInputManifestHash","invoiceSnapshot"],"ConfigurationBundleContract":["id","version","lifecycle","scope","schemas","mappings","rules","workflow","views","templates"],"ConfigurationLifecycleEventDto":["state","action","actorId","actorRole","actorOrganizationId","rationale","testEvidenceId","approvalId","predecessorVersionId","successorVersionId","rollbackTargetVersionId","eventHash","occurredAt"],"ConfigurationDraftDto":["configuration","revision","payloadHash","updatedAt"],"ConfigurationTestCheckDto":["code","passed"],"ConfigurationTestEvidenceDto":["id","suiteVersion","payloadHash","resultHash","passed","checks","testedBy","testedRole","testedOrganizationId","rationale","createdAt"],"ConfigurationApprovalEvidenceDto":["id","testEvidenceId","approvedBy","approvedRole","approvedOrganizationId","rationale","approvalHash","approvedAt"],"GovernedConfigurationVersionDto":["id","contractId","version","configuration","state","active","payloadHash","testEvidence","approval","history"],"ConfigurationLifecycleResponseDto":["versions"],"ConfigurationDiffChangeDto":["path","changeType","before","after","description"],"ConfigurationDiffDto":["contractId","baseVersionId","targetVersionId","changes","projectionHash","canonical"],"ConfigurationReferenceDto":["resourceKind","resourceId","resourceVersion","state","recordedAt"],"ConfigurationReferencesDto":["configurationVersionId","references","projectionHash","canonical"],"ConfigurationActivationImpactDto":["configurationVersionId","contractId","wouldSupersedeVersionId","historicalReferenceVersionId","referenceCounts","applicationScope","historicalReferencesPreserved","projectionHash","canonical"],"ActiveConfigurationDto":["id","version","activatedAt"],"EventEnvelope":["eventId","eventType","schemaVersion","actor","organizationId","contractId","aggregate","occurredAt","payload","versionReferences"],"AuditEventDto":["id","event","eventHash"],"AuditLineageDto":["id","fieldName","fieldValue","recordedAt"],"AuditRelationDto":["id","relationType","source","target","actor","relationHash","createdAt"],"AuditSnapshotDto":["id","invoiceVersionId","invoiceVersion","materialRevision","stage","payload","snapshotHash","actor","createdAt"],"AuditPackageDto":["packageId","invoiceVersionId","invoiceVersion","reproductionManifestId","validationInputManifestId","validationInputManifestHash","buildInputHash","packageManifestHash","archiveSha256","reproductionManifestHash","templateId","templateVersion","templateHash","manifest","buildInput"],"ClaimedAmountTrailDto":["expenseKey","claimedAmount","sourceArtifactId","sourceLocation","validationRunId","invoiceSnapshotId","invoiceVersionId","invoiceVersion","packageId","packageManifestHash","archiveSha256"],"AuditTimelineDto":["contractId","events","lineage","relations","snapshots","packages","claimedAmountTrails"]} as const;
 
 export interface VersionReference {
   kind: VersionReferenceKind;
@@ -271,17 +271,102 @@ export interface ConfigurationLifecycleEventDto {
   occurredAt: string;
 }
 
+export interface ConfigurationDraftDto {
+  configuration: Record<string, unknown>;
+  revision: number;
+  payloadHash: string;
+  updatedAt: string;
+}
+
+export interface ConfigurationTestCheckDto {
+  code: string;
+  passed: boolean;
+}
+
+export interface ConfigurationTestEvidenceDto {
+  id: string;
+  suiteVersion: string;
+  payloadHash: string;
+  resultHash: string;
+  passed: boolean;
+  checks: ConfigurationTestCheckDto[];
+  testedBy: string;
+  testedRole: ActorRole;
+  testedOrganizationId: string;
+  rationale: string;
+  createdAt: string;
+}
+
+export interface ConfigurationApprovalEvidenceDto {
+  id: string;
+  testEvidenceId: string;
+  approvedBy: string;
+  approvedRole: ActorRole;
+  approvedOrganizationId: string;
+  rationale: string;
+  approvalHash: string;
+  approvedAt: string;
+}
+
 export interface GovernedConfigurationVersionDto {
   id: string;
+  contractId: string;
   version: number;
   configuration: Record<string, unknown>;
   state: ConfigurationLifecycle;
   active: boolean;
+  payloadHash: string;
+  testEvidence: ConfigurationTestEvidenceDto | null;
+  approval: ConfigurationApprovalEvidenceDto | null;
   history: ConfigurationLifecycleEventDto[];
 }
 
 export interface ConfigurationLifecycleResponseDto {
   versions: GovernedConfigurationVersionDto[];
+}
+
+export interface ConfigurationDiffChangeDto {
+  path: string;
+  changeType: string;
+  before: unknown | null;
+  after: unknown | null;
+  description: string;
+}
+
+export interface ConfigurationDiffDto {
+  contractId: string;
+  baseVersionId: string;
+  targetVersionId: string;
+  changes: ConfigurationDiffChangeDto[];
+  projectionHash: string;
+  canonical: boolean;
+}
+
+export interface ConfigurationReferenceDto {
+  resourceKind: string;
+  resourceId: string;
+  resourceVersion: string;
+  state: string;
+  recordedAt: string;
+}
+
+export interface ConfigurationReferencesDto {
+  configurationVersionId: string;
+  references: ConfigurationReferenceDto[];
+  projectionHash: string;
+  canonical: boolean;
+}
+
+export interface ConfigurationActivationImpactDto {
+  configurationVersionId: string;
+  contractId: string;
+  wouldSupersedeVersionId: string | null;
+  historicalReferenceVersionId: string | null;
+  referenceCounts: Record<string, number>;
+  applicationScope: string;
+  historicalReferencesPreserved: boolean;
+  projectionHash: string;
+  canonical: boolean;
 }
 
 export interface ActiveConfigurationDto {

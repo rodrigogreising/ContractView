@@ -88,7 +88,7 @@
     "schema_migrations": "platform"
   },
   "sqlAllowedPaths": ["app/adapters/persistence/", "app/manage.py", "app/runtime.py"],
-  "declaredReadModels": ["access_scope", "attestation", "budget", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "invoice_snapshots", "provenance", "revision", "submission", "validation"],
+  "declaredReadModels": ["access_scope", "attestation", "budget", "configuration", "extraction_review", "finding_resolution", "government_decision", "government_review", "ingestion", "invoice_snapshots", "provenance", "revision", "submission", "validation"],
   "entrypointCapabilityDependencies": {
     "platform": ["extraction"]
   },

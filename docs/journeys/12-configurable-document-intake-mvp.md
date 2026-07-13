@@ -1,6 +1,6 @@
 # Journey 12: Configurable Document-Intake MVP
 
-Status: Design Review
+Status: Build (`SUB-74` merged; `SUB-75` implementation active)
 
 Controlling epic: `SUB-73`
 
@@ -167,3 +167,28 @@ attestation, submission, return, approval, or audit-mutation authority.
 - Static, unit, integration, boundary, authorization, provenance,
   deterministic-replay, frontend, build, clean Compose, AI review, and release
   review gates approve the immutable merged diff.
+
+## SUB-75 Configuration Checkpoint
+
+Before profile execution begins in SUB-76, the existing reimbursement
+configuration path proves the governance mechanics Journey 12 will reuse:
+
+- a normal Configuration Administrator session reads the editable draft with a
+  revision, saves through compare-and-update, tests that exact revision,
+  approves the exact immutable evidence, and activates prospectively;
+- stale save/test, wrong-role, unassigned, invalid-transition, and failed-test
+  activation paths return without governed mutation;
+- version list/detail exposes exact payload, payload hash, deterministic checks,
+  result hash, human approval binding, lifecycle actor/role/rationale/time, and
+  predecessor/successor evidence;
+- diff and activation impact are hashed, replayable, noncanonical projections;
+- historical invoice, validation, package, submission, snapshot, and audit-event
+  references continue to resolve the original configuration after a successor
+  activates; and
+- the bounded administrator UI consumes generated DTOs and explains draft
+  revision, deterministic evidence, diff, prospective impact, and historical
+  references. SUB-77 remains responsible for the complete profile workspace.
+
+This checkpoint does not claim English/Spanish profile fixtures, deterministic
+profile matching, changed/unknown routing, or five-role Journey 12 completion;
+those remain SUB-76 through SUB-78 acceptance criteria.

@@ -573,7 +573,21 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select payload from configuration_drafts where contract_id=%s",
+    "sql": "select payload,revision,updated_at from configuration_drafts where contract_id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_CONFIGURATION_DRAFTS_017": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "configuration_drafts"
+    ],
+    "sourceOwners": [
+      "configuration"
+    ],
+    "sql": "select payload,revision,updated_at from configuration_drafts where contract_id=%s for update",
     "writeTables": []
   },
   "CONFIGURATION_READ_CONFIGURATION_VERSIONS_003": {
@@ -611,6 +625,7 @@
     "operation": "read",
     "owner": "configuration",
     "readTables": [
+      "configuration_active_versions",
       "configuration_approvals",
       "configuration_lifecycle_events",
       "configuration_test_evidence",
@@ -619,7 +634,30 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select v.contract_id,v.version,v.payload,e.state,te.id,te.payload_hash,te.result_hash,te.suite_version,ap.id,ap.approval_hash,e.rollback_target_version_id\n               from configuration_versions v\n               join lateral (select state,rollback_target_version_id from configuration_lifecycle_events where configuration_version_id=v.id order by sequence desc limit 1) e on true\n               left join configuration_test_evidence te on te.configuration_version_id=v.id\n               left join configuration_approvals ap on ap.configuration_version_id=v.id\n               where v.id=%s",
+    "sql": "select v.contract_id,v.version,v.payload,e.state,te.id,te.payload_hash,te.result_hash,te.suite_version,te.results,te.tested_by,te.tested_role,te.tested_organization_id,te.rationale,te.created_at,ap.id,ap.test_evidence_id,ap.approved_by,ap.approved_role,ap.approved_organization_id,ap.rationale,ap.approval_hash,ap.approved_at,e.rollback_target_version_id,coalesce(a.configuration_version_id=v.id,false)\n               from configuration_versions v\n               join lateral (select state,rollback_target_version_id from configuration_lifecycle_events where configuration_version_id=v.id order by sequence desc limit 1) e on true\n               left join configuration_test_evidence te on te.configuration_version_id=v.id\n               left join configuration_approvals ap on ap.configuration_version_id=v.id\n               left join configuration_active_versions a on a.contract_id=v.contract_id\n               where v.id=%s",
+    "writeTables": []
+  },
+  "CONFIGURATION_READ_DOMAIN_EVENTS_INVOICE_SNAPSHOTS_INVOICE_VERSIONS_PACKAGES_SUBMISSIONS_VALIDATION_RUNS_018": {
+    "consumerCapability": "configuration",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": [
+      "domain_events",
+      "invoice_snapshots",
+      "invoice_versions",
+      "packages",
+      "submissions",
+      "validation_runs"
+    ],
+    "sourceOwners": [
+      "invoices",
+      "packages",
+      "provenance",
+      "validation",
+      "workflow"
+    ],
+    "sql": "with configuration_references as (\n                 select 'invoice'::text resource_kind,i.id resource_id,i.version::text resource_version,i.state,i.created_at recorded_at\n                 from invoice_versions i where i.configuration_version_id=%s\n                 union all\n                 select 'validation_run',v.id,coalesce(v.engine_version,'1'),coalesce(v.status,'completed'),v.created_at\n                 from validation_runs v where v.configuration_version_id=%s\n                 union all\n                 select 'package',p.id,p.version::text,'generated',p.created_at\n                 from packages p join invoice_versions i on i.id=p.invoice_version_id where i.configuration_version_id=%s\n                 union all\n                 select 'submission',s.id,s.invoice_version::text,'submitted',s.submitted_at\n                 from submissions s where s.configuration_version_id=%s\n                 union all\n                 select 'invoice_snapshot',sn.id,sn.material_revision::text,sn.stage,sn.created_at\n                 from invoice_snapshots sn join invoice_versions i on i.id=sn.invoice_version_id where i.configuration_version_id=%s\n                 union all\n                 select 'audit_event',e.event_key,e.schema_version::text,e.event_type,e.occurred_at\n                 from domain_events e where e.version_references @> jsonb_build_array(jsonb_build_object('kind','configuration','id',%s::text))\n               ) select resource_kind,resource_id,resource_version,state,recorded_at from configuration_references order by recorded_at,resource_kind,resource_id",
     "writeTables": []
   },
   "CONFIGURATION_READ_CONFIGURATION_ACTIVE_VERSIONS_012": {
@@ -661,7 +699,7 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "insert into configuration_drafts(contract_id, payload, updated_by)\n                   values (%s, %s, %s)\n                   on conflict (contract_id) do update set payload=excluded.payload,\n                   updated_by=excluded.updated_by, updated_at=now()",
+    "sql": "insert into configuration_drafts(contract_id,payload,updated_by,revision)\n                   values (%s,%s,%s,1)\n                   on conflict (contract_id) do update set payload=excluded.payload,\n                   updated_by=excluded.updated_by,updated_at=now(),\n                   revision=configuration_drafts.revision+1\n                   where configuration_drafts.revision=%s\n                   returning payload,revision,updated_at",
     "writeTables": [
       "configuration_drafts"
     ]

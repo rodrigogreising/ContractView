@@ -214,8 +214,17 @@ CONTRACT_REQUIRED_FIELDS = {
     'PackageReproductionManifestContract': frozenset(['schema_version', 'build_input_hash', 'package_manifest_hash', 'archive_sha256', 'archive_byte_size', 'files', 'template', 'validation_input_manifest_id', 'validation_input_manifest_hash', 'invoice_snapshot']),
     'ConfigurationBundleContract': frozenset(['id', 'version', 'lifecycle', 'scope', 'schemas', 'mappings', 'rules', 'workflow', 'views', 'templates']),
     'ConfigurationLifecycleEventDto': frozenset(['state', 'action', 'actor_id', 'actor_role', 'actor_organization_id', 'rationale', 'test_evidence_id', 'approval_id', 'predecessor_version_id', 'successor_version_id', 'rollback_target_version_id', 'event_hash', 'occurred_at']),
-    'GovernedConfigurationVersionDto': frozenset(['id', 'version', 'configuration', 'state', 'active', 'history']),
+    'ConfigurationDraftDto': frozenset(['configuration', 'revision', 'payload_hash', 'updated_at']),
+    'ConfigurationTestCheckDto': frozenset(['code', 'passed']),
+    'ConfigurationTestEvidenceDto': frozenset(['id', 'suite_version', 'payload_hash', 'result_hash', 'passed', 'checks', 'tested_by', 'tested_role', 'tested_organization_id', 'rationale', 'created_at']),
+    'ConfigurationApprovalEvidenceDto': frozenset(['id', 'test_evidence_id', 'approved_by', 'approved_role', 'approved_organization_id', 'rationale', 'approval_hash', 'approved_at']),
+    'GovernedConfigurationVersionDto': frozenset(['id', 'contract_id', 'version', 'configuration', 'state', 'active', 'payload_hash', 'test_evidence', 'approval', 'history']),
     'ConfigurationLifecycleResponseDto': frozenset(['versions']),
+    'ConfigurationDiffChangeDto': frozenset(['path', 'change_type', 'before', 'after', 'description']),
+    'ConfigurationDiffDto': frozenset(['contract_id', 'base_version_id', 'target_version_id', 'changes', 'projection_hash', 'canonical']),
+    'ConfigurationReferenceDto': frozenset(['resource_kind', 'resource_id', 'resource_version', 'state', 'recorded_at']),
+    'ConfigurationReferencesDto': frozenset(['configuration_version_id', 'references', 'projection_hash', 'canonical']),
+    'ConfigurationActivationImpactDto': frozenset(['configuration_version_id', 'contract_id', 'would_supersede_version_id', 'historical_reference_version_id', 'reference_counts', 'application_scope', 'historical_references_preserved', 'projection_hash', 'canonical']),
     'ActiveConfigurationDto': frozenset(['id', 'version', 'activated_at']),
     'EventEnvelope': frozenset(['event_id', 'event_type', 'schema_version', 'actor', 'organization_id', 'contract_id', 'aggregate', 'occurred_at', 'payload', 'version_references']),
     'AuditEventDto': frozenset(['id', 'event', 'event_hash']),
@@ -462,17 +471,102 @@ class ConfigurationLifecycleEventDto(ContractModel):
     occurred_at: datetime
 
 
+class ConfigurationDraftDto(ContractModel):
+    configuration: dict[str, Any]
+    revision: int = Field(ge=1)
+    payload_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    updated_at: datetime
+
+
+class ConfigurationTestCheckDto(ContractModel):
+    code: str
+    passed: bool
+
+
+class ConfigurationTestEvidenceDto(ContractModel):
+    id: str
+    suite_version: str
+    payload_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    result_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    passed: bool
+    checks: list[ConfigurationTestCheckDto]
+    tested_by: str
+    tested_role: Role
+    tested_organization_id: str
+    rationale: str
+    created_at: datetime
+
+
+class ConfigurationApprovalEvidenceDto(ContractModel):
+    id: str
+    test_evidence_id: str
+    approved_by: str
+    approved_role: Role
+    approved_organization_id: str
+    rationale: str
+    approval_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    approved_at: datetime
+
+
 class GovernedConfigurationVersionDto(ContractModel):
     id: str
+    contract_id: str
     version: int = Field(ge=1)
     configuration: dict[str, Any]
     state: ConfigurationLifecycle
     active: bool
+    payload_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    test_evidence: ConfigurationTestEvidenceDto | None
+    approval: ConfigurationApprovalEvidenceDto | None
     history: list[ConfigurationLifecycleEventDto]
 
 
 class ConfigurationLifecycleResponseDto(ContractModel):
     versions: list[GovernedConfigurationVersionDto]
+
+
+class ConfigurationDiffChangeDto(ContractModel):
+    path: str
+    change_type: str
+    before: Any | None
+    after: Any | None
+    description: str
+
+
+class ConfigurationDiffDto(ContractModel):
+    contract_id: str
+    base_version_id: str
+    target_version_id: str
+    changes: list[ConfigurationDiffChangeDto]
+    projection_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    canonical: bool
+
+
+class ConfigurationReferenceDto(ContractModel):
+    resource_kind: str
+    resource_id: str
+    resource_version: str
+    state: str
+    recorded_at: datetime
+
+
+class ConfigurationReferencesDto(ContractModel):
+    configuration_version_id: str
+    references: list[ConfigurationReferenceDto]
+    projection_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    canonical: bool
+
+
+class ConfigurationActivationImpactDto(ContractModel):
+    configuration_version_id: str
+    contract_id: str
+    would_supersede_version_id: str | None
+    historical_reference_version_id: str | None
+    reference_counts: dict[str, int]
+    application_scope: str
+    historical_references_preserved: bool
+    projection_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    canonical: bool
 
 
 class ActiveConfigurationDto(ContractModel):

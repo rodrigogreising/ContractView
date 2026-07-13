@@ -301,13 +301,69 @@ describe("authentication shell", () => {
           },
         }}
         active={{ id: "config-v1", version: 1, activatedAt: "now" }}
-        versions={[
-          {
+        draftRevision={4}
+        evidence={{
+          detail: {
             id: "config-v2",
+            contractId: "contract-synthetic",
             version: 2,
             configuration: {},
             state: "tested",
             active: false,
+            payloadHash: "a".repeat(64),
+            testEvidence: null,
+            approval: null,
+            history: [],
+          },
+          diff: {
+            contractId: "contract-synthetic",
+            baseVersionId: "config-v1",
+            targetVersionId: "config-v2",
+            changes: [{
+              path: "/package/label",
+              changeType: "changed",
+              before: "Old package",
+              after: "New package",
+              description: "/package/label changed from old to new",
+            }],
+            projectionHash: "d".repeat(64),
+            canonical: false,
+          },
+          impact: {
+            configurationVersionId: "config-v2",
+            contractId: "contract-synthetic",
+            wouldSupersedeVersionId: "config-v1",
+            historicalReferenceVersionId: "config-v1",
+            referenceCounts: { invoice: 1 },
+            applicationScope: "future-intake-only",
+            historicalReferencesPreserved: true,
+            projectionHash: "e".repeat(64),
+            canonical: false,
+          },
+          references: {
+            configurationVersionId: "config-v1",
+            references: [{
+              resourceKind: "invoice",
+              resourceId: "invoice-v1",
+              resourceVersion: "1",
+              state: "submitted",
+              recordedAt: "2026-07-13T00:00:00Z",
+            }],
+            projectionHash: "f".repeat(64),
+            canonical: false,
+          },
+        }}
+        versions={[
+          {
+            id: "config-v2",
+            contractId: "contract-synthetic",
+            version: 2,
+            configuration: {},
+            state: "tested",
+            active: false,
+            payloadHash: "a".repeat(64),
+            testEvidence: null,
+            approval: null,
             history: [
               {
                 state: "tested",
@@ -328,10 +384,14 @@ describe("authentication shell", () => {
           },
           {
             id: "config-v1",
+            contractId: "contract-synthetic",
             version: 1,
             configuration: {},
             state: "active",
             active: true,
+            payloadHash: "b".repeat(64),
+            testEvidence: null,
+            approval: null,
             history: [],
           },
         ]}
@@ -356,6 +416,12 @@ describe("authentication shell", () => {
     expect(html).toContain("Record human approval");
     expect(html).toContain("Immutable lifecycle evidence");
     expect(html).toContain("Validated deterministic configuration");
+    expect(html).toContain("Editable draft revision");
+    expect(html).toContain("stale writes are rejected");
+    expect(html).toContain("Derived version evidence");
+    expect(html).toContain("/package/label changed from old to new");
+    expect(html).toContain("future-intake-only");
+    expect(html).toContain("invoice-v1");
     expect(html).not.toContain("Activate numbered version");
   });
   it("renders every governed transition only for its valid lifecycle state", () => {
@@ -420,10 +486,14 @@ describe("authentication shell", () => {
       active = false,
     ): AdminProps["versions"][number] => ({
       id,
+      contractId: "contract-synthetic",
       version: number,
       configuration: {},
       state,
       active,
+      payloadHash: "c".repeat(64),
+      testEvidence: null,
+      approval: null,
       history: [],
     });
 
