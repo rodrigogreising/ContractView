@@ -284,7 +284,7 @@
         "Feature transport, application orchestration, workspace adaptation, and presentation remain separate; the UI consumes existing Configuration/Extraction seams and creates no canonical owner"
       ],
       "gate:security-privacy": [
-        "Normal sessions and canonical server assignment scope protect every read/command; fixture transcripts are not rendered and unauthorized states are explicit"
+        "Normal sessions and canonical server assignment scope protect every read/command; logout clears every contract-scoped client projection before another user renders, fixture transcripts are not rendered, and unauthorized states are explicit"
       ],
       "gate:config-governance": [
         "Typed editing, immutable evidence/history, separate fixture test and approval, exact profile-reference staging, and explicit prospective activation preserve the governed lifecycle"

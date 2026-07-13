@@ -1,6 +1,6 @@
 # SUB-77 Configuration Administrator Workspace Evidence
 
-Status: In Progress
+Status: In Review
 
 Linear project stage: Build
 
@@ -91,7 +91,9 @@ Focused component tests prove:
   rationale, and explicit prospective-impact confirmation;
 - profile setup, evaluation, history, fixture outcomes, and safe exception
   states render without exposing private fixture transcripts; and
-- governance failures use an accessible alert.
+- governance failures use an accessible alert; and
+- logout clears every contract-scoped client projection before a later
+  administrator session can render or submit a prior contract's draft.
 
 The canonical browser journey additionally proves a normal administrator
 session, direct server denial of an invoice command, full configuration
@@ -108,8 +110,8 @@ browser inspection cover the responsive shell defect found during review.
 - AI/configuration governance: `docs/sdlc/poc-ai-governance.md`
 - Requirements: `docs/sdlc/requirements-traceability.md`
 - Journey checkpoint: `docs/journeys/12-configurable-document-intake-mvp.md`
-- Frontend evidence: `ConfigurationAdmin.test.tsx`, `App.test.tsx`, and
-  `tests/e2e/specs/journey11.spec.ts`
+- Frontend evidence: `ConfigurationAdmin.test.tsx`, `App.test.tsx`,
+  `App.session.test.tsx`, and `tests/e2e/specs/journey11.spec.ts`
 - PR manifest: `tmp/evidence/SUB-77/pr/manifest.json` after an immutable head
   exists
 
@@ -117,7 +119,7 @@ browser inspection cover the responsive shell defect found during review.
 
 | Command | Exit | Result |
 | --- | ---: | --- |
-| pinned `bash scripts/ci/run_static.sh` | 0 | Python 3.12.2/Node 20.20.2; format, Ruff, mypy, contract/persistence/boundary/policy checks, 90 script tests, 28 frontend tests, production build, and web boundaries pass |
+| pinned `bash scripts/ci/run_static.sh` | 0 | Python 3.12.2/Node 20.20.2; format, Ruff, mypy, contract/persistence/boundary/policy checks, 90 script tests, 29 frontend tests, production build, and web boundaries pass |
 | full clean Compose API/workflow suite | 0 | 217 tests pass, including configuration/profile lifecycle, authorization, deterministic routing, provenance, and immutable manifests |
 | `JOURNEY11_PROJECT_NAME=contractview-sub77-final-profile bash scripts/run_journey11.sh headless tmp/evidence/SUB-77/journey-final-profile` | 0 | One clean canonical browser journey passes in 16.4 seconds with real configuration activation; profile successor create/test/approve/stage/save; changed/unknown routing; explicit impact confirmation; direct server denial; and draft-only cluster confirmation |
 | `CI_PROJECT_NAME=contractview-sub77-final bash scripts/ci/run_hermetic.sh tmp/evidence/SUB-77/compose-final` | 0 | Two fresh PostgreSQL/MinIO passes run 217 tests each with equal reset fingerprint `98f77de03e5553b230c7956c0d8b8373b7ae12efd32c763a20deee8f3e7040fd` |

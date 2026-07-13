@@ -152,11 +152,37 @@ export function App() {
     try { await establishContext((await loginSession(email, password)).user); }
     catch (error) { setMessage(errorText(error, "Invalid email or password.")); }
   }
+  function clearContractState() {
+    setJobs([]);
+    setExtractions([]);
+    setDraft(null);
+    setConfiguration(null);
+    setConfigurationDraftRevision(0);
+    setActiveConfiguration(null);
+    setConfigurationLifecycle([]);
+    setConfigurationEvidence(null);
+    setConfigurationProfiles([]);
+    setDocumentClusters([]);
+    setValidation(null);
+    setFindings([]);
+    setApprovalPreview(null);
+    setAttestation(null);
+    setGeneratedPackage(null);
+    setSubmission(null);
+    setQueue([]);
+    setReviewContext(null);
+    setRevisionFeedback(null);
+    setAuditTimeline(null);
+  }
   async function logout() {
     try { await logoutSession(); } finally {
-      currentContract.current = null; setUser(null); setContractId(null); setContractContexts([]); setEmail(""); setPassword(""); setDraft(null);
-      setValidation(null); setFindings([]); setApprovalPreview(null); setAttestation(null);
-      setGeneratedPackage(null); setSubmission(null); setReviewContext(null); setConfigurationLifecycle([]); setConfigurationEvidence(null); setConfigurationProfiles([]); setDocumentClusters([]); setConfigurationDraftRevision(0); setAuditTimeline(null);
+      currentContract.current = null;
+      clearContractState();
+      setUser(null);
+      setContractId(null);
+      setContractContexts([]);
+      setEmail("");
+      setPassword("");
       setMessage(demoMode ? "Signed out. Choose a persona to continue." : "Signed out.");
     }
   }
@@ -292,11 +318,10 @@ export function App() {
   }
 
   function selectContract(nextContractId: string) {
-    currentContract.current = nextContractId; setContractId(nextContractId);
-    setJobs([]); setExtractions([]); setConfiguration(null); setConfigurationDraftRevision(0); setActiveConfiguration(null); setConfigurationLifecycle([]); setConfigurationEvidence(null); setConfigurationProfiles([]); setDocumentClusters([]);
-    setDraft(null); setValidation(null); setFindings([]);
-    setApprovalPreview(null); setAttestation(null); setGeneratedPackage(null); setSubmission(null);
-    setReviewContext(null); setQueue([]); setRevisionFeedback(null); setAuditTimeline(null); setMessage("");
+    currentContract.current = nextContractId;
+    clearContractState();
+    setContractId(nextContractId);
+    setMessage("");
   }
 
   if (user?.role === "government_reviewer") return <GovernmentWorkspace user={user} activeConfiguration={activeConfiguration} queue={queue} review={reviewContext} onInspect={inspectQueue} onDecision={decideQueue} message={message} onLogout={logout} />;
