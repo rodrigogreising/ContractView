@@ -7,6 +7,7 @@ import { NgoApproverWorkspace } from "./NgoApproverWorkspace";
 import { NgoPreparerWorkspace } from "./NgoPreparerWorkspace";
 import { ContractSelector } from "../presentation/ContractSelector";
 import { IdentityHeader } from "../presentation/IdentityHeader";
+import type { ConfigurationEvidenceView } from "../features/configuration/api";
 
 export function AuthenticatedWorkspace({
   user,
@@ -17,6 +18,8 @@ export function AuthenticatedWorkspace({
   extractions,
   draft,
   configuration,
+  configurationDraftRevision = 0,
+  configurationEvidence = null,
   activeConfiguration,
   configurationLifecycle,
   validation,
@@ -54,6 +57,8 @@ export function AuthenticatedWorkspace({
   extractions: Extraction[];
   draft: InvoiceDraft | null;
   configuration: Configuration | null;
+  configurationDraftRevision?: number;
+  configurationEvidence?: ConfigurationEvidenceView | null;
   activeConfiguration: ActiveConfiguration | null;
   configurationLifecycle: GovernedConfigurationVersion[];
   validation: ValidationRun | null;
@@ -112,7 +117,7 @@ export function AuthenticatedWorkspace({
           Your navigation and available actions are scoped to the signed-in
           persona. The API enforces the same boundaries independently.
         </p>
-        {user.role === "configuration_administrator" && configuration && <ConfigurationWorkspace configuration={configuration} active={activeConfiguration} versions={configurationLifecycle} message={message} onSave={onSaveConfiguration} onTest={onTestConfiguration} onApprove={onApproveConfiguration} onActivate={onActivateConfiguration} onSupersede={onSupersedeConfiguration} onRetire={onRetireConfiguration} onRollback={onRollbackConfiguration} />}
+        {user.role === "configuration_administrator" && configuration && <ConfigurationWorkspace configuration={configuration} draftRevision={configurationDraftRevision} evidence={configurationEvidence} active={activeConfiguration} versions={configurationLifecycle} message={message} onSave={onSaveConfiguration} onTest={onTestConfiguration} onApprove={onApproveConfiguration} onActivate={onActivateConfiguration} onSupersede={onSupersedeConfiguration} onRetire={onRetireConfiguration} onRollback={onRollbackConfiguration} />}
         {user.role === "ngo_preparer" && <NgoPreparerWorkspace jobs={jobs} extractions={extractions} draft={draft} validation={validation} findings={findings} feedback={revisionFeedback} message={message} onUpload={onUpload} onReview={onReview} onAssemble={onAssemble} onValidate={onValidate} onResolve={onResolveFinding} onCorrect={onCorrectRevision} />}
         {user.role === "ngo_approver" && approvalPreview && <NgoApproverWorkspace preview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onAttest={onAttest} onGeneratePackage={onGeneratePackage} onSubmit={onSubmitInvoice} />}
         {user.role === "auditor" && <AuditorWorkspace timeline={auditTimeline} />}

@@ -13,7 +13,11 @@ from ..configuration import (
     active_summary,
     activate_version,
     approve_version,
-    get_draft,
+    compare_configuration_versions,
+    configuration_activation_impact,
+    configuration_references,
+    configuration_version_detail,
+    get_draft_details,
     lifecycle_history,
     retire_version,
     rollback_version,
@@ -70,6 +74,9 @@ class RevisionCorrectionRequest(BaseModel):
 
 class RationaleRequest(BaseModel):
     rationale: str
+
+class TestConfigurationRequest(RationaleRequest):
+    expectedDraftRevision: int | None = None
 
 class ActivateConfigurationRequest(RationaleRequest):
     versionId: str
@@ -189,22 +196,30 @@ def get_latest_invoice_draft(contractId: str, resolved=Depends(current_identity)
 @app.get("/configuration/draft")
 def configuration_draft(contractId: str,resolved=Depends(current_identity)):
     actor,_=resolved
-    try:return {"configuration":get_draft(actor,contractId)}
+    try:return get_draft_details(actor,contractId)
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
 
 @app.put("/configuration/draft")
-def save_configuration_draft(contractId: str,payload: dict,resolved=Depends(current_identity)):
+def save_configuration_draft(payload:dict,contractId:str,expectedRevision:int|None=None,resolved=Depends(current_identity)):
     actor,_=resolved
-    try:return {"configuration":update_draft(actor,contractId,payload)}
+    if expectedRevision is None:
+        try:get_draft_details(actor,contractId)
+        except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+        raise HTTPException(status_code=422,detail="expectedRevision is required")
+    try:return update_draft(actor,contractId,payload,expectedRevision)
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
-    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=409 if "stale" in str(error).lower() else 422,detail=str(error)) from error
 
 @app.post("/configuration/test")
-def test_configuration(contractId: str,payload:RationaleRequest,resolved=Depends(current_identity)):
+def test_configuration(contractId: str,payload:TestConfigurationRequest,resolved=Depends(current_identity)):
     actor,_=resolved
-    try:return {"configurationVersion":test_draft(actor,contractId,payload.rationale)}
+    if payload.expectedDraftRevision is None:
+        try:get_draft_details(actor,contractId)
+        except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+        raise HTTPException(status_code=422,detail="expectedDraftRevision is required")
+    try:return {"configurationVersion":test_draft(actor,contractId,payload.rationale,payload.expectedDraftRevision)}
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
-    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=409 if "stale" in str(error).lower() else 422,detail=str(error)) from error
 
 @app.post("/configuration/versions/{version_id}/approve")
 def approve_configuration(version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
@@ -247,6 +262,34 @@ def configuration_lifecycle(contractId:str,resolved=Depends(current_identity)):
     try:return lifecycle_history(actor,contractId)
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
     except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.get("/configuration/versions/{version_id}")
+def configuration_version(version_id:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"configurationVersion":configuration_version_detail(actor,version_id)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=404,detail=str(error)) from error
+
+@app.get("/configuration/compare")
+def compare_configuration(baseVersionId:str,targetVersionId:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return compare_configuration_versions(actor,baseVersionId,targetVersionId)
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.get("/configuration/versions/{version_id}/references")
+def configuration_version_references(version_id:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return configuration_references(actor,version_id)
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=404,detail=str(error)) from error
+
+@app.get("/configuration/versions/{version_id}/activation-impact")
+def configuration_version_activation_impact(version_id:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return configuration_activation_impact(actor,version_id)
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidConfiguration as error:raise HTTPException(status_code=404,detail=str(error)) from error
 
 @app.get("/configuration/active")
 def active_configuration(contractId: str,resolved=Depends(current_identity)):

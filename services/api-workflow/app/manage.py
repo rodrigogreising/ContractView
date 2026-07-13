@@ -65,7 +65,7 @@ def seed() -> None:
             )
         configuration = scenario["initialConfiguration"]
         connection.execute(
-            "insert into configuration_drafts(contract_id, payload, updated_by) values (%s,%s,%s) on conflict (contract_id) do update set payload=excluded.payload, updated_by=excluded.updated_by, updated_at=now()",
+            "insert into configuration_drafts(contract_id, payload, updated_by, revision) values (%s,%s,%s,1) on conflict (contract_id) do update set payload=excluded.payload, updated_by=excluded.updated_by, updated_at=now(), revision=configuration_drafts.revision + case when configuration_drafts.payload is distinct from excluded.payload then 1 else 0 end",
             (contract["id"], json.dumps(configuration), "user-config-admin"),
         )
         connection.commit()
@@ -89,7 +89,7 @@ def fingerprint() -> None:
         "contracts": "select id,agency_organization_id,ngo_organization_id,contract_start,contract_end,service_period_start,service_period_end,currency from contracts order by id",
         "assignments": "select contract_id,user_id,role,agency_organization_id from contract_role_assignments order by contract_id,user_id,role",
         "budgets": "select id,contract_id,name,budget_limit::text from budget_categories order by id",
-        "configuration": "select contract_id,payload from configuration_drafts order by contract_id",
+        "configuration": "select contract_id,payload,revision from configuration_drafts order by contract_id",
     }
     with database() as connection:
         state = {

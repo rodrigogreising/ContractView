@@ -169,6 +169,33 @@ over shared canonical state and never grant authority.
   DTOs.
 - SUB-78: role landing pages and Journey 12 terminal certification.
 
+## SUB-75 Implementation Note: Explainable Configuration Evidence
+
+SUB-75 implements the Configuration-owned lifecycle seam needed before profile
+execution. Editable drafts now carry an optimistic revision. Save and test
+commands compare that revision inside the owner transaction; stale commands
+fail before any version or evidence record is appended. Governed versions,
+test evidence, approvals, and lifecycle events remain immutable.
+
+Activation and supersession rederive the candidate payload hash, deterministic
+test report, result hash, suite version, and approval binding from the exact
+immutable version. A lifecycle label alone is therefore insufficient to
+activate a candidate. The active pointer remains prospective.
+
+Version detail is canonical Configuration data. Human-readable diff,
+activation impact, and configuration-to-runtime references are explicitly
+noncanonical, content-hashed projections. A declared read model may join exact
+invoice, validation, package, submission, snapshot, and audit-event references
+for display and reconstruction, but it exposes no command or write port.
+Capability owners retain their original tables and mutation authority.
+
+The public HTTP paths evolve additively through generated shared DTOs. Full
+history/detail/projection access and every mutation require the canonically
+assigned Configuration Administrator. Other roles continue to receive only
+their existing scoped, read-only active-configuration or audit projections.
+The bounded evidence panel delivered here proves the DTO seam; SUB-77 remains
+responsible for the complete administrator workspace.
+
 ## Related Evidence
 
 - `docs/product/document-intake-mvp-charter.md`

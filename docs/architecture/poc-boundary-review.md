@@ -328,3 +328,23 @@ and create no canonical expense. Local pinned OCR is permitted, while hosted
 models, runtime LLM extraction, AI-assisted profile drafting, and system/AI
 authority are prohibited. Runtime contracts and persistence remain gated on
 SUB-75/SUB-76 and may not be inferred from this design PR.
+
+## SUB-75 Configuration Evidence Boundary
+
+Configuration continues to own the editable draft, immutable governed
+versions, test evidence, approvals, lifecycle events, and prospective active
+pointer. Migration 024 adds a draft revision and read-support indexes; it does
+not introduce a second canonical projection or shared ownership.
+
+The Configuration application command compares draft revision within its owner
+transaction and revalidates exact test/approval hashes before activation. The
+HTTP adapter transports generated DTOs and canonical sessions only. The Web
+feature displays version evidence and server-derived projections without
+owning a rule, lifecycle decision, tenant scope, or mutation authority.
+
+One declared read model joins stable runtime references across Invoices,
+Validation, Packages, Workflow, and Provenance. Its SQL and source owners are
+machine registered, it is executable only through the read-model repository,
+and its result is marked noncanonical. No command imports it, and no source
+owner is written. This is the permitted audit/reporting collaboration seam,
+not an arbitrary cross-capability SQL exception.

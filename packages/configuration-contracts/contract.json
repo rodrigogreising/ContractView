@@ -1,6 +1,6 @@
 {
   "package": "configuration-contracts",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "dependsOn": {"domain-types": "^1.0.0", "rule-contracts": "^1.0.0"},
   "vocabularies": {
     "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template"]},
@@ -119,16 +119,92 @@
       {"name": "eventHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
       {"name": "occurredAt", "type": "datetime", "required": true}
     ]},
+    "ConfigurationDraftDto": {"model": "ConfigurationDraftDto", "fields": [
+      {"name": "configuration", "type": "map<string,any>", "required": true},
+      {"name": "revision", "type": "integer", "required": true, "minimum": 1},
+      {"name": "payloadHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "updatedAt", "type": "datetime", "required": true}
+    ]},
+    "ConfigurationTestCheckDto": {"model": "ConfigurationTestCheckDto", "fields": [
+      {"name": "code", "type": "string", "required": true},
+      {"name": "passed", "type": "boolean", "required": true}
+    ]},
+    "ConfigurationTestEvidenceDto": {"model": "ConfigurationTestEvidenceDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "suiteVersion", "type": "string", "required": true},
+      {"name": "payloadHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "resultHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "passed", "type": "boolean", "required": true},
+      {"name": "checks", "type": "ConfigurationTestCheckDto[]", "required": true},
+      {"name": "testedBy", "type": "string", "required": true},
+      {"name": "testedRole", "type": "Role", "required": true},
+      {"name": "testedOrganizationId", "type": "string", "required": true},
+      {"name": "rationale", "type": "string", "required": true},
+      {"name": "createdAt", "type": "datetime", "required": true}
+    ]},
+    "ConfigurationApprovalEvidenceDto": {"model": "ConfigurationApprovalEvidenceDto", "fields": [
+      {"name": "id", "type": "string", "required": true},
+      {"name": "testEvidenceId", "type": "string", "required": true},
+      {"name": "approvedBy", "type": "string", "required": true},
+      {"name": "approvedRole", "type": "Role", "required": true},
+      {"name": "approvedOrganizationId", "type": "string", "required": true},
+      {"name": "rationale", "type": "string", "required": true},
+      {"name": "approvalHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "approvedAt", "type": "datetime", "required": true}
+    ]},
     "GovernedConfigurationVersionDto": {"model": "GovernedConfigurationVersionDto", "fields": [
       {"name": "id", "type": "string", "required": true},
+      {"name": "contractId", "type": "string", "required": true},
       {"name": "version", "type": "integer", "required": true, "minimum": 1},
       {"name": "configuration", "type": "map<string,any>", "required": true},
       {"name": "state", "type": "ConfigurationLifecycle", "required": true},
       {"name": "active", "type": "boolean", "required": true},
+      {"name": "payloadHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "testEvidence", "type": "ConfigurationTestEvidenceDto", "required": true, "nullable": true},
+      {"name": "approval", "type": "ConfigurationApprovalEvidenceDto", "required": true, "nullable": true},
       {"name": "history", "type": "ConfigurationLifecycleEventDto[]", "required": true}
     ]},
     "ConfigurationLifecycleResponseDto": {"model": "ConfigurationLifecycleResponseDto", "fields": [
       {"name": "versions", "type": "GovernedConfigurationVersionDto[]", "required": true}
+    ]},
+    "ConfigurationDiffChangeDto": {"model": "ConfigurationDiffChangeDto", "fields": [
+      {"name": "path", "type": "string", "required": true},
+      {"name": "changeType", "type": "string", "required": true},
+      {"name": "before", "type": "any", "required": true, "nullable": true},
+      {"name": "after", "type": "any", "required": true, "nullable": true},
+      {"name": "description", "type": "string", "required": true}
+    ]},
+    "ConfigurationDiffDto": {"model": "ConfigurationDiffDto", "fields": [
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "baseVersionId", "type": "string", "required": true},
+      {"name": "targetVersionId", "type": "string", "required": true},
+      {"name": "changes", "type": "ConfigurationDiffChangeDto[]", "required": true},
+      {"name": "projectionHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "canonical", "type": "boolean", "required": true}
+    ]},
+    "ConfigurationReferenceDto": {"model": "ConfigurationReferenceDto", "fields": [
+      {"name": "resourceKind", "type": "string", "required": true},
+      {"name": "resourceId", "type": "string", "required": true},
+      {"name": "resourceVersion", "type": "string", "required": true},
+      {"name": "state", "type": "string", "required": true},
+      {"name": "recordedAt", "type": "datetime", "required": true}
+    ]},
+    "ConfigurationReferencesDto": {"model": "ConfigurationReferencesDto", "fields": [
+      {"name": "configurationVersionId", "type": "string", "required": true},
+      {"name": "references", "type": "ConfigurationReferenceDto[]", "required": true},
+      {"name": "projectionHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "canonical", "type": "boolean", "required": true}
+    ]},
+    "ConfigurationActivationImpactDto": {"model": "ConfigurationActivationImpactDto", "fields": [
+      {"name": "configurationVersionId", "type": "string", "required": true},
+      {"name": "contractId", "type": "string", "required": true},
+      {"name": "wouldSupersedeVersionId", "type": "string", "required": true, "nullable": true},
+      {"name": "historicalReferenceVersionId", "type": "string", "required": true, "nullable": true},
+      {"name": "referenceCounts", "type": "map<string,integer>", "required": true},
+      {"name": "applicationScope", "type": "string", "required": true},
+      {"name": "historicalReferencesPreserved", "type": "boolean", "required": true},
+      {"name": "projectionHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "canonical", "type": "boolean", "required": true}
     ]},
     "ActiveConfigurationDto": {"model": "ActiveConfigurationDto", "fields": [
       {"name": "id", "type": "string", "required": true},

@@ -361,3 +361,28 @@ introduced.
 The owner-to-owner routing contract is closed: exact active matches return
 `recognized_profile_draft`; changed or unknown layouts return
 `needs_profile_review` with retained evidence and no canonical expense.
+
+## Explainable Configuration Read Boundary (SUB-75)
+
+| Concern | Owner | Interface | Boundary control |
+| --- | --- | --- | --- |
+| Editable draft revision | Configuration | Owner repository and save/test commands | Compare-and-update under the Configuration transaction; stale revision returns no row and appends no evidence |
+| Version detail, test evidence, approval, lifecycle | Configuration | Generated immutable DTOs | Exact version payload and append-only governance tables remain canonical |
+| Human-readable diff | Configuration projection | Pure canonical-JSON comparison of two immutable versions | Sorted changes plus projection hash; `canonical=false`; no persistence table |
+| Activation impact | Configuration projection | Active-version query plus derived runtime-reference counts | Prospective scope only; historical records are never selected for mutation |
+| Runtime references | Configuration read model | Declared read-only join over Invoices, Validation, Packages, Workflow, and Provenance | Read-model repository only; source owners and SQL footprint are machine checked; no writes |
+| Bounded web evidence | Web | Generated TypeScript DTOs and normal authenticated GET/command paths | Displays server results; owns neither lifecycle nor authorization |
+
+Migration 024 adds only the Configuration-owned draft revision and read-support
+indexes. It creates no cross-capability projection table. The named statement
+catalog declares the multi-owner reference query as a `declared-read-model`;
+the repository adapter rejects it through every owner repository and exposes
+it only through `read_models`. Commands continue to use the Configuration
+repository and cannot consume the read projection as mutation input.
+
+Full version history/detail/diff/impact/reference reads and all lifecycle
+commands resolve canonical contract assignment and require the Configuration
+Administrator. NGO and Government roles retain the existing scoped active
+summary; Auditor reconstruction remains the submitted, read-only Provenance
+projection. This is an intentional least-privilege split, not role-specific
+copies of configuration state.

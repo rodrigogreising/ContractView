@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import type { ActiveConfigurationDto as ActiveConfiguration, GovernedConfigurationVersionDto as GovernedConfigurationVersion } from "../../generated/contracts";
 import type { Configuration } from "../../domain/types";
 import { roleLabel } from "../../presentation/roleLabel";
+import type { ConfigurationEvidenceView } from "./api";
 
 export function ConfigurationAdmin({
   configuration,
+  draftRevision = 0,
+  evidence = null,
   active,
   versions,
   message,
@@ -17,6 +20,8 @@ export function ConfigurationAdmin({
   onRollback,
 }: {
   configuration: Configuration;
+  draftRevision?: number;
+  evidence?: ConfigurationEvidenceView | null;
   active: ActiveConfiguration | null;
   versions: GovernedConfigurationVersion[];
   message: string;
@@ -63,6 +68,7 @@ export function ConfigurationAdmin({
             Bounded POC settings only.{" "}
             {active ? `Active version ${active.version}` : "No active version"}
           </p>
+          <p>Editable draft revision {draftRevision}; stale writes are rejected.</p>
         </div>
       </div>
       <h3>Categories and limits</h3>
@@ -266,6 +272,19 @@ export function ConfigurationAdmin({
                 </div>
                 <details>
                   <summary>Immutable lifecycle evidence</summary>
+                  {version.testEvidence && (
+                    <p>
+                      Deterministic suite {version.testEvidence.suiteVersion}:{" "}
+                      {version.testEvidence.passed ? "passed" : "failed"}; result hash{" "}
+                      {version.testEvidence.resultHash}
+                    </p>
+                  )}
+                  {version.approval && (
+                    <p>
+                      Human approval {version.approval.id} by {version.approval.approvedRole};
+                      bound to test evidence {version.approval.testEvidenceId}.
+                    </p>
+                  )}
                   <ol>
                     {version.history.map((event) => (
                       <li key={event.eventHash}>
@@ -295,6 +314,64 @@ export function ConfigurationAdmin({
               </li>
             ))}
         </ol>
+      )}
+      {evidence && (
+        <section aria-label="Derived configuration evidence">
+          <h3>Derived version evidence</h3>
+          <p>
+            Showing version {evidence.detail.version}. Diff, impact, and references are
+            read-only projections from immutable records; projection hashes make replay
+            comparison explicit.
+          </p>
+          <details open>
+            <summary>Human-readable change from prior version</summary>
+            {evidence.diff.changes.length ? (
+              <ul>
+                {evidence.diff.changes.map((change) => (
+                  <li key={change.path}>{change.description}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No material configuration changes.</p>
+            )}
+            <small>projection hash {evidence.diff.projectionHash}</small>
+          </details>
+          <details>
+            <summary>Prospective activation impact</summary>
+            <p>
+              Scope: {evidence.impact.applicationScope}; historical references preserved:{" "}
+              {evidence.impact.historicalReferencesPreserved ? "yes" : "no"}.
+            </p>
+            {evidence.impact.historicalReferenceVersionId && (
+              <p>
+                Counts below remain bound to version{" "}
+                {evidence.impact.historicalReferenceVersionId}.
+              </p>
+            )}
+            <ul>
+              {Object.entries(evidence.impact.referenceCounts).map(([kind, count]) => (
+                <li key={kind}>{kind}: {count}</li>
+              ))}
+            </ul>
+            <small>projection hash {evidence.impact.projectionHash}</small>
+          </details>
+          <details>
+            <summary>Historical runtime references</summary>
+            {evidence.references.references.length ? (
+              <ul>
+                {evidence.references.references.map((reference) => (
+                  <li key={`${reference.resourceKind}:${reference.resourceId}`}>
+                    {reference.resourceKind} {reference.resourceId} version{" "}
+                    {reference.resourceVersion} ({reference.state})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No runtime record references this version yet.</p>
+            )}
+            <small>projection hash {evidence.references.projectionHash}</small>
+          </details>
+        </section>
       )}
       <p aria-live="polite">{message}</p>
     </section>

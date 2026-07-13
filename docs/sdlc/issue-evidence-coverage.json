@@ -182,6 +182,43 @@
       ]
     }
   },
+  "SUB-75": {
+    "projectStatus": "Build",
+    "certificationRationale": "Configuration lifecycle implementation must prove optimistic draft concurrency, current deterministic test and human-approval binding, immutable history, noncanonical explainable projections, exact runtime references, and canonical assignment scope before profile execution or the full administrator workspace begins.",
+    "includeJourneyInCleanRuntime": false,
+    "reviewSkills": [
+      "cv-review-requirements-traceability",
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-implementation-tests"
+    ],
+    "riskAndGateLabels": [
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:config-governance",
+      "risk:auditability",
+      "risk:configuration-drift"
+    ],
+    "riskCoverage": {
+      "gate:architecture": [
+        "Migration 024 preserves Configuration ownership; the multi-owner runtime-reference query is a declared read model with no write path or projection table"
+      ],
+      "gate:security-privacy": [
+        "Canonical assignment, wrong-role/unassigned denials, optimistic revision checks, current-evidence activation checks, and zero-mutation fingerprints protect the synthetic tenant boundary"
+      ],
+      "gate:config-governance": [
+        "Immutable test and approval evidence, independent hash recomputation, complete lifecycle transitions, and prospective activation are executable through normal sessions"
+      ],
+      "risk:auditability": [
+        "Version detail plus hashed diff, impact, and invoice/validation/package/submission/snapshot/event projections preserve and reconstruct exact historical configuration references"
+      ],
+      "risk:configuration-drift": [
+        "Draft revisions reject stale commands; the pinned suite, payload/result/approval hashes, generated DTO compatibility, and deterministic projection replay detect drift"
+      ]
+    }
+  },
   "SUB-80": {
     "projectStatus": "Design Review",
     "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",

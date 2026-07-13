@@ -241,3 +241,28 @@ suggestion into a draft association, and the full `draft -> tested -> approved
 Profile activation is prospective. Historical invoice snapshots, validation
 inputs, packages, submissions, and audit views continue to reference the exact
 profile/configuration versions originally used.
+
+## SUB-75 Configuration Governance And Projection Flow
+
+```mermaid
+flowchart LR
+  ReadDraft["Read editable draft plus revision"] --> Save["Compare-and-update save"]
+  Save -->|matching revision| Revised["Incremented draft revision"]
+  Save -->|stale or unauthorized| Denied["Rollback with zero governed mutation"]
+  Revised --> Test["Freeze exact payload and deterministic test evidence"]
+  Test --> Approve["Assigned human approval bound to test id"]
+  Approve --> Verify["Recompute payload, suite, result, and approval hashes"]
+  Verify --> Active["Prospective active pointer"]
+  Immutable["Immutable versions and lifecycle events"] --> Diff["Noncanonical diff plus hash"]
+  Immutable --> Impact["Noncanonical impact plus hash"]
+  Runtime["Invoice, validation, package, submission, snapshot, event owners"] --> References["Declared read-only references projection"]
+  Active --> Future["Future intake only"]
+  References --> Historical["Historical exact version reconstruction"]
+```
+
+The editable draft is the only mutable configuration record. Testing locks and
+compares its revision before creating an immutable version. Activation never
+trusts a client projection or lifecycle label alone; it revalidates the exact
+stored payload/test/approval evidence. Diff, impact, and reference responses
+are recomputable views with `canonical=false` and deterministic projection
+hashes. They are display and audit evidence, never command inputs.
