@@ -1,10 +1,10 @@
 # SUB-78 Role Dashboards And Journey 12 Certification
 
-Status: In Progress — candidate implementation and local evidence complete;
-immutable PR reviews, hosted certification, merge, and post-merge verification
-remain required
+Status: In Review — candidate implementation and local evidence complete;
+immutable PR reviews, exact-head hosted certification, merge, and post-merge
+verification remain required
 
-Linear project stage: Build
+Linear project stage: Evidence Review
 
 Branch: `codex/sub-78-role-dashboards-journey-certification`
 
