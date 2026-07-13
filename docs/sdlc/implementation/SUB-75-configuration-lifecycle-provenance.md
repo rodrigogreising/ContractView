@@ -87,7 +87,9 @@ submitted read-only audit projection.
 The web app carries the server-issued draft revision, submits it on save/test,
 consumes generated DTOs, and explains deterministic evidence, human approval,
 diff, prospective impact, and historical references. The server remains the
-authority. SUB-77 owns the complete profile-focused administrator workspace.
+authority. The existing Journey 11 save confirmation remains stable while the
+revision is displayed in the evidence panel. SUB-77 owns the complete
+profile-focused administrator workspace.
 
 ## Deterministic And Zero-Mutation Evidence
 
@@ -135,10 +137,12 @@ Recorded on 2026-07-13 before immutable PR review:
 | focused Docker pytest after clean synthetic reset | 0 | 28 lifecycle, API, migration, authorization, provenance, replay, and shared-contract tests pass |
 | full Docker API/workflow pytest after clean synthetic reset | 0 | 195 tests pass |
 | `CI_PROJECT_NAME=contractview-sub75-final bash scripts/ci/run_hermetic.sh tmp/evidence/SUB-75/compose-final` | 0 | Two fresh PostgreSQL/MinIO passes over the frozen implementation; 195 tests per pass; API/web/worker health; equal reset fingerprint `cf0df3ccff130a8aefc15e30482e9a53ceb08b1c85aa8d3f65d1de0cb6bb35e8` |
+| `JOURNEY11_PROJECT_NAME=contractview-sub75-fix-journey11 bash scripts/run_journey11.sh headless tmp/evidence/SUB-75/journey11-fix` | 0 | Canonical Journey 11 Playwright test passed after restoring the stable save confirmation; 1 test passed in 13.1 seconds |
 
-The immutable PR manifest, hosted CI artifact, and six AI review decisions
-remain pending. Required fixes will be additional commits on the same PR
-followed by a new immutable review pass.
+Hosted run `29259147216` on the initial PR head caught the changed save
+confirmation before merge. The stable Journey 11 text was restored without
+removing the visible or typed revision. The hosted rerun and a fresh immutable
+AI review over the corrected head remain pending.
 
 ## Review Plan
 

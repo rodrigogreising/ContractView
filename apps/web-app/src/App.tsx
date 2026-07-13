@@ -171,7 +171,7 @@ export function App() {
   }
   async function saveConfiguration(value: Configuration) {
     if (!contractId) return;
-    try { const saved = await saveConfigurationDraft(contractId, configurationDraftRevision, value); setConfiguration(saved.configuration); setConfigurationDraftRevision(saved.revision); setMessage(`Configuration draft revision ${saved.revision} saved and validated.`); }
+    try { const saved = await saveConfigurationDraft(contractId, configurationDraftRevision, value); setConfiguration(saved.configuration); setConfigurationDraftRevision(saved.revision); setMessage("Configuration draft saved and validated."); }
     catch (error) { await refreshConfiguration("configuration_administrator").catch(() => undefined); setMessage(errorText(error, "Configuration save failed")); }
   }
   async function govern(path: string, payload: Record<string, string | number>, success: string) {
