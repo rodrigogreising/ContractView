@@ -219,6 +219,47 @@
       ]
     }
   },
+  "SUB-76": {
+    "projectStatus": "Build",
+    "certificationRationale": "Profile execution must prove executable shared ontology, Configuration/Extraction ownership, exact approved activation, deterministic multilingual fixture evaluation and OCR routing, immutable version evidence, safe unknown handling, and downstream reproducibility before the administrator workspace begins.",
+    "includeJourneyInCleanRuntime": false,
+    "reviewSkills": [
+      "cv-review-requirements-traceability",
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-implementation-tests"
+    ],
+    "riskAndGateLabels": [
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:config-governance",
+      "risk:auditability",
+      "risk:configuration-drift",
+      "risk:sensitive-data"
+    ],
+    "riskCoverage": {
+      "gate:architecture": [
+        "Five generated shared registries, migration 025, 57 table owners, 197 named statements, owner repositories, and two immutable query collaborations enforce Configuration/Extraction separation"
+      ],
+      "gate:security-privacy": [
+        "Positive closed synthetic fixtures, local OCR, canonical user-organization and contract-role constraints, wrong-role zero-mutation denial, and safe unknown routing preserve the approved data and tenant boundary"
+      ],
+      "gate:config-governance": [
+        "Immutable fixture evaluation, assigned-human approval, exact id/version/hash validation, prospective active pointers, and successor evidence enforce the complete profile lifecycle"
+      ],
+      "risk:auditability": [
+        "Immutable artifact/OCR/fingerprint/match/field evidence and exact profile/configuration/fingerprint references in validation manifests reconstruct every recognized and safely routed document"
+      ],
+      "risk:configuration-drift": [
+        "Pinned OCR/parser/fingerprint/evaluation versions, content hashes, exact active-profile joins, deterministic replay, and immutable runtime match records prevent silent reinterpretation"
+      ],
+      "risk:sensitive-data": [
+        "Deterministic generated English/Spanish fixtures use the closed synthetic catalog and reserved identities; no hosted model, external credential, branding, customer data, or blacklist-based acceptance is introduced"
+      ]
+    }
+  },
   "SUB-80": {
     "projectStatus": "Design Review",
     "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",

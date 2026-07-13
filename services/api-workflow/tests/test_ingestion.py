@@ -25,7 +25,7 @@ def ensure_active_configuration():
     ("ledger.csv", "text/csv", "ledger_import", "completed"),
     ("ledger.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ledger_import", "completed"),
     ("invoice.pdf", "application/pdf", "evidence_extract", "completed"),
-    ("receipt.png", "image/png", "evidence_extract", "failed"),
+    ("receipt.png", "image/png", "evidence_extract", "completed"),
     ("receipt.jpg", "image/jpeg", "evidence_extract", "failed"),
 ])
 def test_allowed_uploads_queue_run_and_reach_visible_terminal_status(filename, media_type, job_type, terminal_status):

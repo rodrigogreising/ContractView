@@ -180,3 +180,12 @@ references after a successor profile activates.
 
 The shared-contract registry changes needed to make these concepts executable
 belong to SUB-75 and SUB-76. SUB-74 defines and tests the design contract only.
+
+SUB-76 supplies those executable contracts. `DocumentProfileContract`,
+`ProfileFixtureSetContract`, `ProfileEvaluationContract`,
+`DocumentFingerprintContract`, `DocumentClusterProjectionContract`,
+`ProfileMatchResultContract`, and `DocumentIntakeResultContract` share the
+closed lifecycle, reason, actor/resource, typed-field, event, and
+`VersionReference` vocabularies. Runtime records distinguish editable or
+prospective configuration pointers from immutable profile, evaluation,
+fingerprint, match, and extraction evidence.

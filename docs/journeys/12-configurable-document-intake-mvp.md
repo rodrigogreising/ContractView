@@ -192,3 +192,28 @@ configuration path proves the governance mechanics Journey 12 will reuse:
 This checkpoint does not claim English/Spanish profile fixtures, deterministic
 profile matching, changed/unknown routing, or five-role Journey 12 completion;
 those remain SUB-76 through SUB-78 acceptance criteria.
+
+## SUB-76 Deterministic Intake Checkpoint
+
+The executable backend now proves the Journey 12 profile and routing portion:
+
+- immutable English and Spanish profile definitions each have two supported
+  deterministic fixtures plus shared changed/unknown negative fixtures;
+- pinned local `tesseract-5.5.0-eng+spa` and the versioned parser produce exact
+  normalized fields and source lines for real English and Spanish PDFs;
+- identical declared inputs reproduce fingerprints, normalized drafts, match
+  results, and content hashes;
+- changed and unknown layouts return `needs_profile_review`, retain artifact,
+  raw OCR, fingerprint, match, and noncanonical cluster evidence, and create no
+  fields, canonical expense, validation run, assignment, or activation;
+- administrator confirmation creates a draft association only, while exact
+  test evidence and human approval remain prerequisites for prospective profile
+  activation; and
+- a tested and approved configuration rollback can reactivate an exact
+  historical profile reference through a new append-only rollback-activation
+  event; and
+- validation manifests retain the exact profile, configuration, fingerprint,
+  OCR, parser, and artifact references used by recognized drafts.
+
+This checkpoint does not claim the complete administrator workspace or the
+five-role browser journey. Those remain SUB-77 and SUB-78.

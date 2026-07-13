@@ -348,3 +348,20 @@ machine registered, it is executable only through the read-model repository,
 and its result is marked noncanonical. No command imports it, and no source
 owner is written. This is the permitted audit/reporting collaboration seam,
 not an arbitrary cross-capability SQL exception.
+
+## SUB-76 Profile And Extraction Boundary Decision
+
+Migration 025 assigns profile lifecycle/evaluation/activation records to
+Configuration and fingerprint/cluster/match records to Extraction. The named
+statement catalog, generated statement ids, table-owner catalog, module map,
+and dependency policy reject arbitrary cross-capability access. The two
+permitted collaborations are immutable query ports: active profile resolution
+for Extraction and cluster-projection lookup for an authorized Configuration
+draft-association command.
+
+The local OCR adapter remains behind the existing replaceable extraction port.
+Fingerprinting, field normalization, exact matching, safe routing, fixture
+evaluation, and result hashing are pure deterministic domain functions. They
+cannot validate reimbursement compliance, mutate an invoice, assign a profile,
+or perform a human lifecycle action. Profile/version and runtime evidence is
+append-only; only the prospective active pointer is replaceable.

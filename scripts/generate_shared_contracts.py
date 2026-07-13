@@ -13,6 +13,7 @@ SOURCES = {
     "domain": ROOT / "packages/domain-types/contract.json",
     "rules": ROOT / "packages/rule-contracts/contract.json",
     "configuration": ROOT / "packages/configuration-contracts/contract.json",
+    "extraction": ROOT / "packages/extraction-contracts/contract.json",
     "events": ROOT / "packages/event-contracts/contract.json",
 }
 PYTHON_OUTPUT = ROOT / "services/api-workflow/app/domain/shared_contracts.py"
@@ -261,7 +262,7 @@ def main() -> int:
         print("Generated contracts are stale: " + ", ".join(stale))
         return 1
     if args.check:
-        print("Shared contract generation check passed (4 registries, 2 consumers).")
+        print(f"Shared contract generation check passed ({len(SOURCES)} registries, 2 consumers).")
     return 0
 
 

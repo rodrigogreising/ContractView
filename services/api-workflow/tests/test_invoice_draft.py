@@ -22,7 +22,7 @@ FILES=Path("/app/fixtures/files")
 
 class InvoiceAdapter:
     provider="invoice-fixture-provider"; model="invoice-fixture-model-v1"
-    def extract(self,*_): return OcrResponse(self.provider,self.model,"Synthetic Program Supplies Vendor B\nDate: 2026-06-18\nWorkshop materials and learning kits $1,820.00\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
+    def extract(self,*_): return OcrResponse(self.provider,self.model,"Synthetic Program Supplies Vendor B\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-SUP-0618\nDate: 2026-06-18\nVENDOR INVOICE\nDescription: Workshop materials and learning kits\nAmount: $1,820.00\nPrinted subtotal: $1,820.00\nApproved adjustment: $-540.00\nApproved claim total: $1,280.00\nAPPROVAL NOTE\nClaim only the approved adjusted total; exclude the non-program materials adjustment.\nExpense reference: VENDOR-INVOICE-EXP-003\n",Decimal("0.9500"))
 
 def complete_job(job,adapter=None):
     claimed=claim_next_job(); assert claimed and claimed.id==job.id

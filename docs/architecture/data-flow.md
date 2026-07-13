@@ -266,3 +266,19 @@ trusts a client projection or lifecycle label alone; it revalidates the exact
 stored payload/test/approval evidence. Diff, impact, and reference responses
 are recomputable views with `canonical=false` and deterministic projection
 hashes. They are display and audit evidence, never command inputs.
+
+## SUB-76 Executable Intake Evidence Flow
+
+The implementation resolves the active configuration and exact content-hashed
+profile versions before parsing. Pinned local OCR output is retained as an
+immutable generated artifact. The deterministic parser emits source-located
+typed fields and a canonical fingerprint. Exact matches append route evidence
+and proposed fields; nonmatches append the same artifact/OCR/fingerprint/route
+evidence plus a noncanonical cluster projection but no fields or canonical
+expense.
+
+The validation-input manifest reads only immutable extraction references and
+records the exact configuration version, profile version/hash, fingerprint
+specification/result, OCR model, parser, and source artifacts. Re-execution
+with the same declared inputs reproduces normalized fields, fingerprint, match
+result, and downstream manifest identity.

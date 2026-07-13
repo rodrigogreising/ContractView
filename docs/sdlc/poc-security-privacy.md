@@ -470,3 +470,26 @@ production configuration console, sessions lack production SSO/MFA controls,
 and retained evidence has no hosted retention/legal-hold claim. These changes
 do not authorize real data, public writes, external credentials, production
 activation, or cross-tenant disclosure.
+
+## SUB-76 Deterministic Profile Security Decision
+
+SUB-76 processes only the closed synthetic English/Spanish fixture catalog in
+the local Compose boundary. Pinned Tesseract reads source bytes locally; no
+hosted model, external credential, customer identity, or network data transfer
+is introduced. Fixture acceptance uses positive catalog and generator
+provenance with deterministic hashes, not a forbidden-term blacklist.
+
+Every profile command first resolves the persisted contract and explicit
+Configuration Administrator assignment. Database constraints separately bind
+authority evidence to that contract/role assignment and to the actor's
+canonical user organization. Wrong-role cluster confirmation and profile
+mutation fail without changing profile, active-assignment, invoice, validation,
+or cluster-association counts.
+
+Changed, unknown, incomplete, and unmatched documents are untrusted inputs.
+They retain immutable artifact/OCR/fingerprint/match evidence and a
+noncanonical suggestion but create no canonical expense or automatic profile
+assignment. Profile, evaluation, approval, lifecycle, fingerprint, match, and
+association records reject update/delete. Residual risks remain the local POC
+identity, malware-scanning, backup, legal-hold, SSO/MFA, and production
+hardening exclusions.

@@ -4,9 +4,11 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import json
+import re
 import uuid
 
 from .access_scope import configuration_scope
+from .document_profiles import InvalidDocumentProfile, activate_profile_references_tx
 from ...authorization import Action, Actor, execute_authorized, require_permission
 from .provenance import append_event_tx
 from ...shared_contracts import (
@@ -161,6 +163,28 @@ def validate_configuration(payload: dict) -> None:
         or not isinstance(package.get("includeManifest"), bool)
     ):
         raise InvalidConfiguration("Package labels and settings are required")
+    profile_references = payload.get("documentProfiles")
+    if (
+        not isinstance(profile_references, list)
+        or not profile_references
+        or any(
+            not isinstance(reference, dict)
+            or reference.get("kind") != "document_profile"
+            or not isinstance(reference.get("id"), str)
+            or not reference["id"].strip()
+            or isinstance(reference.get("version"), bool)
+            or not isinstance(reference.get("version"), int)
+            or reference["version"] < 1
+            or not isinstance(reference.get("sha256"), str)
+            or not re.fullmatch(r"[a-f0-9]{64}", reference["sha256"])
+            for reference in profile_references
+        )
+        or len({reference["id"] for reference in profile_references})
+        != len(profile_references)
+    ):
+        raise InvalidConfiguration(
+            "Exact document profile id, version, and hash references are required"
+        )
 
 
 def _test_report(payload: dict) -> dict:
@@ -171,6 +195,7 @@ def _test_report(payload: dict) -> dict:
         {"code": "EVIDENCE_REQUIREMENTS", "passed": True},
         {"code": "DETERMINISTIC_RULE_SET", "passed": True},
         {"code": "WORKFLOW_AND_TEMPLATE", "passed": True},
+        {"code": "DOCUMENT_PROFILE_REFERENCES", "passed": True},
     ]
     return {
         "suiteVersion": TEST_SUITE_VERSION,
@@ -596,6 +621,17 @@ def activate_version(actor: Actor, version_id: str, rationale: str) -> dict:
                 raise InvalidConfiguration(
                     "Supersede the current active version with this approved successor"
                 )
+            try:
+                activate_profile_references_tx(
+                    connection,
+                    actor,
+                    current["contractId"],
+                    version_id,
+                    current["configuration"]["documentProfiles"],
+                    rationale,
+                )
+            except InvalidDocumentProfile as error:
+                raise InvalidConfiguration(str(error)) from error
             connection.configuration.execute(
                 Statement.CONFIGURATION_WRITE_CONFIGURATION_ACTIVE_VERSIONS_013,
                 (
@@ -655,6 +691,20 @@ def supersede_version(
             ).fetchone()
             if not active or active[0] != active_version_id:
                 raise InvalidConfiguration("The predecessor is not the current active version")
+            try:
+                activate_profile_references_tx(
+                    connection,
+                    actor,
+                    successor["contractId"],
+                    successor_version_id,
+                    successor["configuration"]["documentProfiles"],
+                    rationale,
+                    activation_action=(
+                        "rollback" if successor["rollbackTargetId"] else "activate"
+                    ),
+                )
+            except InvalidDocumentProfile as error:
+                raise InvalidConfiguration(str(error)) from error
             cursor = connection.configuration.execute(
                 Statement.CONFIGURATION_WRITE_CONFIGURATION_ACTIVE_VERSIONS_016,
                 (

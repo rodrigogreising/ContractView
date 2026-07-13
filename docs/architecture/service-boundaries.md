@@ -362,6 +362,21 @@ The owner-to-owner routing contract is closed: exact active matches return
 `recognized_profile_draft`; changed or unknown layouts return
 `needs_profile_review` with retained evidence and no canonical expense.
 
+### SUB-76 Enforced Profile Boundary
+
+Configuration repositories own profile versions, fixtures, evaluations,
+approvals, lifecycle events, active assignments, and draft cluster
+associations. Extraction repositories own fingerprints, cluster projections,
+match results, OCR/extraction runs, and draft fields. The application unit of
+work exposes separate owner repositories; no command receives a raw
+connection or generic query surface.
+
+Extraction may consume the exact active profile/configuration set through one
+named immutable query port. Configuration may read a cluster projection only
+to confirm an assigned administrator's draft association. Neither collaboration
+permits a cross-owner write. Shared `extraction-contracts` describes the seam
+without becoming a runtime owner.
+
 ## Explainable Configuration Read Boundary (SUB-75)
 
 | Concern | Owner | Interface | Boundary control |

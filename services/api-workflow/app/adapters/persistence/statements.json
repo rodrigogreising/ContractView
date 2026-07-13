@@ -788,23 +788,6 @@
       "configuration_active_versions"
     ]
   },
-  "EXTRACTION_REVIEW_READ_ARTIFACTS_EXTRACTION_FIELDS_EXTRACTION_RUNS_001": {
-    "consumerCapability": "extraction",
-    "kind": "declared-read-model",
-    "operation": "read",
-    "owner": "extraction",
-    "readTables": [
-      "artifacts",
-      "extraction_fields",
-      "extraction_runs"
-    ],
-    "sourceOwners": [
-      "artifacts",
-      "extraction"
-    ],
-    "sql": "select r.id,r.source_artifact_id,a.filename,r.provider,r.model,r.status,r.routing_reason,\n                      f.id,f.field_name,f.proposed_value,f.reviewed_value,f.confidence,f.source_location,f.review_status\n               from extraction_runs r join artifacts a on a.id=r.source_artifact_id\n               join extraction_fields f on f.extraction_run_id=r.id\n               where r.contract_id=%s and r.status='needs_review' order by r.created_at,f.field_name",
-    "writeTables": []
-  },
   "EXTRACTION_REVIEW_READ_EXTRACTION_FIELDS_006": {
     "consumerCapability": "extraction",
     "kind": "repository",
@@ -2321,16 +2304,21 @@
     "owner": "validation",
     "readTables": [
       "artifacts",
+      "configuration_versions",
+      "document_fingerprints",
+      "document_profile_match_results",
+      "document_profile_versions",
       "extraction_fields",
       "extraction_runs",
       "invoice_lines"
     ],
     "sourceOwners": [
       "artifacts",
+      "configuration",
       "extraction",
       "invoices"
     ],
-    "sql": "select distinct x.source_artifact_id,sa.sha256,x.raw_response_artifact_id,ra.sha256,x.provider,x.model,x.prompt_version,x.parser_version,x.schema_version from invoice_lines l join extraction_fields f on f.id=l.extraction_field_id join extraction_runs x on x.id=f.extraction_run_id join artifacts sa on sa.id=x.source_artifact_id left join artifacts ra on ra.id=x.raw_response_artifact_id where l.invoice_version_id=%s order by x.source_artifact_id",
+    "sql": "select distinct x.source_artifact_id,sa.sha256,x.raw_response_artifact_id,ra.sha256,x.provider,x.model,x.prompt_version,x.parser_version,x.schema_version,p.id,p.version,p.content_hash,m.configuration_version_id,cv.version,d.id,d.specification_version,d.fingerprint_sha256 from invoice_lines l join extraction_fields ef on ef.id=l.extraction_field_id join extraction_runs x on x.id=ef.extraction_run_id join artifacts sa on sa.id=x.source_artifact_id left join artifacts ra on ra.id=x.raw_response_artifact_id join document_profile_match_results m on m.extraction_run_id=x.id join document_profile_versions p on p.id=m.profile_version_id join configuration_versions cv on cv.id=m.configuration_version_id join document_fingerprints d on d.extraction_run_id=x.id where l.invoice_version_id=%s order by x.source_artifact_id",
     "writeTables": []
   },
   "VALIDATION_READ_VALIDATION_INPUT_MANIFESTS_010": {
@@ -2568,6 +2556,196 @@
     "sourceOwners": ["provenance"],
     "sql": "insert into provenance_relations(id,contract_id,organization_id,relation_type,source_reference,target_reference,schema_version,actor_id,actor_role,actor_organization_id,reason_code,relation_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) on conflict (relation_type,source_reference,target_reference) do nothing",
     "writeTables": ["provenance_relations"]
+  },
+  "DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_VERSIONS_002": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["document_profile_versions"],
+    "sourceOwners": ["configuration"],
+    "sql": "select id from document_profile_versions where contract_id=%s order by profile_key,version",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_ACTIVE_ASSIGNMENTS_DOCUMENT_PROFILE_APPROVALS_DOCUMENT_PROFILE_EVALUATIONS_DOCUMENT_PROFILE_FIXTURE_SETS_DOCUMENT_PROFILE_LIFECYCLE_EVENTS_DOCUMENT_PROFILE_VERSIONS_001": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["document_profile_active_assignments", "document_profile_approvals", "document_profile_evaluations", "document_profile_fixture_sets", "document_profile_lifecycle_events", "document_profile_versions"],
+    "sourceOwners": ["configuration"],
+    "sql": "select v.id,v.contract_id,v.profile_key,v.version,v.payload,v.content_hash,v.predecessor_version_id,v.created_by,v.created_role,v.created_organization_id,v.created_at,l.state,l.action,l.rationale,l.event_hash,l.occurred_at,f.id,f.version,f.cases,f.content_hash,e.id,e.suite_version,e.ocr_version,e.parser_version,e.results,e.supported_field_exactness,e.source_location_exactness,e.unknown_safe_routing_rate,e.passed,e.result_hash,e.tested_by,e.tested_role,e.tested_organization_id,e.rationale,e.created_at,a.id,a.evaluation_id,a.approved_by,a.approved_role,a.approved_organization_id,a.rationale,a.approval_hash,a.approved_at,x.configuration_version_id,x.activated_at from document_profile_versions v join lateral (select state,action,rationale,event_hash,occurred_at from document_profile_lifecycle_events where profile_version_id=v.id order by sequence desc limit 1) l on true join document_profile_fixture_sets f on f.profile_version_id=v.id left join document_profile_evaluations e on e.profile_version_id=v.id left join document_profile_approvals a on a.profile_version_id=v.id left join document_profile_active_assignments x on x.profile_version_id=v.id where v.id=%s",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_VERSIONS_003": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["document_profile_versions"],
+    "sourceOwners": ["configuration"],
+    "sql": "select coalesce(max(version),0)+1 from document_profile_versions where contract_id=%s and profile_key=%s",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_VERSIONS_004": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_versions(id,contract_id,profile_key,version,payload,content_hash,predecessor_version_id,created_by,created_role,created_organization_id) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_versions"]
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_FIXTURE_SETS_005": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_fixture_sets(id,profile_version_id,contract_id,version,cases,content_hash,created_by) values (%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_fixture_sets"]
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_EVALUATIONS_006": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_evaluations(id,profile_version_id,fixture_set_id,contract_id,suite_version,ocr_version,parser_version,results,supported_field_exactness,source_location_exactness,unknown_safe_routing_rate,passed,result_hash,tested_by,tested_role,tested_organization_id,rationale) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_evaluations"]
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_APPROVALS_007": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_approvals(id,profile_version_id,evaluation_id,contract_id,approved_by,approved_role,approved_organization_id,rationale,approval_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_approvals"]
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_LIFECYCLE_EVENTS_008": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_lifecycle_events(id,profile_version_id,contract_id,state,action,actor_id,actor_role,actor_organization_id,rationale,evaluation_id,approval_id,predecessor_version_id,successor_version_id,configuration_version_id,event_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_lifecycle_events"]
+  },
+  "EXTRACTION_READ_CONFIGURATION_ACTIVE_VERSIONS_CONFIGURATION_VERSIONS_DOCUMENT_PROFILE_VERSIONS_004": {
+    "consumerCapability": "extraction",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["configuration_active_versions", "configuration_versions", "document_profile_versions"],
+    "sourceOwners": ["configuration"],
+    "sql": "select cv.id,cv.version,v.id,v.version,v.payload,v.content_hash from configuration_active_versions ca join configuration_versions cv on cv.id=ca.configuration_version_id join jsonb_array_elements(coalesce(cv.payload->'documentProfiles','[]'::jsonb)) r on true join document_profile_versions v on v.id=r->>'id' and v.version=(r->>'version')::integer and v.content_hash=r->>'sha256' where ca.contract_id=%s order by v.profile_key",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_ACTIVE_ASSIGNMENTS_009": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["document_profile_active_assignments"],
+    "sourceOwners": ["configuration"],
+    "sql": "select profile_version_id,configuration_version_id from document_profile_active_assignments where contract_id=%s and profile_key=%s",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_ACTIVE_ASSIGNMENTS_010": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_active_assignments(contract_id,profile_key,profile_version_id,configuration_version_id,activated_by,activated_role,activated_organization_id) values (%s,%s,%s,%s,%s,%s,%s) on conflict (contract_id,profile_key) do update set profile_version_id=excluded.profile_version_id,configuration_version_id=excluded.configuration_version_id,activated_by=excluded.activated_by,activated_role=excluded.activated_role,activated_organization_id=excluded.activated_organization_id,activated_at=now()",
+    "writeTables": ["document_profile_active_assignments"]
+  },
+  "DOCUMENT_PROFILES_READ_DOCUMENT_CLUSTER_PROJECTIONS_011": {
+    "consumerCapability": "configuration",
+    "kind": "application-query-port",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": ["document_cluster_projections"],
+    "sourceOwners": ["extraction"],
+    "sql": "select cluster_key,contract_id from document_cluster_projections where id=%s",
+    "writeTables": []
+  },
+  "DOCUMENT_PROFILES_WRITE_DOCUMENT_PROFILE_CLUSTER_ASSOCIATIONS_012": {
+    "consumerCapability": "configuration",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "configuration",
+    "readTables": [],
+    "sourceOwners": ["configuration"],
+    "sql": "insert into document_profile_cluster_associations(id,contract_id,cluster_key,profile_key,status,confirmed_by,confirmed_role,confirmed_organization_id,rationale,association_hash) values (%s,%s,%s,%s,'draft',%s,%s,%s,%s,%s) returning created_at",
+    "writeTables": ["document_profile_cluster_associations"]
+  },
+  "DOCUMENT_PROFILES_READ_ARTIFACTS_DOCUMENT_CLUSTER_PROJECTIONS_DOCUMENT_FINGERPRINTS_DOCUMENT_PROFILE_CLUSTER_ASSOCIATIONS_013": {
+    "consumerCapability": "configuration",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "configuration",
+    "readTables": ["artifacts", "document_cluster_projections", "document_fingerprints", "document_profile_cluster_associations"],
+    "sourceOwners": ["artifacts", "configuration", "extraction"],
+    "sql": "select p.id,p.cluster_key,p.language_tag,p.status,p.canonical,p.projection_hash,p.created_at,f.id,f.specification_version,f.fingerprint_sha256,a.id,a.filename,a.sha256,coalesce(s.member_count,1),c.id,c.profile_key,c.status,c.confirmed_by,c.confirmed_role,c.confirmed_organization_id,c.rationale,c.association_hash,c.created_at from document_cluster_projections p join document_fingerprints f on f.id=p.fingerprint_id join artifacts a on a.id=p.source_artifact_id left join (select contract_id,cluster_key,count(*) member_count from document_cluster_projections group by contract_id,cluster_key) s on s.contract_id=p.contract_id and s.cluster_key=p.cluster_key left join document_profile_cluster_associations c on c.contract_id=p.contract_id and c.cluster_key=p.cluster_key where p.contract_id=%s order by p.created_at,p.id",
+    "writeTables": []
+  },
+  "EXTRACTION_WRITE_DOCUMENT_FINGERPRINTS_004": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": ["extraction"],
+    "sql": "insert into document_fingerprints(id,extraction_run_id,source_artifact_id,contract_id,artifact_hash,specification_version,algorithm,language_tag,signals,fingerprint_sha256,ocr_version,parser_version) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_fingerprints"]
+  },
+  "EXTRACTION_WRITE_DOCUMENT_PROFILE_MATCH_RESULTS_005": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": ["extraction"],
+    "sql": "insert into document_profile_match_results(id,extraction_run_id,fingerprint_id,contract_id,outcome,match_kind,profile_version_id,configuration_version_id,ledger_match_outcome,ledger_expense_key,reason,result_hash) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    "writeTables": ["document_profile_match_results"]
+  },
+  "EXTRACTION_WRITE_DOCUMENT_CLUSTER_PROJECTIONS_006": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "write",
+    "owner": "extraction",
+    "readTables": [],
+    "sourceOwners": ["extraction"],
+    "sql": "insert into document_cluster_projections(id,contract_id,fingerprint_id,source_artifact_id,cluster_key,language_tag,status,canonical,projection_hash) values (%s,%s,%s,%s,%s,%s,'suggested',false,%s)",
+    "writeTables": ["document_cluster_projections"]
+  },
+  "EXTRACTION_READ_EXPENSE_ROWS_007": {
+    "consumerCapability": "extraction",
+    "kind": "repository",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": ["expense_rows"],
+    "sourceOwners": ["extraction"],
+    "sql": "select expense_key,expense_date::text,vendor,amount::text from expense_rows where contract_id=%s and expense_key=%s order by id",
+    "writeTables": []
+  },
+  "EXTRACTION_REVIEW_READ_ARTIFACTS_CONFIGURATION_VERSIONS_DOCUMENT_CLUSTER_PROJECTIONS_DOCUMENT_FINGERPRINTS_DOCUMENT_PROFILE_MATCH_RESULTS_DOCUMENT_PROFILE_VERSIONS_EXTRACTION_FIELDS_EXTRACTION_RUNS_007": {
+    "consumerCapability": "extraction",
+    "kind": "declared-read-model",
+    "operation": "read",
+    "owner": "extraction",
+    "readTables": ["artifacts", "configuration_versions", "document_cluster_projections", "document_fingerprints", "document_profile_match_results", "document_profile_versions", "extraction_fields", "extraction_runs"],
+    "sourceOwners": ["artifacts", "configuration", "extraction"],
+    "sql": "select r.id,r.source_artifact_id,a.filename,r.provider,r.model,r.status,r.routing_reason,m.outcome,m.match_kind,m.ledger_match_outcome,m.ledger_expense_key,m.reason,m.result_hash,v.id,v.version,v.profile_key,cv.id,cv.version,f.id,f.specification_version,f.language_tag,f.fingerprint_sha256,c.id,c.cluster_key,c.projection_hash,x.id,x.field_name,x.proposed_value,x.reviewed_value,x.confidence,x.source_location,x.review_status from extraction_runs r join artifacts a on a.id=r.source_artifact_id left join document_profile_match_results m on m.extraction_run_id=r.id left join document_profile_versions v on v.id=m.profile_version_id left join configuration_versions cv on cv.id=m.configuration_version_id left join document_fingerprints f on f.extraction_run_id=r.id left join document_cluster_projections c on c.fingerprint_id=f.id left join extraction_fields x on x.extraction_run_id=r.id where r.contract_id=%s order by r.created_at,x.field_name",
+    "writeTables": []
   },
   "WORKER_HEALTH_READ_WORKER_HEARTBEAT_001": {
     "consumerCapability": "platform",

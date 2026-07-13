@@ -28,8 +28,8 @@ class TesseractCliAdapter:
                     raise ExtractionProviderError(result.stderr.strip() or "PDF rendering failed")
             try:
                 version_result = subprocess.run(["tesseract", "--version"], capture_output=True, text=True, timeout=10)
-                text_result = subprocess.run(["tesseract", str(image), "stdout", "--psm", "6"], capture_output=True, text=True, timeout=30)
-                tsv_result = subprocess.run(["tesseract", str(image), "stdout", "--psm", "6", "tsv"], capture_output=True, text=True, timeout=30)
+                text_result = subprocess.run(["tesseract", str(image), "stdout", "-l", "eng+spa", "--psm", "6"], capture_output=True, text=True, timeout=30)
+                tsv_result = subprocess.run(["tesseract", str(image), "stdout", "-l", "eng+spa", "--psm", "6", "tsv"], capture_output=True, text=True, timeout=30)
             except (OSError, subprocess.TimeoutExpired) as error:
                 raise ExtractionProviderError(f"OCR provider unavailable: {error}") from error
             if text_result.returncode != 0 or tsv_result.returncode != 0:
@@ -48,4 +48,4 @@ class TesseractCliAdapter:
                 raise InvalidExtractionResponse("OCR returned no usable text")
             confidence = (sum(confidences, Decimal("0")) / len(confidences) / Decimal("100")).quantize(Decimal("0.0001"))
             runtime_version = version_result.stdout.splitlines()[0].split(maxsplit=1)[1] if version_result.returncode == 0 else "unknown"
-            return OcrResponse(self.provider, f"tesseract-{runtime_version}-eng", text_result.stdout, confidence)
+            return OcrResponse(self.provider, f"tesseract-{runtime_version}-eng+spa", text_result.stdout, confidence)

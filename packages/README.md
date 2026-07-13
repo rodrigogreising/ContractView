@@ -39,6 +39,7 @@ Future shared package tests must certify:
 - [rule-contracts](rule-contracts/README.md)
 - [event-contracts](event-contracts/README.md)
 - [configuration-contracts](configuration-contracts/README.md)
+- [extraction-contracts](extraction-contracts/README.md)
 - [infrastructure](infrastructure/README.md)
 - [persistence](persistence/README.md)
 - [test-fixtures](test-fixtures/README.md)

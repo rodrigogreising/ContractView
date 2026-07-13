@@ -25,6 +25,17 @@ from ..configuration import (
     test_draft,
     update_draft,
 )
+from ..document_profiles import (
+    InvalidDocumentProfile,
+    approve_profile,
+    confirm_cluster,
+    create_profile_draft,
+    list_cluster_suggestions,
+    list_profiles,
+    profile_detail,
+    retire_profile,
+    test_profile,
+)
 from ..validation import execute_validation,latest_validation
 from ..budget import budget_snapshot
 from ..finding_resolution import InvalidResolution,current_findings,resolve_finding
@@ -86,6 +97,13 @@ class SupersedeConfigurationRequest(RationaleRequest):
 
 class RollbackConfigurationRequest(RationaleRequest):
     targetVersionId: str
+
+class DocumentProfileDraftRequest(RationaleRequest):
+    definition: dict
+    fixtures: list[dict]
+
+class ClusterConfirmationRequest(RationaleRequest):
+    profileKey: str
 
 def current_identity(contractview_session: str | None = Cookie(default=None)):
     resolved = resolve_session(contractview_session)
@@ -296,6 +314,60 @@ def active_configuration(contractId: str,resolved=Depends(current_identity)):
     actor,_=resolved
     try:return {"configuration":active_summary(actor,contractId)}
     except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+
+@app.get("/configuration/profiles")
+def configuration_profiles(contractId:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profiles":list_profiles(actor,contractId)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+
+@app.get("/configuration/profiles/{profile_version_id}")
+def configuration_profile(profile_version_id:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profile":profile_detail(actor,profile_version_id)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=404,detail=str(error)) from error
+
+@app.post("/configuration/profiles/draft")
+def create_configuration_profile(contractId:str,payload:DocumentProfileDraftRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profile":create_profile_draft(actor,contractId,payload.definition,payload.fixtures,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/profiles/{profile_version_id}/test")
+def test_configuration_profile(profile_version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profile":test_profile(actor,profile_version_id,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/profiles/{profile_version_id}/approve")
+def approve_configuration_profile(profile_version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profile":approve_profile(actor,profile_version_id,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.post("/configuration/profiles/{profile_version_id}/retire")
+def retire_configuration_profile(profile_version_id:str,payload:RationaleRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"profile":retire_profile(actor,profile_version_id,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=422,detail=str(error)) from error
+
+@app.get("/configuration/document-clusters")
+def configuration_document_clusters(contractId:str,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"clusters":list_cluster_suggestions(actor,contractId)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+
+@app.post("/configuration/document-clusters/{cluster_projection_id}/confirm")
+def confirm_configuration_document_cluster(cluster_projection_id:str,payload:ClusterConfirmationRequest,resolved=Depends(current_identity)):
+    actor,_=resolved
+    try:return {"association":confirm_cluster(actor,cluster_projection_id,payload.profileKey,payload.rationale)}
+    except ForbiddenError as error:raise HTTPException(status_code=403,detail="Permission denied") from error
+    except InvalidDocumentProfile as error:raise HTTPException(status_code=422,detail=str(error)) from error
 
 @app.post("/invoices/{invoice_id}/validation")
 def run_validation(invoice_id:str,resolved=Depends(current_identity)):

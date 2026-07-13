@@ -222,6 +222,25 @@ def extraction_components(
             prompt_version=row[6],
             parser_version=row[7],
             schema_version=row[8],
+            document_profile=(
+                VersionReference(
+                    kind="document_profile", id=row[9], version=row[10], sha256=row[11]
+                )
+                if row[9]
+                else None
+            ),
+            configuration_version=(
+                VersionReference(kind="configuration", id=row[12], version=row[13])
+                if row[12]
+                else None
+            ),
+            document_fingerprint=(
+                VersionReference(
+                    kind="document_fingerprint", id=row[14], version=row[15], sha256=row[16]
+                )
+                if row[14]
+                else None
+            ),
         )
         for row in rows
     ]

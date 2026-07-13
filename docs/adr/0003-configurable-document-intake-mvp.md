@@ -196,6 +196,36 @@ their existing scoped, read-only active-configuration or audit projections.
 The bounded evidence panel delivered here proves the DTO seam; SUB-77 remains
 responsible for the complete administrator workspace.
 
+## SUB-76 Implementation Note: Executable Profiles And Safe Intake
+
+SUB-76 makes the profile composition executable through shared configuration,
+domain, event, rule, and extraction contracts with generated Python and
+TypeScript consumers. Configuration owns immutable profile definitions,
+fixtures, evaluations, approvals, lifecycle events, active pointers, and draft
+cluster associations. Extraction owns OCR, fingerprints, noncanonical cluster
+projections, exact match records, and draft fields. The ownership catalog and
+named statements enforce this without a new deployable.
+
+The runtime uses pinned local English/Spanish Tesseract plus versioned,
+deterministic parsing and fingerprint specifications. Only an exact active
+profile fingerprint with complete required fields produces a draft. Changed,
+unknown, or incomplete input retains immutable artifact/OCR/fingerprint/match
+evidence and routes to `needs_profile_review` with no canonical expense,
+validation, assignment, or activation mutation.
+
+Profile activation binds exact id/version/hash, successful immutable fixture
+evidence, and assigned-human approval to the active configuration transaction.
+Authority evidence independently proves canonical user organization and
+contract-role assignment. Runtime match records and validation manifests carry
+the exact configuration, profile, OCR/parser, and fingerprint identities, so a
+future profile successor cannot reinterpret prior evidence.
+
+A configuration rollback that restores an exact historical profile reference
+is a new prospective activation, not history mutation. It must pass the normal
+tested/approved configuration rollback gate and append an explicit profile
+rollback-activation event; prior active, superseded, and retired events remain
+unchanged.
+
 ## Related Evidence
 
 - `docs/product/document-intake-mvp-charter.md`

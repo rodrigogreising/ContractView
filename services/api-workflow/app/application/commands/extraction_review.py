@@ -19,13 +19,23 @@ def list_extractions(actor: Actor, contract_id: str) -> list[dict]:
         contract_scope(actor, contract_id, f"extractions:{contract_id}", ResourceKind.JOB),
     )
     with database() as connection:
-        rows = connection.read_models.execute(Statement.EXTRACTION_REVIEW_READ_ARTIFACTS_EXTRACTION_FIELDS_EXTRACTION_RUNS_001, (contract_id,)
+        rows = connection.read_models.execute(Statement.EXTRACTION_REVIEW_READ_ARTIFACTS_CONFIGURATION_VERSIONS_DOCUMENT_CLUSTER_PROJECTIONS_DOCUMENT_FINGERPRINTS_DOCUMENT_PROFILE_MATCH_RESULTS_DOCUMENT_PROFILE_VERSIONS_EXTRACTION_FIELDS_EXTRACTION_RUNS_007, (contract_id,)
         ).fetchall()
     grouped: dict[str, dict] = {}
     for row in rows:
         require_permission(actor, Action.READ, extraction_scope(actor, row[0]))
-        item = grouped.setdefault(row[0], {"id":row[0],"sourceArtifactId":row[1],"filename":row[2],"provider":row[3],"model":row[4],"status":row[5],"routingReason":row[6],"fields":[]})
-        item["fields"].append({"id":row[7],"name":row[8],"proposedValue":row[9],"reviewedValue":row[10],"confidence":str(row[11]),"sourceLocation":row[12],"reviewStatus":row[13]})
+        item = grouped.setdefault(row[0], {
+            "id":row[0],"sourceArtifactId":row[1],"filename":row[2],"provider":row[3],"model":row[4],
+            "status":row[5],"routingReason":row[6],"outcome":row[7],"matchKind":row[8],
+            "ledgerMatchOutcome":row[9],"ledgerExpenseKey":row[10],"matchReason":row[11],"resultHash":row[12],
+            "profileVersion":({"id":row[13],"version":row[14],"profileKey":row[15]} if row[13] else None),
+            "configurationVersion":({"id":row[16],"version":row[17]} if row[16] else None),
+            "fingerprint":({"id":row[18],"specificationVersion":row[19],"languageTag":row[20],"sha256":row[21]} if row[18] else None),
+            "cluster":({"id":row[22],"clusterKey":row[23],"projectionHash":row[24],"canonical":False} if row[22] else None),
+            "fields":[],
+        })
+        if row[25]:
+            item["fields"].append({"id":row[25],"name":row[26],"proposedValue":row[27],"reviewedValue":row[28],"confidence":str(row[29]),"sourceLocation":row[30],"reviewStatus":row[31]})
     return list(grouped.values())
 
 
