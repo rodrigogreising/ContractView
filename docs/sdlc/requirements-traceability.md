@@ -1,7 +1,7 @@
 # ContractView Requirements Traceability
 
-Status: Journey 11 POC certified; SUB-74, SUB-75, and SUB-76 merged; SUB-77
-Configuration Administrator workspace in Build
+Status: Journey 11 POC certified; SUB-74 through SUB-77 merged; SUB-78
+terminal Journey 12 candidate in Evidence Review
 
 Last updated: 2026-07-13
 
@@ -50,6 +50,7 @@ Last updated: 2026-07-13
 | SUB-75 | Expose tested configuration lifecycle, explainable projections, optimistic draft concurrency, and exact runtime references | 1-4 | 12 precursor | Configuration with declared cross-owner read model and bounded Web projection | Configuration contracts 1.2.0; migration 024; 179 named statements; stale zero-mutation, current-evidence activation, lifecycle, API-session, authorization, historical-reference, projection-replay, shared-contract, frontend, and clean Compose evidence |
 | SUB-76 | Execute governed English/Spanish document profiles, deterministic intake routing, and exact runtime evidence | 1-4 | 12 profile/routing checkpoint | Configuration-owned profile lifecycle plus Extraction-owned OCR/fingerprint/cluster/match/draft records | Five shared registries and 58 contracts; migration 025; 197 named statements; 57 table owners; closed non-vacuous fixture evaluation; whitespace-normalized conservative layout identity; executable fingerprint/ledger contracts; exact predecessor and configuration-reference evidence; real local OCR; zero-mutation safe-route, replay, and downstream-manifest tests |
 | SUB-77 | Deliver a complete governed Configuration Administrator workspace | 2-4 | 12 administrator checkpoint | Web projection over Configuration and Extraction read/command seams | Overview/lifecycle/profile/exception navigation; typed non-JSON editing; immutable evidence/history/detail/diff/impact/provenance; explicit activation confirmation; draft-only cluster association; accessible error/empty states; component and clean-browser evidence with no desktop overflow |
+| SUB-78 | Deliver bounded role dashboards and certify the complete configuration-to-audit MVP | 1-4 | 12 terminal | Web role projections plus existing Configuration, Invoices, Workflow, Provenance, browser, and release seams | Additive exact-context DTOs; visible next action/authority/unavailable actions; English/Spanish intake; safe changed/unknown routing; v1 return/v2 approval; prospective successor activation; original package/profile/configuration reconstruction; clean headless/headed retained evidence |
 
 ## Recovery Architecture Trace
 

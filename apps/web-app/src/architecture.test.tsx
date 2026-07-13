@@ -8,6 +8,7 @@ import { AuditorWorkspace } from "./workspaces/AuditorWorkspace";
 import type { AuditTimelineDto } from "./generated/contracts";
 import { roleLabel } from "./presentation/roleLabel";
 import { IdentityHeader, permissionSummary } from "./presentation/IdentityHeader";
+import { RoleDashboard } from "./presentation/RoleDashboard";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -95,6 +96,24 @@ describe("web module boundaries", () => {
     expect(html).toContain('aria-label="Auditor workspace"');
     expect(html).not.toContain("<button");
     expect(html).not.toContain("<form");
+  });
+
+  it("explains role authority and separates prospective from historical context", () => {
+    const html = renderToString(<RoleDashboard
+      title="NGO Approver dashboard"
+      nextAction="Review the exact validated invoice version."
+      authority="Attest and submit assigned versions."
+      unavailable={["You cannot edit evidence."]}
+      contract={{ contractId: "contract-1", contractName: "Synthetic contract", agencyOrganizationId: "agency-1", agencyOrganizationName: "Synthetic Agency", ngoOrganizationId: "ngo-1", ngoOrganizationName: "Synthetic NGO" }}
+      activeConfiguration={{ id: "configuration-v2", version: 2, activatedAt: "2026-07-13T00:00:00Z", documentProfiles: [{ kind: "document_profile", id: "profile-en-v2", version: 2, sha256: "2".repeat(64) }] }}
+      exactContext={{ label: "Invoice v1 context", configuration: { kind: "configuration", id: "configuration-v1", version: 1, sha256: "1".repeat(64) }, documentProfiles: [{ kind: "document_profile", id: "profile-en-v1", version: 1, sha256: "3".repeat(64) }], note: "Historical references remain fixed." }}
+      workTarget="approver-work"
+    />);
+    expect(html).toContain("Next action");
+    expect(html).toContain("Not available in this role");
+    expect(html).toContain("configuration:configuration-v2@2");
+    expect(html).toContain("configuration:configuration-v1@1");
+    expect(html).toContain("document_profile:profile-en-v1@1");
   });
 
   it("renders exact actor, version, source, validation, and package evidence", () => {

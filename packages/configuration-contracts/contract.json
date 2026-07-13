@@ -1,6 +1,6 @@
 {
   "package": "configuration-contracts",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "dependsOn": {"domain-types": "^2.0.0", "rule-contracts": "^2.0.0"},
   "vocabularies": {
     "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template", "document_profile"]},
@@ -301,7 +301,8 @@
     "ActiveConfigurationDto": {"model": "ActiveConfigurationDto", "fields": [
       {"name": "id", "type": "string", "required": true},
       {"name": "version", "type": "integer", "required": true},
-      {"name": "activatedAt", "type": "string", "required": true}
+      {"name": "activatedAt", "type": "string", "required": true},
+      {"name": "documentProfiles", "type": "VersionReference[]", "required": false}
     ]}
   },
   "activationRule": "Only an approved bundle with immutable test evidence may become active; runtime application is prospective."

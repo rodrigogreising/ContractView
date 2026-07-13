@@ -129,6 +129,7 @@ export function AuthenticatedWorkspace({
   onStageProfile?: (profile: StagedProfileReference) => void;
   onConfirmCluster?: (clusterId: string, profileKey: string, rationale: string) => void;
 }) {
+  const selectedContract = contractContexts.find((context) => context.contractId === contractId) || null;
   return (
     <>
       <IdentityHeader user={user} activeConfiguration={activeConfiguration} onLogout={onLogout}>
@@ -152,9 +153,9 @@ export function AuthenticatedWorkspace({
           </section>
         )}
         {user.role === "configuration_administrator" && configuration && <ConfigurationWorkspace configuration={configuration} draftRevision={configurationDraftRevision} evidence={configurationEvidence} profiles={configurationProfiles} clusters={documentClusters} active={activeConfiguration} versions={configurationLifecycle} message={message} onSave={onSaveConfiguration} onTest={onTestConfiguration} onApprove={onApproveConfiguration} onActivate={onActivateConfiguration} onSupersede={onSupersedeConfiguration} onRetire={onRetireConfiguration} onRollback={onRollbackConfiguration} onSelectVersion={onSelectConfigurationVersion} onCreateProfile={onCreateProfile} onTestProfile={onTestProfile} onApproveProfile={onApproveProfile} onRetireProfile={onRetireProfile} onStageProfile={onStageProfile} onConfirmCluster={onConfirmCluster} />}
-        {user.role === "ngo_preparer" && <NgoPreparerWorkspace jobs={jobs} extractions={extractions} draft={draft} validation={validation} findings={findings} feedback={revisionFeedback} message={message} onUpload={onUpload} onReview={onReview} onAssemble={onAssemble} onValidate={onValidate} onResolve={onResolveFinding} onCorrect={onCorrectRevision} />}
-        {user.role === "ngo_approver" && approvalPreview && <NgoApproverWorkspace preview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onAttest={onAttest} onGeneratePackage={onGeneratePackage} onSubmit={onSubmitInvoice} />}
-        {user.role === "auditor" && <AuditorWorkspace timeline={auditTimeline} />}
+        {user.role === "ngo_preparer" && <NgoPreparerWorkspace contract={selectedContract} activeConfiguration={activeConfiguration} jobs={jobs} extractions={extractions} draft={draft} validation={validation} findings={findings} feedback={revisionFeedback} message={message} onUpload={onUpload} onReview={onReview} onAssemble={onAssemble} onValidate={onValidate} onResolve={onResolveFinding} onCorrect={onCorrectRevision} />}
+        {user.role === "ngo_approver" && <NgoApproverWorkspace contract={selectedContract} activeConfiguration={activeConfiguration} preview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onAttest={onAttest} onGeneratePackage={onGeneratePackage} onSubmit={onSubmitInvoice} />}
+        {user.role === "auditor" && <AuditorWorkspace contract={selectedContract} activeConfiguration={activeConfiguration} timeline={auditTimeline} />}
       </main>
     </>
   );

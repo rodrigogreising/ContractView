@@ -294,3 +294,24 @@ human approval, nonblank rationale, calculated future-only impact, and an
 explicit historical-preservation confirmation. These browser controls are
 usability safeguards; server contracts independently recompute and enforce the
 same deterministic gates. System and AI actors retain empty authority sets.
+
+## SUB-78 Terminal Journey AI And Configuration Decision
+
+SUB-78 adds no provider, hosted call, runtime LLM, prompt, parser, supported
+document class, fuzzy classifier, or AI-generated configuration. Pinned local
+`tesseract-5.5.0-eng+spa` still emits untrusted draft fields. Deterministic
+shared contracts own profile matching, changed/unknown routing, fixture
+evaluation, validation, lifecycle eligibility, and package reproduction.
+
+The browser displays retained profile/configuration evidence but cannot
+calculate or grant authority. A canonical NGO Preparer reviews/corrects draft
+fields; a Configuration Administrator tests, approves, and prospectively
+activates the successor; an NGO Approver attests/submits; and a Government
+Reviewer returns/approves. System and AI actors perform none of those actions.
+
+Journey 12 measures the already approved closed evaluation contract: supported
+English/Spanish exactness, 100% changed/unknown safe routing, zero canonical
+mutation for unsupported layouts, and stable historical package/profile/config
+references after successor activation. Adding model-assisted profile drafting,
+hosted extraction, another data class, or automated assignment remains a new
+governance decision and release gate.

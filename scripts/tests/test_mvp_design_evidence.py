@@ -150,6 +150,23 @@ def test_runtime_automation_and_human_authority_are_bounded() -> None:
     assert policy["authority"]["ngoApprover"] == ["attest", "submit"]
     assert policy["authority"]["governmentReviewer"] == ["return", "approve"]
     assert policy["authority"]["auditor"] == ["read_reconstruction"]
+    assert policy["roleContextContract"] == {
+        "requiredPresentation": [
+            "identity",
+            "organization",
+            "role",
+            "authorized_contract",
+            "next_action",
+            "bounded_authority",
+            "unavailable_actions",
+            "exact_configuration_profile_context",
+            "logout",
+        ],
+        "activeContextIsProspective": True,
+        "assignedWorkContextIsHistorical": True,
+        "auditorActiveConfigurationVisible": False,
+        "clientProjectionGrantsAuthority": False,
+    }
 
 
 def test_narrative_design_evidence_is_linked_and_traceable() -> None:

@@ -616,7 +616,7 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select v.id,v.version,a.activated_at from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s",
+    "sql": "select v.id,v.version,a.activated_at,coalesce(v.payload->'documentProfiles','[]'::jsonb) from configuration_active_versions a join configuration_versions v on v.id=a.configuration_version_id where a.contract_id=%s",
     "writeTables": []
   },
   "CONFIGURATION_READ_CONFIGURATION_APPROVALS_CONFIGURATION_LIFECYCLE_EVENTS_CONFIGURATION_TEST_EVIDENCE_CONFIGURATION_VERSIONS_009": {
@@ -1277,7 +1277,8 @@
       "invoice_versions",
       "organizations",
       "packages",
-      "submissions"
+      "submissions",
+      "configuration_versions"
     ],
     "sourceOwners": [
       "configuration",
@@ -1286,7 +1287,7 @@
       "packages",
       "workflow"
     ],
-    "sql": "select q.status,s.invoice_version_id,s.package_id,p.zip_artifact_id,s.package_hashes,iv.configuration_version_id,iv.version,iv.total,o.name,c.name,s.submitted_at\n          from government_queue_items q join submissions s on s.id=q.submission_id join packages p on p.id=s.package_id join invoice_versions iv on iv.id=s.invoice_version_id join organizations o on o.id=q.ngo_organization_id join contracts c on c.id=iv.contract_id\n          where q.id=%s and q.agency_organization_id=%s",
+    "sql": "select q.status,s.invoice_version_id,s.package_id,p.zip_artifact_id,s.package_hashes,iv.configuration_version_id,iv.version,iv.total,o.name,c.name,s.submitted_at,cv.version,cv.payload,coalesce(cv.payload->'documentProfiles','[]'::jsonb)\n          from government_queue_items q join submissions s on s.id=q.submission_id join packages p on p.id=s.package_id join invoice_versions iv on iv.id=s.invoice_version_id join organizations o on o.id=q.ngo_organization_id join contracts c on c.id=iv.contract_id join configuration_versions cv on cv.id=iv.configuration_version_id\n          where q.id=%s and q.agency_organization_id=%s",
     "writeTables": []
   },
   "GOVERNMENT_REVIEW_READ_DOMAIN_EVENTS_006": {
@@ -1459,7 +1460,7 @@
     "sourceOwners": [
       "configuration"
     ],
-    "sql": "select payload from configuration_versions where id=%s",
+    "sql": "select payload,version from configuration_versions where id=%s",
     "writeTables": []
   },
   "INVOICE_DRAFT_READ_DRAFT_ASSEMBLIES_003": {
@@ -2534,7 +2535,7 @@
       "packages",
       "validation"
     ],
-    "sql": "select p.id,p.invoice_version_id,p.version,r.id,r.validation_input_manifest_id,v.manifest_hash,r.build_input_hash,r.package_manifest_hash,r.archive_sha256,r.reproduction_manifest_hash,r.template_id,r.template_version,r.template_hash,r.reproduction_manifest,r.build_input from package_reproduction_manifests r join packages p on p.id=r.package_id join invoice_versions i on i.id=p.invoice_version_id join validation_input_manifests v on v.id=r.validation_input_manifest_id where i.contract_id=%s and (%s=false or i.state<>'draft') order by p.version,p.id",
+    "sql": "select p.id,p.invoice_version_id,p.version,r.id,r.validation_input_manifest_id,v.manifest_hash,r.build_input_hash,r.package_manifest_hash,r.archive_sha256,r.reproduction_manifest_hash,r.template_id,r.template_version,r.template_hash,r.reproduction_manifest,r.build_input,v.manifest from package_reproduction_manifests r join packages p on p.id=r.package_id join invoice_versions i on i.id=p.invoice_version_id join validation_input_manifests v on v.id=r.validation_input_manifest_id where i.contract_id=%s and (%s=false or i.state<>'draft') order by p.version,p.id",
     "writeTables": []
   },
   "PROVENANCE_READ_PROVENANCE_RELATIONS_011": {

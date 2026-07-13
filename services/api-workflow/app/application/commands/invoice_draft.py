@@ -4,6 +4,7 @@ import uuid
 from .access_scope import contract_scope, invoice_scope
 from ...authorization import Action, Actor, ResourceKind, execute_authorized, require_permission
 from .provenance import LineageInput, append_lineage_tx, append_relation_tx
+from ..reproducibility import canonical_hash
 
 
 from ..ports.statements import Statement
@@ -105,7 +106,9 @@ def get_draft(actor: Actor, invoice_id: str) -> dict:
     for line in lines: category_totals[line[4]]=category_totals.get(line[4],Decimal("0.00"))+line[5]
     limits={item["label"]:Decimal(str(item["limit"])) for item in config["categories"]}
     categories=[{"name":name,"claimed":f"{category_totals.get(name,Decimal('0')):.2f}","limit":f"{limit:.2f}","available":f"{limit-category_totals.get(name,Decimal('0')):.2f}"} for name,limit in limits.items()]
-    return {"id":invoice[0],"contractId":invoice[1],"version":invoice[2],"configurationVersionId":invoice[3],"state":invoice[4],"total":f"{invoice[6]:.2f}",
+    return {"id":invoice[0],"contractId":invoice[1],"version":invoice[2],"configurationVersionId":invoice[3],
+            "configurationVersion":{"kind":"configuration","id":invoice[3],"version":config_row[1],"sha256":canonical_hash(config)},
+            "documentProfiles":config.get("documentProfiles",[]),"state":invoice[4],"total":f"{invoice[6]:.2f}",
             "lines":[{"expenseKey":r[0],"date":r[1].isoformat(),"vendor":r[2],"description":r[3],"category":r[4],"amount":f"{r[5]:.2f}","ledgerArtifactId":r[6],"ledgerSource":r[7],"evidenceArtifactId":r[8],"extractionStatus":r[9]} for r in lines],
             "categories":categories,"findings":[{"expenseKey":r[0],"code":r[1],"message":r[2],"status":r[3]} for r in findings]}
 

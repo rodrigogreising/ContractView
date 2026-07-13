@@ -484,6 +484,7 @@ export interface ActiveConfigurationDto {
   id: string;
   version: number;
   activatedAt: string;
+  documentProfiles?: VersionReference[];
 }
 
 export interface SourceLocationContract {
@@ -626,6 +627,8 @@ export interface AuditPackageDto {
   templateId: string;
   templateVersion: number;
   templateHash: string;
+  configurationVersion?: VersionReference;
+  documentProfiles?: VersionReference[];
   manifest: Record<string, unknown>;
   buildInput: Record<string, unknown>;
 }

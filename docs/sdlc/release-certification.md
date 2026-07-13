@@ -286,3 +286,33 @@ traceability, implementation, journey, and release AI reviews must all return
 gate. This synthetic development POC may be `Certified` after merge and clean
 post-merge verification; staging, production, real data, or a real-world
 release promotion remains a separately human decision.
+
+## SUB-78 Terminal MVP Release Gate
+
+Current candidate decision: **Blocked** pending exact PR-head hosted checks,
+the paced headed Journey 12 recording, eight immutable-diff AI approvals,
+merge, and clean post-merge verification. The implementation and local
+headless/two-pass evidence are complete; this candidate-gate decision is not a
+defect waiver or scope reduction.
+
+The MVP becomes eligible for **Certified** only when the exact candidate proves
+all five normal persona sessions, useful bounded landing pages, exact
+configuration/profile context, supported English/Spanish profile intake,
+changed/unknown safe routing, deterministic validation, distinct human
+authority, immutable v1 and v2 packages, prospective successor activation, and
+post-successor reconstruction of original configuration/profile references and
+archive hashes.
+
+Required retained evidence is static/unit/frontend/build output, two fresh-
+volume Compose passes with an equal reset fingerprint, clean headless and
+default 650 ms headed Journey 12 results, video, trace, screenshots, HTML,
+runtime logs, Compose state, exact base/head/merge SHAs, commands, versions,
+counts, and artifact hashes. Architecture/ADR, traceability, boundary,
+security/privacy, AI/configuration, implementation, journey, and release AI
+reviews must all approve the same immutable diff. Human code review is not a
+gate.
+
+Certification remains limited to the local/CI synthetic MVP. Hosted production,
+real data, public write access, SSO/MFA, malware scanning, backup/legal hold/
+retention, penetration testing, broader document classes, notifications, and
+payment execution are excluded and require separately scoped decisions.

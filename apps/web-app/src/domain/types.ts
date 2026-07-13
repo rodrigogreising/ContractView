@@ -1,3 +1,5 @@
+import type { VersionReference } from "../generated/contracts";
+
 export type Job = {
   id: string;
   artifact_id: string;
@@ -21,12 +23,19 @@ export type Extraction = {
   provider: string;
   model: string;
   routingReason: string;
+  outcome?: string;
+  matchKind?: string;
+  profileVersion?: { id: string; version: number; profileKey: string } | null;
+  configurationVersion?: { id: string; version: number } | null;
+  fingerprint?: { id: string; specificationVersion: string; languageTag: string; sha256: string } | null;
   fields: ExtractionField[];
 };
 export type InvoiceDraft = {
   id: string;
   version: number;
   configurationVersionId: string;
+  configurationVersion?: VersionReference;
+  documentProfiles?: VersionReference[];
   state: string;
   total: string;
   lines: Array<{
@@ -148,6 +157,8 @@ export type ReviewContext = {
   ngo: string;
   contract: string;
   configurationVersionId: string;
+  configurationVersion?: VersionReference;
+  documentProfiles?: VersionReference[];
   zipArtifactId: string;
   validation: {
     id: string;

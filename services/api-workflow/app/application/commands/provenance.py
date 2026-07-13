@@ -275,7 +275,7 @@ def audit_query(actor: Actor, contract_id: str, *, submitted: bool) -> dict[str,
             ["packageId","invoiceVersionId","invoiceVersion","reproductionManifestId",
              "validationInputManifestId","validationInputManifestHash","buildInputHash",
              "packageManifestHash","archiveSha256","reproductionManifestHash","templateId",
-             "templateVersion","templateHash","manifest","buildInput"], row
+             "templateVersion","templateHash","manifest","buildInput","validationInputManifest"], row
         )) for row in reproduction],
     }
 
@@ -377,13 +377,28 @@ def audit_timeline(actor: Actor, contract_id: str) -> dict:
                 "archiveSha256": package["archiveSha256"],
             })
 
+    packages = []
+    for item in evidence["reproducibility"]:
+        item_projection = {**item}
+        manifest = item_projection.pop("validationInputManifest")
+        profiles = {
+            (profile["id"], str(profile["version"])): profile
+            for component in manifest.get("extractionComponents", [])
+            if (profile := component.get("documentProfile"))
+        }
+        packages.append({
+            **item_projection,
+            "configurationVersion": manifest.get("configurationVersion"),
+            "documentProfiles": [profiles[key] for key in sorted(profiles)],
+        })
+
     projection = AuditTimelineDto.model_validate({
         "contractId": contract_id,
         "events": events,
         "lineage": lineage,
         "relations": relations,
         "snapshots": snapshots,
-        "packages": evidence["reproducibility"],
+        "packages": packages,
         "claimedAmountTrails": trails,
     })
     return projection.model_dump(by_alias=True, mode="json")

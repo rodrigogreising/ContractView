@@ -1,6 +1,7 @@
 # Journey 12: Configurable Document-Intake MVP
 
-Status: Build (`SUB-74`, `SUB-75`, and `SUB-76` merged; `SUB-77` in progress)
+Status: Evidence Review (`SUB-74` through `SUB-77` merged; `SUB-78` terminal
+candidate in immutable PR review)
 
 Controlling epic: `SUB-73`
 
@@ -247,3 +248,30 @@ SUB-75/SUB-76 without creating a second source of truth:
 
 This checkpoint does not certify all five role landing pages or the terminal
 Journey 12 release bundle. SUB-78 retains that scope.
+
+## SUB-78 Terminal Journey Checkpoint
+
+The canonical `journey12.spec.ts` scenario now performs the complete path from
+a clean Compose reset through final historical reconstruction:
+
+- each non-administrator persona lands on a useful page that explains its next
+  action, exact contract/context, bounded authority, and unavailable actions;
+- the Configuration Administrator activates configuration/profile v1 through
+  normal lifecycle commands;
+- the NGO Preparer processes a supported English invoice and a supported
+  Spanish invoice, while changed and unknown layouts visibly retain
+  `needs_profile_review` and state that no canonical expense was created;
+- distinct NGO Approver, Government Reviewer, NGO correction, re-attestation,
+  resubmission, and final approval sessions produce immutable v1 and v2
+  packages with distinct archive hashes;
+- the administrator tests and approves an English profile successor, stages
+  its exact reference, tests and approves configuration v2, and explicitly
+  supersedes v1 prospectively; and
+- after activation, a Preparer sees active configuration/profile v2 while the
+  Auditor reconstructs both submitted packages against their original exact
+  configuration/profile v1 references and original hashes.
+
+The scenario uses visible UI paths and direct public API denial assertions; it
+contains no database edit, test-only role switch, invented client authority, or
+manual state mutation. The canonical runner is `scripts/run_journey12.sh`.
+Journey 11 command names remain compatibility aliases to this non-reduced path.

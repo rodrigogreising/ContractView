@@ -60,6 +60,10 @@ def invoice():
     return assemble_draft(PREPARER,CONTRACT)
 
 def test_five_rules_record_versions_inputs_results_and_expected_findings(invoice):
+    assert invoice["configurationVersion"]["id"] == invoice["configurationVersionId"]
+    assert invoice["configurationVersion"]["kind"] == "configuration"
+    assert {profile["kind"] for profile in invoice["documentProfiles"]} == {"document_profile"}
+    assert all(profile["sha256"] for profile in invoice["documentProfiles"])
     run=execute_validation(PREPARER,invoice["id"])
     assert run["engineVersion"]==ENGINE_VERSION and run["invoiceVersionId"]==invoice["id"] and run["configurationVersionId"]==invoice["configurationVersionId"]
     assert len(run["inputHash"])==64 and len(run["outputHash"])==64
@@ -262,6 +266,9 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert item["amount"]==invoice["total"] and item["servicePeriod"]=={"start":"2026-06-01","end":"2026-06-30"} and item["submittedAt"]
     context=review_context(government,item["id"])
     assert context["packageId"]==submission["packageId"] and context["configurationVersionId"]==invoice["configurationVersionId"]
+    assert context["configurationVersion"]["id"]==invoice["configurationVersionId"]
+    assert context["configurationVersion"]["sha256"]==invoice["configurationVersion"]["sha256"]
+    assert context["documentProfiles"]==invoice["documentProfiles"]
     assert context["validation"]["outputHash"] and context["findings"] and context["artifacts"]
     assert any(x["path"]=="package.zip" and x["artifactId"]==context["zipArtifactId"] for x in context["artifacts"])
     assert any(x["eventType"]=="submitted" for x in context["provenance"])
@@ -404,6 +411,9 @@ def test_submission_atomically_locks_exact_version_and_creates_government_queue(
     assert all(item["validationInputManifestHash"] and item["buildInputHash"] and item["packageManifestHash"] and item["archiveSha256"] for item in reproduced_packages.values())
     assert all(item["templateId"]=="reimbursement-invoice-pdf" and item["templateVersion"]==1 and len(item["templateHash"])==64 for item in reproduced_packages.values())
     timeline=audit_timeline(AUDITOR,CONTRACT)
+    assert all(item["configurationVersion"] and item["documentProfiles"] for item in timeline["packages"])
+    assert all(item["configurationVersion"]["id"]==invoice["configurationVersionId"] for item in timeline["packages"])
+    assert all({profile["kind"] for profile in item["documentProfiles"]}=={"document_profile"} for item in timeline["packages"])
     required_timeline_events={
         "config_activated","artifact_uploaded","extraction_drafted","field_corrected",
         "validation_completed","finding_resolved","attested","package_generated",

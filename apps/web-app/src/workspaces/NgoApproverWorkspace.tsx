@@ -1,6 +1,12 @@
+import type { ActiveConfigurationDto, ContractContextDto } from "../generated/contracts";
 import type { ApprovalPreview, Attestation, GeneratedPackage, Submission } from "../domain/types";
 import { ApprovalPanel } from "../features/approval/ApprovalPanel";
+import { RoleDashboard } from "../presentation/RoleDashboard";
 
-export function NgoApproverWorkspace(props: { preview: ApprovalPreview; attestation: Attestation | null; generatedPackage: GeneratedPackage | null; submission: Submission | null; message: string; onAttest: (text: string) => void; onGeneratePackage: () => void; onSubmit: () => void }) {
-  return <ApprovalPanel {...props} />;
+export function NgoApproverWorkspace({ contract, activeConfiguration, preview, ...props }: { contract: ContractContextDto | null; activeConfiguration: ActiveConfigurationDto | null; preview: ApprovalPreview | null; attestation: Attestation | null; generatedPackage: GeneratedPackage | null; submission: Submission | null; message: string; onAttest: (text: string) => void; onGeneratePackage: () => void; onSubmit: () => void }) {
+  const nextAction = !preview ? "Wait for a validated invoice version to enter your assigned approval queue." : props.submission ? "This exact version is submitted; wait for the government decision." : props.generatedPackage ? "Submit the immutable package to government review." : props.attestation?.current ? "Generate the immutable package from the attested version." : "Review and attest the exact validated invoice version.";
+  return <>
+    <RoleDashboard title="NGO Approver dashboard" nextAction={nextAction} authority="You alone may attest an assigned validated invoice version, generate its immutable package, and submit that package for government review." unavailable={["You cannot upload, edit, or correct invoice evidence.", "You cannot return or approve a government decision.", "You cannot test, approve, or activate configuration or document profiles."]} contract={contract} activeConfiguration={activeConfiguration} exactContext={preview ? { label: `Invoice v${preview.invoice.version} approval context`, configuration: preview.invoice.configurationVersion || { kind: "configuration", id: preview.invoice.configurationVersionId, version: preview.invoice.configurationVersionId }, documentProfiles: preview.invoice.documentProfiles || [], note: "Attestation and package generation bind to these historical references, not the current active pointer." } : null} workTarget="approver-work" />
+    <div id="approver-work">{preview ? <ApprovalPanel preview={preview} {...props} /> : <section className="panel"><h2>NGO approval and attestation</h2><p>No validated invoice is assigned yet. Upload and correction controls remain unavailable to this role.</p></section>}</div>
+  </>;
 }

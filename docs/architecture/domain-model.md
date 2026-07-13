@@ -189,3 +189,10 @@ closed lifecycle, reason, actor/resource, typed-field, event, and
 `VersionReference` vocabularies. Runtime records distinguish editable or
 prospective configuration pointers from immutable profile, evaluation,
 fingerprint, match, and extraction evidence.
+
+SUB-78 exposes two deliberately different read contexts without adding a
+domain primitive. `ActiveConfigurationDto.documentProfiles` is a prospective
+pointer for future intake. Invoice, Government review, and `AuditPackageDto`
+references are immutable historical evidence. A role projection may display
+both, but it cannot substitute the active pointer for the exact historical
+reference or reinterpret a submitted invoice after successor activation.

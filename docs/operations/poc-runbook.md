@@ -27,7 +27,7 @@ secrets, and must never be reused outside this isolated POC:
 | Field | POC decision |
 | --- | --- |
 | Owner role | POC developer or release operator executing the clean local certification. |
-| Trigger | Clean-checkout startup, deterministic reset, Journey 11 certification/recording, or investigation of a failed health/journey command. |
+| Trigger | Clean-checkout startup, deterministic reset, Journey 12 certification/recording, or investigation of a failed health/journey command. |
 | Detection | Nonzero command exit, failed API/worker/web health, failed browser result, or unhealthy Compose state. |
 | Immediate mitigation | Stop the isolated project when safety is uncertain; preserve generated evidence; correct prerequisites or code through an issue branch. |
 | Supported recovery | Restart through `make start`, restore synthetic fixture state through `make reset`, verify with `make health`, and rerun the failed certification command. |
@@ -99,7 +99,7 @@ CI_PROJECT_NAME=contractview-hermetic-local \
   bash scripts/ci/run_hermetic.sh artifacts/hermetic
 ```
 
-## Canonical Journey 11 Commands
+## Canonical Journey 12 Commands
 
 Headless certification starts a uniquely named isolated Compose project,
 replaces its volumes, resets through the supported command, starts the real
@@ -107,14 +107,14 @@ worker, completes all five persona sessions, and retains JSON, video, trace,
 screenshots, HTML, runtime logs, and Compose state:
 
 ```bash
-make journey11-headless
+make journey12-headless
 ```
 
 To retain evidence at a specific path, pass the Make variable explicitly:
 
 ```bash
-make journey11-headless EVIDENCE_DIR=artifacts/journey11/release-headless
-make journey11-headed EVIDENCE_DIR=artifacts/journey11/release-headed
+make journey12-headless EVIDENCE_DIR=artifacts/journey12/release-headless
+make journey12-headed EVIDENCE_DIR=artifacts/journey12/release-headed
 ```
 
 The Make targets forward that directory to the same operator script; omitting
@@ -124,24 +124,28 @@ Paced headed recording executes the same scenario. Its default slow motion is
 650 milliseconds between browser actions:
 
 ```bash
-make journey11-headed
+make journey12-headed
 ```
 
-The npm aliases are `npm run journey11:headless` and
-`npm run journey11:headed`. To choose an evidence directory explicitly:
+The npm aliases are `npm run journey12:headless` and
+`npm run journey12:headed`. To choose an evidence directory explicitly:
 
 ```bash
-bash scripts/poc.sh certify-headless artifacts/journey11/headless
-bash scripts/poc.sh record-headed artifacts/journey11/headed
+bash scripts/poc.sh certify-headless artifacts/journey12/headless
+bash scripts/poc.sh record-headed artifacts/journey12/headed
 ```
 
-Set `JOURNEY11_SLOW_MO_MS` only to change headed pacing. Set
-`JOURNEY11_KEEP_RUNTIME=true` only for local diagnosis; the default removes the
+Set `JOURNEY12_SLOW_MO_MS` only to change headed pacing. Set
+`JOURNEY12_KEEP_RUNTIME=true` only for local diagnosis; the default removes the
 isolated runtime and volumes after retaining evidence.
+
+The `make journey11-headless` and `make journey11-headed` targets remain as
+backward-compatible aliases to the same Journey 12 scenario and evidence
+runner. They do not execute a separate or reduced acceptance path.
 
 ## Recovery And Failure Evidence
 
-- A failed Journey 11 run still retains browser failure context, trace, video,
+- A failed Journey 12 run still retains browser failure context, trace, video,
   screenshots, Compose service state, and runtime logs in its chosen directory.
 - A failed hermetic pass retains service logs and Compose state for that pass.
 - Inspect with `make status` and `make logs`; rerun `make health` after a repair.

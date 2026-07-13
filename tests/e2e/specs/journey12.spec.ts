@@ -24,6 +24,11 @@ async function login(page: Page, persona: keyof typeof personas, testInfo: TestI
   await expect(page.locator("header.identity")).toContainText(role);
   await expect(page.getByLabel("Permissions")).toHaveText(`Permissions: ${permissions}`);
   await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+  if (persona !== "administrator") {
+    await expect(page.getByRole("heading", { name: `${role} dashboard` })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Next action" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Not available in this role" })).toBeVisible();
+  }
   await page.screenshot({ path: testInfo.outputPath(`${persona}-workspace.png`), fullPage: true });
 }
 
@@ -48,7 +53,7 @@ async function resolveOpenFindings(page: Page) {
   }
 }
 
-test("Journey 11: configuration through immutable approval and audit reconstruction", async ({ page }, testInfo) => {
+test("Journey 12: role dashboards and configuration-to-audit certification", async ({ page }, testInfo) => {
   await page.goto("/");
 
   await test.step("Configuration Administrator governs and activates configuration", async () => {
@@ -58,7 +63,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
     await page.getByRole("button", { name: "Configuration lifecycle" }).click();
     await page.getByRole("button", { name: "Save validated draft" }).click();
     await expect(page.getByText("Configuration draft saved and validated.")).toBeVisible();
-    await page.getByLabel("Governance rationale").fill("Journey 11 deterministic configuration evidence");
+    await page.getByLabel("Governance rationale").fill("Journey 12 deterministic configuration evidence");
     await page.getByRole("button", { name: "Test draft and retain evidence" }).click();
     await expect(page.getByRole("button", { name: "Record human approval" })).toBeVisible();
     await page.getByRole("button", { name: "Record human approval" }).click();
@@ -85,6 +90,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
       "vendor-invoice-exp-005.pdf",
       "synthetic-vendor-invoice-changed-layout.pdf",
       "synthetic-unknown-supporting-document.pdf",
+      "synthetic-vendor-invoice-es-001.pdf",
     ]) {
       await page.getByLabel("Evidence file").setInputFiles(path.join(fixtures, filename));
       await page.getByRole("button", { name: "Upload and process" }).click();
@@ -107,8 +113,17 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
         row.getByRole("button", { name: "Accept" }).click(),
       ]);
     }
+    const spanish = page.locator("article.extraction").filter({ hasText: "synthetic-vendor-invoice-es-001.pdf" });
+    await expect(spanish).toContainText("Exact profile vendor_invoice_es v1", { timeout: 120_000 });
+    await expect(spanish).toContainText("configuration");
+    const changed = page.locator("article.extraction").filter({ hasText: "synthetic-vendor-invoice-changed-layout.pdf" });
+    const unknown = page.locator("article.extraction").filter({ hasText: "synthetic-unknown-supporting-document.pdf" });
+    await expect(changed).toContainText("No profile assigned", { timeout: 120_000 });
+    await expect(changed).toContainText("no canonical expense created");
+    await expect(unknown).toContainText("No profile assigned", { timeout: 120_000 });
+    await expect(unknown).toContainText("no canonical expense created");
     await page.getByRole("button", { name: "Assemble draft" }).click();
-    await expect(page.getByText("Invoice v1")).toBeVisible();
+    await expect(page.getByText("Invoice v1", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Run deterministic validation" }).click();
     await expect(page.getByText("Resolve findings")).toBeVisible();
     await resolveOpenFindings(page);
@@ -119,6 +134,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
   let v1Hash = "";
   await test.step("NGO Approver attests, packages, and submits immutable v1", async () => {
     await login(page, "approver", testInfo);
+    await expect(page.getByLabel("Exact assigned work context")).toContainText("Invoice v1 approval context");
     await expect(page.getByText("No open blockers")).toBeVisible();
     await page.getByLabel("I confirm this exact invoice version and evidence set.").check();
     await page.getByRole("button", { name: "Attest exact version" }).click();
@@ -138,6 +154,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
     await login(page, "government", testInfo);
     const v1 = page.locator("article.queue-item").filter({ hasText: "Invoice v1" });
     await v1.getByRole("button", { name: "Inspect exact package" }).click();
+    await expect(page.getByLabel("Exact assigned work context")).toContainText("Invoice v1 review context");
     await page.getByLabel("Decision note").fill("Correct the EXP-004 service evidence and resubmit");
     await page.getByLabel("Affected expense").fill("EXP-004");
     await page.getByRole("button", { name: "Return version 1 with feedback" }).click();
@@ -163,7 +180,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
   let v2Hash = "";
   await test.step("NGO Approver separately attests and resubmits v2", async () => {
     await login(page, "approver", testInfo);
-    await expect(page.getByText("Invoice v2")).toBeVisible();
+    await expect(page.getByText("Invoice v2", { exact: true })).toBeVisible();
     await page.getByLabel("I confirm this exact invoice version and evidence set.").check();
     await page.getByRole("button", { name: "Attest exact version" }).click();
     await expect(page.getByText("Current attestation")).toBeVisible();
@@ -190,26 +207,7 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
     await logout(page);
   });
 
-  await test.step("Auditor reconstructs both packages without mutation authority", async () => {
-    await login(page, "auditor", testInfo);
-    await expect(page.getByRole("heading", { name: "Source-to-approval timeline" })).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByText("Approved by government")).toBeVisible();
-    await expect(page.getByText("2", { exact: true })).toBeVisible();
-    await expect(page.getByText("Invoice v1 package")).toBeVisible();
-    await expect(page.getByText("Invoice v2 package")).toBeVisible();
-    await expect(page.getByText("EXP-004 · $950.00")).toHaveCount(2);
-    const v1Trail = page.locator(".audit-card").filter({ hasText: "EXP-004 · $950.00" }).filter({ hasText: "Invoice v1" });
-    const v2Trail = page.locator(".audit-card").filter({ hasText: "EXP-004 · $950.00" }).filter({ hasText: "Invoice v2" });
-    await expect(v1Trail).toContainText(v1Hash);
-    await expect(v2Trail).toContainText(v2Hash);
-    await expect(page.getByLabel("Auditor workspace").locator("button")).toHaveCount(0);
-    await expect(page.getByLabel("Auditor workspace").locator("form")).toHaveCount(0);
-    expect(await page.evaluate(async () => (await fetch("/api/invoices/draft?contractId=contract-synthetic-agency-ngo-2026", { method: "POST" })).status)).toBe(403);
-    await page.screenshot({ path: testInfo.outputPath("audit-reconstruction.png"), fullPage: true });
-    await logout(page);
-  });
-
-  await test.step("Configuration Administrator reviews a safe exception and creates only a draft association", async () => {
+  await test.step("Configuration Administrator governs a safe exception and activates a prospective successor", async () => {
     await login(page, "administrator", testInfo);
     await page.getByRole("button", { name: "Profiles and exceptions" }).click();
     await page.getByLabel("Profile governance rationale").fill("Create and evaluate the exact synthetic successor profile");
@@ -235,7 +233,52 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
     await expect(page.getByText("Cluster suggestion confirmed as a draft association only; no profile was assigned or activated.")).toBeVisible();
     await expect(exception).toContainText("confirmed draft");
     await expect(exception).toContainText("It is not active configuration");
+    await page.getByRole("button", { name: "Configuration lifecycle" }).click();
+    await page.getByLabel("Governance rationale").fill("Activate the tested successor prospectively while preserving historical invoice and package evidence");
+    await page.getByRole("button", { name: "Test draft and retain evidence" }).click();
+    await expect(page.getByRole("heading", { name: "Configuration v2" })).toBeVisible();
+    const successorConfiguration = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Configuration v2" }) });
+    await successorConfiguration.getByRole("button", { name: "Record human approval" }).click();
+    await successorConfiguration.getByRole("button", { name: "Review activation impact" }).click();
+    await expect(page.getByText("Explicit activation confirmation")).toBeVisible();
+    await page.getByLabel("I confirm this change applies to future intake only and preserves historical references.").check();
+    await page.getByRole("button", { name: "Confirm and supersede active version" }).click();
+    await expect(page.locator("header.identity")).toContainText("Active config v2");
     await page.screenshot({ path: testInfo.outputPath("configuration-exception-draft.png"), fullPage: true });
+    await logout(page);
+  });
+
+  await test.step("NGO Preparer sees the prospective successor without historical reinterpretation", async () => {
+    await login(page, "preparer", testInfo);
+    const current = page.getByLabel("Current configuration context");
+    const historical = page.getByLabel("Exact assigned work context");
+    await expect(current).toContainText("@2");
+    await expect(current).toContainText(/document_profile:profile-vendor_invoice_en-v2-[a-f0-9]+@2/);
+    await expect(historical).toContainText("No assigned invoice or submitted package is available yet.");
+    await logout(page);
+  });
+
+  await test.step("Auditor reconstructs both original packages after successor activation", async () => {
+    await login(page, "auditor", testInfo);
+    await expect(page.getByRole("heading", { name: "Source-to-approval timeline" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText("Approved by government")).toBeVisible();
+    await expect(page.getByText("2", { exact: true })).toBeVisible();
+    const v1Package = page.locator(".audit-card").filter({ hasText: "Invoice v1 package" });
+    const v2Package = page.locator(".audit-card").filter({ hasText: "Invoice v2 package" });
+    await expect(v1Package).toContainText("@1");
+    await expect(v2Package).toContainText("@1");
+    await expect(v1Package).toContainText("profile-vendor-invoice-en-v1@1");
+    await expect(v2Package).toContainText("profile-vendor-invoice-en-v1@1");
+    await expect(page.getByText("EXP-004 · $950.00")).toHaveCount(2);
+    const v1Trail = page.locator(".audit-card").filter({ hasText: "EXP-004 · $950.00" }).filter({ hasText: "Invoice v1" });
+    const v2Trail = page.locator(".audit-card").filter({ hasText: "EXP-004 · $950.00" }).filter({ hasText: "Invoice v2" });
+    await expect(v1Trail).toContainText(v1Hash);
+    await expect(v2Trail).toContainText(v2Hash);
+    await expect(page.getByLabel("Current configuration context")).toContainText("intentionally not exposed");
+    await expect(page.getByLabel("Auditor workspace").locator("button")).toHaveCount(0);
+    await expect(page.getByLabel("Auditor workspace").locator("form")).toHaveCount(0);
+    expect(await page.evaluate(async () => (await fetch("/api/invoices/draft?contractId=contract-synthetic-agency-ngo-2026", { method: "POST" })).status)).toBe(403);
+    await page.screenshot({ path: testInfo.outputPath("audit-reconstruction-after-successor.png"), fullPage: true });
     await logout(page);
   });
 });

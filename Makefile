@@ -1,4 +1,4 @@
-.PHONY: prerequisites start stop logs migrate seed reset api worker web health status test journey11-headless journey11-headed
+.PHONY: prerequisites start stop logs migrate seed reset api worker web health status test journey11-headless journey11-headed journey12-headless journey12-headed
 prerequisites:
 	bash scripts/poc.sh prerequisites
 start:
@@ -30,3 +30,7 @@ journey11-headless:
 	bash scripts/poc.sh certify-headless "$(EVIDENCE_DIR)"
 journey11-headed:
 	bash scripts/poc.sh record-headed "$(EVIDENCE_DIR)"
+journey12-headless:
+	bash scripts/run_journey12.sh headless "$(EVIDENCE_DIR)"
+journey12-headed:
+	bash scripts/run_journey12.sh headed "$(EVIDENCE_DIR)"

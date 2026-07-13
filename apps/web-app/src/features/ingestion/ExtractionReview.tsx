@@ -31,6 +31,15 @@ export function ExtractionReview({
                 {extraction.provider} · {extraction.model} ·{" "}
                 {extraction.routingReason}
               </small>
+              {extraction.profileVersion ? (
+                <small className="runtime-reference">
+                  Exact profile {extraction.profileVersion.profileKey} v{extraction.profileVersion.version} · configuration {extraction.configurationVersion?.id}@{extraction.configurationVersion?.version}
+                </small>
+              ) : (
+                <small className="safe-route">
+                  No profile assigned · {extraction.outcome || "needs_profile_review"} · no canonical expense created
+                </small>
+              )}
             </div>
             <a
               href={`/api/artifacts/${extraction.sourceArtifactId}`}
