@@ -140,6 +140,14 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
     labels = profile.get("riskAndGateLabels")
     coverage = profile.get("riskCoverage")
     review_skills = profile.get("reviewSkills")
+    project_status = profile.get("projectStatus", "Build")
+    certification_rationale = profile.get(
+        "certificationRationale",
+        "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
+    )
+    include_journey_in_clean_runtime = profile.get(
+        "includeJourneyInCleanRuntime", False
+    )
     if (
         not isinstance(labels, list)
         or not labels
@@ -166,10 +174,25 @@ def load_evidence_coverage(issue: str) -> dict[str, object]:
             or any(not isinstance(item, str) or not item.strip() for item in evidence)
         ):
             raise SystemExit(f"Evidence coverage is invalid for {issue} label {label}")
+    if project_status not in {
+        "Design Review",
+        "Build",
+        "Evidence Review",
+        "Rollout",
+        "Completed",
+    }:
+        raise SystemExit(f"Project status is invalid for {issue}")
+    if not isinstance(certification_rationale, str) or not certification_rationale.strip():
+        raise SystemExit(f"Certification rationale is invalid for {issue}")
+    if not isinstance(include_journey_in_clean_runtime, bool):
+        raise SystemExit(f"Clean runtime journey flag is invalid for {issue}")
     return {
         "riskAndGateLabels": labels,
         "riskCoverage": coverage,
         "reviewSkills": review_skills,
+        "projectStatus": project_status,
+        "certificationRationale": certification_rationale,
+        "includeJourneyInCleanRuntime": include_journey_in_clean_runtime,
     }
 
 
@@ -198,6 +221,14 @@ def main() -> int:
     if not journey_result_path.exists():
         raise SystemExit("Journey 11 browser evidence is missing")
     journey_count = playwright_test_count(json.loads(journey_result_path.read_text()))
+    headed_journey_result_path = (
+        args.output_dir / "journey11-headed" / "results.json"
+    )
+    if not headed_journey_result_path.exists():
+        raise SystemExit("Paced headed Journey 11 browser evidence is missing")
+    headed_journey_count = playwright_test_count(
+        json.loads(headed_journey_result_path.read_text())
+    )
     evidence_coverage = load_evidence_coverage(issue)
     static_check = {
         "command": "bash scripts/ci/run_static.sh",
@@ -213,7 +244,13 @@ def main() -> int:
         "result": f"Two isolated fresh-volume migration/reset/API/Compose runs passed with identical reset fingerprint {reset_fingerprint}",
         "recordedAt": recorded,
         "testCount": required_test_count("Hermetic", hermetic_logs),
-        "artifactHashes": {name: digest for name, digest in hashes.items() if name != "static.log" and not name.startswith("journey11/")},
+        "artifactHashes": {
+            name: digest
+            for name, digest in hashes.items()
+            if name != "static.log"
+            and not name.startswith("journey11/")
+            and not name.startswith("journey11-headed/")
+        },
     }
     journey_check = {
         "command": "bash scripts/run_journey11.sh headless artifacts/ci/journey11",
@@ -223,9 +260,21 @@ def main() -> int:
         "testCount": journey_count,
         "artifactHashes": {name: digest for name, digest in hashes.items() if name.startswith("journey11/")},
     }
+    headed_journey_check = {
+        "command": "xvfb-run --auto-servernum bash scripts/run_journey11.sh headed artifacts/ci/journey11-headed",
+        "exitCode": 0,
+        "result": "Clean Compose Journey 11 passed in default 650 ms paced headed mode with retained video, trace, screenshots, and JSON result",
+        "recordedAt": recorded,
+        "testCount": headed_journey_count,
+        "artifactHashes": {
+            name: digest
+            for name, digest in hashes.items()
+            if name.startswith("journey11-headed/")
+        },
+    }
     manifest = {
         "issue": issue,
-        "projectStatus": "Build",
+        "projectStatus": evidence_coverage["projectStatus"],
         "branch": args.branch,
         "baseSha": args.base_sha,
         "headSha": args.head_sha,
@@ -242,15 +291,27 @@ def main() -> int:
             "docker": command_version("docker", "--version"),
             "dockerCompose": command_version("docker", "compose", "version"),
         },
-        "checks": [static_check, hermetic_check, journey_check],
+        "checks": [
+            static_check,
+            hermetic_check,
+            journey_check,
+            headed_journey_check,
+        ],
         "certification": {
             "behaviorChanged": True,
-            "rationale": "Hermetic CI certifies every PR from pinned tools and isolated state, retains exact logs/hashes, and proves consecutive clean reruns are independent.",
+            "rationale": evidence_coverage["certificationRationale"],
             "requiredReviewSkills": evidence_coverage["reviewSkills"],
             "evidenceKinds": ["policy", "unit", "integration", "authorization", "boundary", "provenance", "determinism", "migration", "frontend", "compose", "journey", "artifact"],
             "riskCoverage": evidence_coverage["riskCoverage"],
             "cleanRuntimeRequired": True,
-            "cleanRuntimeChecks": [hermetic_check],
+            "cleanRuntimeChecks": [
+                hermetic_check,
+                *(
+                    [journey_check, headed_journey_check]
+                    if evidence_coverage["includeJourneyInCleanRuntime"]
+                    else []
+                ),
+            ],
         },
         "review": {
             "decision": "Pending",

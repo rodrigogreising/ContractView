@@ -183,3 +183,19 @@ Reset stops the worker, replaces only disposable synthetic database/object
 state through supported commands, applies numbered migrations, idempotently
 seeds fixtures, restarts the worker, and prints the deterministic fingerprint.
 No journey prerequisite requires SQL, role switching, or storage mutation.
+
+## SUB-55 Terminal Release Certification
+
+SUB-55 owns the final candidate and post-merge execution of this complete
+specification. The login helper must assert, for every session, the exact user,
+organization, role, visible bounded-permission summary, and logout control.
+Those assertions do not replace the direct forbidden-command and zero-mutation
+server evidence.
+
+Certification requires both the clean headless command and the default paced
+headed command to complete this same scenario. Retained evidence must include
+the JSON result, trace, video, persona and lifecycle screenshots, HTML report,
+runtime log, Compose service state, deterministic reset fingerprint, exact
+candidate/merge SHAs, command exit codes, test counts, environment versions,
+and SHA-256 artifact hashes. The release decision is recorded in
+`docs/sdlc/implementation/SUB-55-final-poc-certification.md`.

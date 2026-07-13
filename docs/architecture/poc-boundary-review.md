@@ -1,7 +1,7 @@
 # POC Boundary Review
 
-Status: Evidence Review; SUB-66 recertification candidate generated, immutable
-AI review and merge verification pending
+Status: Evidence Review; SUB-66 recovery and all SUB-55 prerequisites are
+merged and post-merge verified; terminal Journey 11 certification is active
 
 SUB-59 design amendment: the runtime is governed by the
 [enforceable modular monolith](modular-monolith.md) and
@@ -294,3 +294,18 @@ shortcut. The script cannot switch roles, mutate submitted evidence directly,
 invent provenance, call an external AI provider, or grant authority. Port
 overrides affect only host publication and preserve the internal Compose
 network contract.
+
+## SUB-55 Terminal Certification Boundary
+
+SUB-55 adds one shared authenticated identity presentation component and final
+release evidence. The component consumes only the generated identity contract,
+maps its closed actor-role vocabulary to an explanatory permission summary,
+and invokes the existing logout callback. It owns no authorization policy,
+command, state, persistence, event, configuration, or network request.
+
+The browser certification remains an external client over normal web/API
+surfaces. It asserts visible identity and bounded permissions for all five
+personas, but server application policy and canonical assignments remain the
+only authority source. The complete run uses isolated Compose state and cannot
+import internals, mutate PostgreSQL/MinIO directly, switch roles, inject job
+results, or perform a human decision without the corresponding persona.

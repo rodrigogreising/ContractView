@@ -1,6 +1,6 @@
 # POC Requirements Traceability
 
-Status: Build; recovery baseline certified with exceptions and POC journey work resumed
+Status: Evidence Review; all terminal prerequisites merged and SUB-55 certification active
 
 Last updated: 2026-07-12
 
@@ -34,7 +34,7 @@ Last updated: 2026-07-12
 | SUB-46 | Exact-line NGO correction and resubmission | 1, 3, 4 | 11 | Invoices correction command with Workflow read model and Provenance evidence | Persisted decision-bound line; zero-mutation denial; normalized correction/decision lineage; deterministic v2 revalidation; separate Approver attestation/package/resubmission; byte/hash/finding/feedback/event/snapshot-stable v1; distinct v2 manifests and archive |
 | SUB-50 | Typed read-only source-to-approval audit timeline | 1 | 11 | Provenance application query + generated event contracts + audit web feature | Canonical submitted scope; complete material event sequence; exact actors/roles/orgs/timestamps/version refs/hashes; all eight relations; source→validation→snapshot→both-package claim trails; immutable v1/distinct v2 hashes; zero-mutation auditor denials |
 | SUB-53 | Reproducible clean-checkout operator commands | 2, 3 | 11 | Operations adapter over Compose and supported management/browser commands | Prerequisite validation; parameterized isolated ports; start/stop/migrate/seed/safe reset/API/worker/web/health; equal reset fingerprints; headless and paced headed one-command evidence; synthetic-only credential runbook |
-| SUB-55 | Canonical E2E certification | 1-4 | 11 | Cross-cutting | Passing recorded Playwright run |
+| SUB-55 | Canonical E2E certification | 1-4 | 11 | External browser/release certification over web, API, worker, nine capability owners, PostgreSQL, and MinIO | Exact visible user/org/role/permissions/logout for five personas; complete UI lifecycle; direct server denials and zero mutation; deterministic validation/package replay; immutable v1/distinct v2; clean headless plus paced headed JSON/video/trace/screenshots/logs/Compose evidence; immutable AI reviews and final synthetic-POC release decision |
 | SUB-59 | Enforceable modular-monolith layers, ownership, ontology split, and persistence rules | 1-4 | 11 and 01-10 reference | Architecture | ADR 0002 amendment, `modular-monolith.md`, machine policy and tests |
 | SUB-61 | Executable ontology, closed vocabulary, compatibility rules, and generated API/web contracts | 1-4 | 01-11 reference | Shared contract packages | Four versioned registries, two generated consumers, compatibility/drift/consumer tests |
 | SUB-62 | Physical module layers, capability repositories, table ownership, and explicit transactions | 1-4 | 01-11 reference | API/worker modular monolith | 39 table owners, 149 named statements, forbidden-import/ownership/transaction tests, clean Compose regression |

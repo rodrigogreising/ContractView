@@ -35,6 +35,8 @@ class CiCertificationTests(unittest.TestCase):
         self.assertIn("git rev-parse --is-shallow-repository", workflow)
         self.assertIn("refs/remotes/origin/${{ github.event.pull_request.base.ref }}", workflow)
         self.assertIn("git merge-base --is-ancestor", workflow)
+        self.assertIn("Paced headed Journey 11 browser certification", workflow)
+        self.assertIn("xvfb-run --auto-servernum", workflow)
 
     def test_numeric_version_ignores_tool_prefix(self) -> None:
         self.assertEqual((20, 20, 2), TOOLCHAINS.numeric_version("v20.20.2"))
@@ -101,7 +103,7 @@ class CiCertificationTests(unittest.TestCase):
         )
 
     def test_issue_evidence_coverage_is_complete(self) -> None:
-        for issue in ("SUB-26", "SUB-53"):
+        for issue in ("SUB-26", "SUB-53", "SUB-55"):
             with self.subTest(issue=issue):
                 profile = MANIFEST.load_evidence_coverage(issue)
                 self.assertEqual(
@@ -113,6 +115,10 @@ class CiCertificationTests(unittest.TestCase):
         self.assertIn("risk:human-authority", sub_26["riskAndGateLabels"])
         sub_53 = MANIFEST.load_evidence_coverage("SUB-53")
         self.assertIn("cv-review-operations-postmortem", sub_53["reviewSkills"])
+        sub_55 = MANIFEST.load_evidence_coverage("SUB-55")
+        self.assertEqual("Evidence Review", sub_55["projectStatus"])
+        self.assertTrue(sub_55["includeJourneyInCleanRuntime"])
+        self.assertIn("risk:ai-authority", sub_55["riskAndGateLabels"])
 
     def test_stale_prerequisite_is_rejected(self) -> None:
         with self.assertRaisesRegex(SystemExit, "not an ancestor of the PR base"):

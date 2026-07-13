@@ -27,6 +27,6 @@ test:
 	docker compose run --rm api pytest
 	docker compose run --rm web-test
 journey11-headless:
-	bash scripts/poc.sh certify-headless
+	bash scripts/poc.sh certify-headless "$(EVIDENCE_DIR)"
 journey11-headed:
-	bash scripts/poc.sh record-headed
+	bash scripts/poc.sh record-headed "$(EVIDENCE_DIR)"

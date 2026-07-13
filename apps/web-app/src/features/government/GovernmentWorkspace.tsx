@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ActiveConfigurationDto as ActiveConfiguration, IdentityDto as User } from "../../generated/contracts";
 import type { QueueItem, ReviewContext } from "../../domain/types";
-import { roleLabel } from "../../presentation/roleLabel";
+import { IdentityHeader } from "../../presentation/IdentityHeader";
 
 export function GovernmentWorkspace({
   user,
@@ -32,19 +32,7 @@ export function GovernmentWorkspace({
   const [lineKey, setLineKey] = useState("EXP-004");
   return (
     <>
-      <header className="identity">
-        <div>
-          <strong>{user.displayName}</strong>
-          <span>{user.organizationName}</span>
-        </div>
-        <span className="role-badge">{roleLabel(user.role)}</span>
-        {activeConfiguration && (
-          <span className="config-badge">
-            Active config v{activeConfiguration.version}
-          </span>
-        )}
-        <button onClick={onLogout}>Log out</button>
-      </header>
+      <IdentityHeader user={user} activeConfiguration={activeConfiguration} onLogout={onLogout} />
       <main>
         <p className="eyebrow">Synthetic role-based POC</p>
         <h1>Government queue</h1>

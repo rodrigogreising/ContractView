@@ -1,12 +1,12 @@
 import type { FormEvent } from "react";
 import type { ActiveConfigurationDto as ActiveConfiguration, AuditTimelineDto, ContractContextDto, GovernedConfigurationVersionDto as GovernedConfigurationVersion, IdentityDto as User, ValidationRunDto as ValidationRun } from "../generated/contracts";
 import type { ApprovalPreview, Attestation, Configuration, Extraction, Finding, GeneratedPackage, InvoiceDraft, Job, RevisionFeedback, Submission } from "../domain/types";
-import { roleLabel } from "../presentation/roleLabel";
 import { AuditorWorkspace } from "./AuditorWorkspace";
 import { ConfigurationWorkspace } from "./ConfigurationWorkspace";
 import { NgoApproverWorkspace } from "./NgoApproverWorkspace";
 import { NgoPreparerWorkspace } from "./NgoPreparerWorkspace";
 import { ContractSelector } from "../presentation/ContractSelector";
+import { IdentityHeader } from "../presentation/IdentityHeader";
 
 export function AuthenticatedWorkspace({
   user,
@@ -102,20 +102,9 @@ export function AuthenticatedWorkspace({
 }) {
   return (
     <>
-      <header className="identity">
-        <div>
-          <strong>{user.displayName}</strong>
-          <span>{user.organizationName}</span>
-        </div>
-        <span className="role-badge">{roleLabel(user.role)}</span>
-        {activeConfiguration && (
-          <span className="config-badge">
-            Active config v{activeConfiguration.version}
-          </span>
-        )}
+      <IdentityHeader user={user} activeConfiguration={activeConfiguration} onLogout={onLogout}>
         {contractId && <ContractSelector contexts={contractContexts} value={contractId} onChange={onSelectContract} />}
-        <button onClick={onLogout}>Log out</button>
-      </header>
+      </IdentityHeader>
       <main>
         <p className="eyebrow">Synthetic role-based POC</p>
         <h1>Workspace</h1>
