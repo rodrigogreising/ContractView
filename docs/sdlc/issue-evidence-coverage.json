@@ -138,5 +138,23 @@
         "Playwright observes human correction of the AI draft before deterministic validation and proves no AI/system authority action occurs"
       ]
     }
+  },
+  "SUB-80": {
+    "projectStatus": "Design Review",
+    "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",
+    "includeJourneyInCleanRuntime": false,
+    "reviewSkills": [
+      "cv-review-requirements-traceability",
+      "cv-review-implementation-tests",
+      "cv-review-release-readiness"
+    ],
+    "riskAndGateLabels": [
+      "gate:release-certification"
+    ],
+    "riskCoverage": {
+      "gate:release-certification": [
+        "Skill validation, semantic dry runs, repository policy tests, hosted certification, and an immutable AI-reviewed PR prove the reusable delivery control"
+      ]
+    }
   }
 }
