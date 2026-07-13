@@ -85,4 +85,5 @@ jobs:
           name: contractview-ci-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/ci
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
