@@ -111,3 +111,24 @@ Each material implementation change should answer:
 - Which user journey certification does it affect?
 - What must remain deterministic?
 - Which human actor retains authority?
+
+## Document-Intake MVP Extension
+
+ADR 0003 and the
+[machine-readable MVP policy](document-intake-mvp-policy.json) extend the same
+modular monolith; they do not authorize another deployable or a second domain
+model.
+
+| Capability | MVP ownership | Required seam |
+| --- | --- | --- |
+| Configuration | Immutable `DocumentProfileVersion`, profile fixtures/evaluation, lifecycle, confirmed assignment, and exact active bundle reference | Configuration commands and version queries |
+| Artifacts | Immutable source bytes and hash | Artifact query port |
+| Extraction | Versioned local OCR, fingerprint, noncanonical cluster projection, exact profile match, and draft fields | Job command plus immutable extraction snapshot |
+| Invoices | Editable draft and immutable snapshots carrying exact profile/configuration references | Invoice command/query ports |
+| Provenance | Profile lifecycle events, source locations, and reconstruction references | Append-only writer and read-only audit projection |
+| Web | Administrator and role landing-page projections | Generated HTTP DTOs; no canonical state or authority |
+
+Changed or unknown layouts produce `needs_profile_review` and no canonical
+expense. Cluster projections may suggest families but cannot assign, approve,
+or activate a profile. SUB-75 and SUB-76 must extend executable shared
+contracts, table ownership, and named statements before runtime data is added.

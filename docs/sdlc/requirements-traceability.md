@@ -1,8 +1,9 @@
-# POC Requirements Traceability
+# ContractView Requirements Traceability
 
-Status: Evidence Review; all terminal prerequisites merged and SUB-55 certification active
+Status: Journey 11 POC certified; SUB-74 configurable document-intake MVP
+design review active
 
-Last updated: 2026-07-12
+Last updated: 2026-07-13
 
 ## Trace
 
@@ -62,6 +63,21 @@ Last updated: 2026-07-12
 | Web capability and authority separation | ADR 0002 SUB-65 note | React transport/features/workspaces plus server identity read model | Architecture; Security/privacy; Human authority; Journey 11 | No fetch outside transport, no production demo/fixed-contract literal, canonical contract-context tests, five role workspaces, 17 frontend tests |
 | Public disclosure without private control-plane or identity leakage | Existing synthetic/non-branded POC boundary; no runtime architecture change | Publication export and fixture-generation tooling | Security/privacy; Release readiness | Allowlisted history-free tree, neutral identity rewrite, reserved-domain catalogs, binary metadata inspection, SHA-256 manifest, candidate-owned clean regression |
 | Future extraction seams without distributed POC complexity | ADR 0002 | Capability application ports and events | Architecture coverage; Operational readiness when extraction occurs | Policy rejects shared tables and network-service expansion |
+
+## Configurable Document-Intake MVP Trace
+
+| Requirement | ADR pillar/decision | Canonical owner | Boundary evidence | Journey 12 criterion | Release evidence | Delivery issue |
+| --- | --- | --- | --- | --- | --- | --- |
+| `MVP-REQ-01` Govern immutable document profile versions through `draft -> tested -> approved -> active -> superseded -> retired` | ADR 0001 pillars 2-4; ADR 0003 decisions 1 and 4 | Configuration | `docs/architecture/service-boundaries.md` Configuration row; `docs/architecture/document-intake-mvp-policy.json` lifecycle/invariants | Exact lifecycle, immutable evidence, assigned-human approval, prospective activation, stable history | `scripts/tests/test_mvp_design_evidence.py`; SUB-75/76 manifests; Journey 12 lifecycle evidence | SUB-75, SUB-76 |
+| `MVP-REQ-02` Compose profiles from the executable reimbursement ontology rather than a parallel schema or customer branch | ADR 0001 pillar 2; ADR 0003 decision 1 | Shared contracts and Configuration | `docs/architecture/domain-model.md`; `docs/architecture/service-boundaries.md` Configuration boundary | Contract compatibility and exact profile/configuration references | `scripts/tests/test_mvp_design_evidence.py`; SUB-75/76 contract compatibility evidence | SUB-75, SUB-76 |
+| `MVP-REQ-03` Derive reproducible noncanonical document clusters without automatic assignment | ADR 0001 pillars 1-3; ADR 0003 decision 2 | Extraction | `docs/architecture/data-flow.md`; `docs/architecture/service-boundaries.md` Extraction row | Identical-input fingerprint equality and zero cluster assignment/activation | `scripts/tests/test_mvp_design_evidence.py`; SUB-76 deterministic fingerprint evidence | SUB-76 |
+| `MVP-REQ-04` Support narrow synthetic English and Spanish vendor-invoice profiles | ADR 0003 decisions 1, 3, and 6 | Configuration, Extraction, Test fixtures | `docs/architecture/document-intake-mvp-policy.json`; `docs/architecture/service-boundaries.md` | At least two fixtures per profile with 100% required field/source exactness | `scripts/tests/test_mvp_design_evidence.py`; SUB-76 fixture manifest; `docs/journeys/12-configurable-document-intake-mvp.md` | SUB-76 |
+| `MVP-REQ-05` Route changed and unknown layouts safely before canonical invoice use | ADR 0001 pillars 1, 3, and 4; ADR 0003 decision 3 | Extraction and Invoices | `docs/architecture/data-flow.md`; `docs/architecture/service-boundaries.md` closed routing contract | 100% `needs_profile_review`; zero canonical expense/validation mutation | `scripts/tests/test_mvp_design_evidence.py`; SUB-76 zero-mutation integration evidence; Journey 12 | SUB-76 |
+| `MVP-REQ-06` Give Configuration Administrators governed history, detail, diff, evaluation, impact, and provenance views | ADR 0003 decisions 1, 5, and 7 | Configuration and Web projection | `docs/architecture/system-map.md`; `docs/architecture/service-boundaries.md` Web row | Normal authenticated UI commands; server scope; visible exact versions and next action | `scripts/tests/test_mvp_design_evidence.py`; SUB-77 frontend/authorization manifest; Journey 12 | SUB-77 |
+| `MVP-REQ-07` Give all five personas useful landing pages over one canonical workflow | ADR 0001 pillar 4; ADR 0003 decision 7 | Web projections and owning server capabilities | `docs/architecture/system-map.md`; `docs/architecture/poc-boundary-review.md` | Identity/org/role/context/authority/next action/logout for every persona | `scripts/tests/test_mvp_design_evidence.py`; SUB-78 Playwright artifacts; `docs/journeys/12-configurable-document-intake-mvp.md` | SUB-78 |
+| `MVP-REQ-08` Keep configuration, profile, invoice, validation, package, and decision history reproducible after successors | ADR 0001 pillars 1-3; ADR 0003 decision 4 | Configuration, Invoices, Validation, Packages, Provenance | `docs/architecture/domain-model.md`; `docs/architecture/data-flow.md`; `docs/architecture/service-boundaries.md` | Historical profile/config refs, results, package bytes/hashes, and reconstruction remain stable | `scripts/tests/test_mvp_design_evidence.py`; SUB-75/76 manifests; SUB-78 audit/Playwright artifacts | SUB-75, SUB-76, SUB-78 |
+| `MVP-REQ-09` Preserve server-side tenant and human authority with zero-mutation denials | ADR 0001 pillar 4; ADR 0003 decisions 5 and 7 | Identity/RBAC and each command owner | `docs/architecture/poc-boundary-review.md`; `docs/architecture/service-boundaries.md` | Direct/indirect cross-scope, wrong-role, stale, and invalid-transition denials mutate nothing | `scripts/tests/test_mvp_design_evidence.py`; SUB-75/77 authorization manifests; SUB-78 direct-denial evidence | SUB-75, SUB-77, SUB-78 |
+| `MVP-REQ-10` Use synthetic data and deterministic/local adapters with no hosted model or runtime AI authority | ADR 0001 pillar 3; ADR 0003 decision 6 | Test fixtures, Extraction, AI/config governance | `docs/architecture/document-intake-mvp-policy.json`; `docs/architecture/poc-boundary-review.md` | Positive synthetic catalogs, pinned local OCR, no external key/call, system/AI empty authority | `scripts/tests/test_mvp_design_evidence.py`; SUB-76 fixture/evaluation manifest; SUB-78 retained environment evidence | SUB-76, SUB-78 |
 
 ## Deferred And Canceled For POC
 

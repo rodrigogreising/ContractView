@@ -155,3 +155,28 @@ Certified releases must preserve evidence for:
 - Human authority events.
 - Generated package hashes and manifests.
 - Audit reconstruction queries or exports.
+
+## Document-Intake MVP Types
+
+`DocumentProfileVersion` is a Configuration-owned composition of the existing
+`Artifact`, `Schema`, typed `Field`, `Mapping`, `Rule`, `Workflow`, `View`,
+`ConfigurationBundle`, and `Event` primitives. It is not a second ontology.
+An immutable version contains the artifact class, BCP 47 language tag,
+required/source-located fields, normalization and ledger-match rules,
+fingerprint specification, fixture-set version, evaluation-evidence hash, and
+predecessor/successor references.
+
+`DocumentClusterProjection` is an Extraction-owned, noncanonical read model. A
+versioned deterministic fingerprint is computed from declared artifact media,
+language, normalized OCR tokens, page geometry, and anchor positions. The
+projection can support an administrator suggestion but cannot create a profile
+assignment or any lifecycle event.
+
+Runtime matching records either `recognized_profile_draft` with the exact
+active profile/configuration references or `needs_profile_review` with retained
+artifact/OCR/fingerprint evidence. The latter creates no canonical expense.
+Existing invoice snapshots and downstream evidence retain their original exact
+references after a successor profile activates.
+
+The shared-contract registry changes needed to make these concepts executable
+belong to SUB-75 and SUB-76. SUB-74 defines and tests the design contract only.

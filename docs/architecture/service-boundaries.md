@@ -340,3 +340,24 @@ human authority.
 - Prohibited responsibilities: correction cannot mutate v1 evidence, select an
   arbitrary draft line, create validation findings, attest, submit, approve, or
   invoke AI.
+
+## Configurable Document-Intake MVP Boundary (SUB-74)
+
+| Owner | Owns | Collaborates through | Must not |
+| --- | --- | --- | --- |
+| Configuration | Profile definitions, immutable lifecycle, fixtures, evaluation evidence, confirmed associations, exact active bundle reference | Application commands, owner repository, immutable version query | Store artifact bytes, run OCR, auto-confirm clusters, mutate runtime invoices |
+| Artifacts | Source bytes and hashes | Immutable artifact query port | Interpret layout or select profiles |
+| Extraction | OCR execution, deterministic fingerprint, cluster projection, exact match result, draft fields | Versioned job and immutable extraction snapshot | Activate configuration, create canonical expense for unknown layouts, decide validation or human actions |
+| Invoices | Editable draft plus immutable runtime snapshots with exact profile/configuration refs | Invoice commands and queries | Rewrite prior snapshots after activation |
+| Provenance | Profile lifecycle events, source lineage, runtime references, audit reconstruction | Append-only evidence port and read-only projection | Become workflow state or a command-side cross-table escape hatch |
+| Web | Administrator and role projections | Generated DTOs and normal authenticated HTTP commands | Own policy, lifecycle, profile matching, or authority |
+
+The feature remains in the existing FastAPI deployment and worker. Direct
+cross-capability SQL, shared mutable ORM models, implicit generic extraction,
+and a new profile service are prohibited. The executable ownership catalogs
+must be extended by SUB-75/SUB-76 before a table, repository, or statement is
+introduced.
+
+The owner-to-owner routing contract is closed: exact active matches return
+`recognized_profile_draft`; changed or unknown layouts return
+`needs_profile_review` with retained evidence and no canonical expense.

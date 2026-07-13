@@ -188,3 +188,33 @@ The final replay evidence verifies retained provider/model/prompt/parser
 identifiers without calling live AI. The permission summary is derived from
 the closed role vocabulary and grants no action. A system or AI actor remains
 unable to activate configuration or perform any human-authority transition.
+
+## SUB-74 Configurable Document-Intake MVP AI And Configuration Decision
+
+The successor MVP deliberately adds no runtime AI capability. Pinned local OCR
+is a replaceable extraction adapter and its exact version is a deterministic
+input; it is not profile, validation, or workflow authority. Profile matching,
+normalization, ledger reconciliation, cluster fingerprinting, validation,
+workflow, and package generation use declared deterministic contracts.
+
+Hosted model calls, runtime LLM extraction, external model credentials,
+AI-assisted profile drafting, opaque classification, and automatic cluster-to-
+profile assignment are prohibited. A cluster is a noncanonical suggestion. An
+assigned human Configuration Administrator must confirm a draft association,
+test immutable fixtures, approve the exact profile version, and activate a
+prospective configuration bundle. System and AI actors have empty authority
+sets.
+
+The fixture evaluation is a closed, versioned synthetic test set containing at
+least two English and two Spanish supported invoices, one changed layout, one
+unknown layout, and one successor historical replay. Required normalized
+fields/source locations must be 100% exact; changed/unknown safe routing must be
+100%; canonical mutation and automatic assignment must be zero. Evaluation
+records retain fixture-set, expected-record, OCR/parser, fingerprint, profile,
+and configuration versions plus content hashes.
+
+The historical POC AI record remains valid only for the certified Journey 11
+baseline. It neither authorizes nor supplies runtime AI behavior for Journey
+12. Any future proposal to add model-assisted profile drafting or hosted
+extraction is a new scoped governance decision with separate data approval,
+evaluation, failure thresholds, human-review rules, and release gate.

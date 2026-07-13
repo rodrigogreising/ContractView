@@ -1,0 +1,183 @@
+{
+  "policyVersion": "1.0.0",
+  "controllingIssue": "SUB-74",
+  "epic": "SUB-73",
+  "deploymentModel": "modular-monolith",
+  "implementationStories": ["SUB-75", "SUB-76", "SUB-77", "SUB-78"],
+  "profileLifecycle": [
+    "draft",
+    "tested",
+    "approved",
+    "active",
+    "superseded",
+    "retired"
+  ],
+  "owners": {
+    "configuration": [
+      "configuration_bundle",
+      "document_profile_version",
+      "profile_fixture_set",
+      "profile_evaluation_evidence",
+      "profile_assignment"
+    ],
+    "artifacts": ["source_artifact_bytes", "source_artifact_hash"],
+    "extraction": [
+      "ocr_execution",
+      "document_fingerprint",
+      "cluster_projection",
+      "profile_match_result",
+      "draft_extracted_fields"
+    ],
+    "provenance": [
+      "profile_version_references",
+      "source_location_lineage",
+      "profile_lifecycle_events"
+    ],
+    "web": [
+      "configuration_administrator_projection",
+      "role_workspace_projections"
+    ]
+  },
+  "profileContract": {
+    "ontologyComposition": [
+      "Artifact",
+      "Schema",
+      "Field",
+      "Mapping",
+      "Rule",
+      "Workflow",
+      "View",
+      "ConfigurationBundle",
+      "Event"
+    ],
+    "requiredProperties": [
+      "profile_id",
+      "version",
+      "artifact_class",
+      "language_tag",
+      "vendor_aliases",
+      "required_fields",
+      "normalization_rules",
+      "ledger_match_rules",
+      "fingerprint_specification",
+      "fixture_set_version",
+      "evaluation_evidence_hash"
+    ],
+    "activeBundleReference": "exact_profile_id_and_version",
+    "activationIsProspective": true,
+    "historicalReferencesAreImmutable": true
+  },
+  "canonicalInvariants": {
+    "submittedDataImmutable": true,
+    "stakeholderSpecificCopiesAllowed": false,
+    "profileActivationRequiresApprovedState": true,
+    "unapprovedConfigurationRuntimeUseAllowed": false
+  },
+  "clusterProjection": {
+    "canonical": false,
+    "deterministic": true,
+    "signals": [
+      "artifact_media_type",
+      "language_tag",
+      "normalized_text_tokens",
+      "page_geometry",
+      "anchor_positions"
+    ],
+    "fingerprintAlgorithm": "sha256-canonical-json-v1",
+    "suggestionCreatesProfileAssignment": false,
+    "administratorConfirmationRequired": true
+  },
+  "extractionRouting": {
+    "supportedMatchResult": "recognized_profile_draft",
+    "unknownLayoutResult": "needs_profile_review",
+    "changedLayoutResult": "needs_profile_review",
+    "canonicalExpenseCreatedForUnknown": false,
+    "validationRunCreatedForUnknown": false,
+    "humanReviewRequiredBeforeCanonicalUse": true
+  },
+  "supportedSyntheticProfiles": [
+    {
+      "artifactClass": "vendor_invoice",
+      "languageTag": "en",
+      "fixtureCountMinimum": 2
+    },
+    {
+      "artifactClass": "vendor_invoice",
+      "languageTag": "es",
+      "fixtureCountMinimum": 2
+    }
+  ],
+  "fixtureEvaluation": {
+    "dataSource": "closed_synthetic_catalogs_and_deterministic_generators",
+    "requiredCases": [
+      "english_supported_layout",
+      "spanish_supported_layout",
+      "changed_layout",
+      "unknown_layout",
+      "profile_successor_historical_replay"
+    ],
+    "supportedFieldExactness": 1.0,
+    "supportedSourceLocationExactness": 1.0,
+    "unknownSafeRoutingRate": 1.0,
+    "canonicalMutationOnUnknown": 0,
+    "identicalInputFingerprintEquality": true,
+    "historicalReferenceStability": true
+  },
+  "runtimeAutomation": {
+    "localOcrAllowed": true,
+    "hostedModelAllowed": false,
+    "runtimeLlmAllowed": false,
+    "aiProfileDraftingAllowed": false,
+    "aiAuthorityAllowed": false,
+    "deterministicProfileMatchingRequired": true,
+    "deterministicNormalizationRequired": true
+  },
+  "runtimeEvidence": {
+    "requiredVersionReferences": [
+      "artifact_hash",
+      "ocr_version",
+      "parser_version",
+      "fingerprint_specification_version",
+      "profile_id",
+      "profile_version",
+      "configuration_bundle_version",
+      "human_review_event_id"
+    ],
+    "snapshotReferencesAreImmutable": true
+  },
+  "authority": {
+    "configurationAdministrator": [
+      "create_profile_draft",
+      "confirm_cluster",
+      "test_profile",
+      "approve_profile",
+      "activate_configuration_bundle"
+    ],
+    "ngoPreparer": ["review_draft_fields", "route_unknown_document"],
+    "ngoApprover": ["attest", "submit"],
+    "governmentReviewer": ["return", "approve"],
+    "auditor": ["read_reconstruction"],
+    "system": [],
+    "ai": []
+  },
+  "roleWorkspaceIntent": {
+    "configurationAdministrator": "govern_configuration_and_profiles",
+    "ngoPreparer": "prepare_evidence_and_resolve_review",
+    "ngoApprover": "review_attest_and_submit_exact_version",
+    "governmentReviewer": "review_return_or_approve_submitted_version",
+    "auditor": "reconstruct_without_mutation"
+  },
+  "outOfScope": [
+    "real_or_customer_data",
+    "customer_or_employer_branding",
+    "hosted_model_calls",
+    "runtime_llm_extraction",
+    "ai_assisted_profile_drafting",
+    "automatic_profile_assignment",
+    "multilingual_user_interface",
+    "production_deployment",
+    "payment_execution",
+    "notifications",
+    "broad_document_class_support"
+  ]
+}

@@ -34,10 +34,19 @@ Each journey must define:
 | AI-assisted extraction requiring human correction | [09-ai-assisted-extraction-human-correction.md](09-ai-assisted-extraction-human-correction.md) | Prove AI assistance remains traceable and human-reviewed. |
 | Config/rule version change applied prospectively | [10-config-rule-version-change-prospectively.md](10-config-rule-version-change-prospectively.md) | Prove rule changes do not rewrite historical submissions. |
 | Role-based POC demo from configuration to approval | [11-poc-role-based-demo.md](11-poc-role-based-demo.md) | Certify the synthetic POC through one recorded UI journey with distinct authenticated personas. |
+| Configurable document-intake MVP | [12-configurable-document-intake-mvp.md](12-configurable-document-intake-mvp.md) | Certify governed English/Spanish profiles, safe unknown routing, role workspaces, prospective activation, and historical reconstruction. |
 
 ## POC Certification Scope
 
 For the role-based engineering POC, Journey 11 is the controlling completion journey. Journeys 01-10 remain production-oriented reference specifications and are not individually required for POC completion. Journey 11 incorporates their core upload, validation, authority, return/resubmission, versioning, and audit invariants at reduced scope.
+
+## Configurable Document-Intake MVP Scope
+
+Journey 12 is the controlling terminal journey for `SUB-73`. It builds on the
+certified Journey 11 baseline but must independently prove the MVP design in
+ADR 0003. Journey 11 evidence is historical and cannot substitute for profile
+governance, English/Spanish fixture evaluation, safe unknown routing, role
+landing pages, or prospective profile activation.
 
 ## Release Evidence
 

@@ -212,3 +212,32 @@ for cross-capability command SQL.
 - Failed package generation must not create a submission.
 - Failed integration submission must not corrupt invoice state.
 - Retention or deletion workflows must preserve required audit evidence through legal hold, tombstone, hash retention, or redacted lineage records.
+
+## Document-Intake MVP Profile And Routing Flow
+
+```mermaid
+flowchart LR
+  DraftProfile["Configuration Administrator creates profile draft"] --> Test["Freeze and test against versioned synthetic fixtures"]
+  Test --> Approve["Assigned human approves exact profile version"]
+  Approve --> Activate["Prospective configuration bundle activation"]
+  Artifact["Immutable source artifact"] --> OCR["Pinned local OCR/parser execution"]
+  OCR --> Fingerprint["Deterministic fingerprint and noncanonical cluster projection"]
+  Activate --> Match["Exact active profile match"]
+  Fingerprint --> Match
+  Match -->|recognized| DraftFields["recognized_profile_draft"]
+  Match -->|changed or unknown| Review["needs_profile_review"]
+  DraftFields --> HumanReview["NGO Preparer reviews draft fields"]
+  Review --> Evidence["Retain artifact/OCR/fingerprint evidence; no canonical expense"]
+```
+
+Every profile definition, fixture set, evaluation result, approval, active
+bundle reference, OCR/parser execution, fingerprint specification, match
+result, draft field, and human correction retains an immutable version or
+content hash. A cluster is an Extraction-owned disposable projection. Only a
+Configuration command by an assigned administrator may turn a confirmed
+suggestion into a draft association, and the full `draft -> tested -> approved
+-> active -> superseded -> retired` lifecycle still applies.
+
+Profile activation is prospective. Historical invoice snapshots, validation
+inputs, packages, submissions, and audit views continue to reference the exact
+profile/configuration versions originally used.
