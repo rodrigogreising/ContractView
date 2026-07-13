@@ -292,8 +292,8 @@ release promotion remains a separately human decision.
 Current candidate decision: **Blocked** pending exact PR-head hosted checks,
 the paced headed Journey 12 recording, eight immutable-diff AI approvals,
 merge, and clean post-merge verification. The implementation and local
-headless/two-pass evidence are complete; this pre-PR decision is not a defect
-waiver or scope reduction.
+headless/two-pass evidence are complete; this candidate-gate decision is not a
+defect waiver or scope reduction.
 
 The MVP becomes eligible for **Certified** only when the exact candidate proves
 all five normal persona sessions, useful bounded landing pages, exact

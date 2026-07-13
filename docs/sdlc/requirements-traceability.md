@@ -1,7 +1,7 @@
 # ContractView Requirements Traceability
 
 Status: Journey 11 POC certified; SUB-74 through SUB-77 merged; SUB-78
-terminal Journey 12 certification in Build
+terminal Journey 12 candidate in Evidence Review
 
 Last updated: 2026-07-13
 

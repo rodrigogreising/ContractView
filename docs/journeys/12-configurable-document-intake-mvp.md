@@ -1,7 +1,7 @@
 # Journey 12: Configurable Document-Intake MVP
 
-Status: Build (`SUB-74` through `SUB-77` merged; `SUB-78` terminal
-certification in progress)
+Status: Evidence Review (`SUB-74` through `SUB-77` merged; `SUB-78` terminal
+candidate in immutable PR review)
 
 Controlling epic: `SUB-73`
 
