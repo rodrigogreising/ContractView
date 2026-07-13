@@ -294,3 +294,23 @@ Before a configuration test record is created, Configuration resolves each
 profile id/version/hash and reproduces its profile hash, fixture hash,
 case-class metrics, evaluation result, and human approval. Reference syntax
 alone cannot create passing test evidence.
+
+## SUB-78 Prospective And Historical Role Context Flow
+
+```mermaid
+flowchart LR
+  Session["Canonical session and contract assignment"] --> Active["Configuration active summary plus exact profile refs"]
+  Active --> Dashboard["Noncanonical role dashboard"]
+  Invoice["Exact invoice configuration/profile refs"] --> Dashboard
+  Submission["Submitted validation and package manifests"] --> Review["Government exact review context"]
+  Submission --> Audit["Auditor historical package context"]
+  Successor["Tested, human-approved prospective successor"] --> Active
+  Invoice --> Stable["Historical v1/v2 refs and hashes unchanged"]
+  Audit --> Stable
+```
+
+The browser never joins or rewrites canonical state. Each server projection
+resolves the actor's assignment and returns only its role-appropriate context.
+Successor activation changes the Configuration-owned active pointer for future
+intake. Submitted invoice, validation, package, decision, and audit evidence
+continues to resolve the original exact references.

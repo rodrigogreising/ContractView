@@ -300,6 +300,9 @@ def test_bounded_admin_draft_and_active_summary_for_later_personas():
         assert summary["id"] == active["id"]
         assert summary["version"] == active["version"]
         assert summary["activatedAt"]
+        assert {reference["kind"] for reference in summary["documentProfiles"]} == {"document_profile"}
+        assert {reference["version"] for reference in summary["documentProfiles"]} == {1}
+        assert all(len(reference["sha256"]) == 64 for reference in summary["documentProfiles"])
     with pytest.raises(ForbiddenError):
         get_draft(PREPARER, CONTRACT)
     with pytest.raises(ForbiddenError):

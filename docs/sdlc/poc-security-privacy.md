@@ -531,3 +531,30 @@ states through accessible status/alert regions. The local retained browser
 evidence contains reserved-domain identities and synthetic fixture metadata
 only. The existing POC exclusions for production identity, retention,
 malware scanning, penetration testing, and real-data approval remain.
+
+## SUB-78 Role Projection And Terminal Certification Security Decision
+
+SUB-78 retains the closed synthetic/local data boundary. Role dashboards show
+only canonically assigned contract names, reserved-domain identities, exact
+configuration/profile references, and submitted evidence already authorized
+for the role. They do not render fixture transcripts, session tokens, secrets,
+foreign contract data, or configuration drafts to the Auditor.
+
+The active summary is prospective and scoped to roles already permitted to read
+active configuration. The Auditor continues through the submitted-only
+Provenance projection and explicitly does not receive active/draft
+configuration access. Government context is derived from the exact submitted
+invoice and agency queue assignment. Every action remains re-authorized on the
+server; visible, hidden, or disabled UI state is never the security boundary.
+
+The clean browser run proves normal login/logout between all five personas,
+direct forbidden invoice creation for Administrator and Auditor, safe
+changed/unknown routing, separate human authority, prospective successor
+activation, and historical package reconstruction. Integration tests preserve
+zero-mutation role/tenant denials and exact version/hash equality.
+
+Retained video, trace, screenshots, JSON, and logs contain synthetic fixture
+data and public demo credentials only. They remain local/CI development
+evidence, not production data. Existing exclusions for SSO/MFA, malware
+scanning, hosted backup/legal hold/retention, penetration testing, and real-data
+approval remain release blockers for any hosted or real deployment.

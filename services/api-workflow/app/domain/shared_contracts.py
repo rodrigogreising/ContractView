@@ -734,6 +734,7 @@ class ActiveConfigurationDto(ContractModel):
     id: str
     version: int
     activated_at: str
+    document_profiles: list[VersionReference] | None = None
 
 
 class SourceLocationContract(ContractModel):
@@ -876,6 +877,8 @@ class AuditPackageDto(ContractModel):
     template_id: str
     template_version: int
     template_hash: str = Field(pattern='^[a-f0-9]{64}$')
+    configuration_version: VersionReference | None = None
+    document_profiles: list[VersionReference] | None = None
     manifest: dict[str, Any]
     build_input: dict[str, Any]
 

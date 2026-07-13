@@ -73,6 +73,8 @@ class OperatorCommandTests(unittest.TestCase):
             "numbered migrations",
             "make journey11-headless",
             "make journey11-headed",
+            "make journey12-headless",
+            "make journey12-headed",
             "video",
             "trace",
             "screenshots",

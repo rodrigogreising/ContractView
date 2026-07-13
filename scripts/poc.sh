@@ -20,8 +20,8 @@ Commands:
   health            Verify API, worker, and web readiness.
   status            Show Compose service state.
   logs              Follow all Compose service logs.
-  certify-headless  Run clean Journey 11 headlessly with retained evidence.
-  record-headed     Run the paced headed Journey 11 recording.
+  certify-headless  Run clean Journey 12 headlessly with retained evidence.
+  record-headed     Run the paced headed Journey 12 recording.
   help              Show this command list.
 EOF
 }
@@ -90,9 +90,9 @@ run_journey() {
   mode="$1"
   output="${2:-}"
   if [[ -n "$output" ]]; then
-    exec bash scripts/run_journey11.sh "$mode" "$output"
+    exec bash scripts/run_journey12.sh "$mode" "$output"
   fi
-  exec bash scripts/run_journey11.sh "$mode"
+  exec bash scripts/run_journey12.sh "$mode"
 }
 
 command="${1:-help}"

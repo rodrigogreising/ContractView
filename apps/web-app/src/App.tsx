@@ -96,6 +96,10 @@ export function App() {
   const refreshConfiguration = useCallback(async (role?: string) => {
     const requested = contractId;
     if (!requested) return;
+    if (role === "auditor") {
+      setActiveConfiguration(null);
+      return;
+    }
     const active = await loadActiveConfiguration(requested);
     if (currentContract.current !== requested) return;
     setActiveConfiguration(active.configuration);
@@ -324,7 +328,7 @@ export function App() {
     setMessage("");
   }
 
-  if (user?.role === "government_reviewer") return <GovernmentWorkspace user={user} activeConfiguration={activeConfiguration} queue={queue} review={reviewContext} onInspect={inspectQueue} onDecision={decideQueue} message={message} onLogout={logout} />;
+  if (user?.role === "government_reviewer") return <GovernmentWorkspace user={user} contract={contractContexts.find((context) => context.contractId === contractId) || null} activeConfiguration={activeConfiguration} queue={queue} review={reviewContext} onInspect={inspectQueue} onDecision={decideQueue} message={message} onLogout={logout} />;
   if (user) return <AuthenticatedWorkspace user={user} contractContexts={contractContexts} contractId={contractId || ""} onSelectContract={selectContract} jobs={jobs} extractions={extractions} draft={draft} configuration={configuration} configurationDraftRevision={configurationDraftRevision} configurationEvidence={configurationEvidence} configurationProfiles={configurationProfiles} documentClusters={documentClusters} activeConfiguration={activeConfiguration} configurationLifecycle={configurationLifecycle} validation={validation} findings={findings} revisionFeedback={revisionFeedback} auditTimeline={auditTimeline} approvalPreview={approvalPreview} attestation={attestation} generatedPackage={generatedPackage} submission={submission} message={message} onLogout={logout} onUpload={upload} onReview={review} onAssemble={assemble} onValidate={validate} onResolveFinding={resolveFinding} onCorrectRevision={correctReturnedRevision} onAttest={submitAttestation} onGeneratePackage={generatePackage} onSubmitInvoice={submitInvoice} onSaveConfiguration={saveConfiguration} onTestConfiguration={testConfiguration} onApproveConfiguration={approveConfiguration} onActivateConfiguration={activateConfiguration} onSupersedeConfiguration={supersedeConfiguration} onRetireConfiguration={retireConfiguration} onRollbackConfiguration={rollbackConfiguration} onSelectConfigurationVersion={selectConfigurationVersion} onCreateProfile={createDocumentProfile} onTestProfile={(id, rationale) => runProfileAction(id, "test", rationale)} onApproveProfile={(id, rationale) => runProfileAction(id, "approve", rationale)} onRetireProfile={(id, rationale) => runProfileAction(id, "retire", rationale)} onStageProfile={stageProfileReference} onConfirmCluster={confirmCluster} />;
   return <main>
     <p className="eyebrow">Synthetic role-based POC</p><h1>Sign in</h1>

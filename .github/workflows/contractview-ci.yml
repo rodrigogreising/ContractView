@@ -54,10 +54,10 @@ jobs:
           bash scripts/ci/run_static.sh 2>&1 | tee artifacts/ci/static.log
       - name: Two-pass hermetic Compose certification
         run: bash scripts/ci/run_hermetic.sh artifacts/ci
-      - name: Headless Journey 11 browser certification
-        run: bash scripts/run_journey11.sh headless artifacts/ci/journey11
-      - name: Paced headed Journey 11 browser certification
-        run: xvfb-run --auto-servernum bash scripts/run_journey11.sh headed artifacts/ci/journey11-headed
+      - name: Headless Journey 12 browser certification
+        run: bash scripts/run_journey12.sh headless artifacts/ci/journey12
+      - name: Paced headed Journey 12 browser certification
+        run: xvfb-run --auto-servernum bash scripts/run_journey12.sh headed artifacts/ci/journey12-headed
       - name: Verify immutable PR history
         if: github.event_name == 'pull_request'
         run: |

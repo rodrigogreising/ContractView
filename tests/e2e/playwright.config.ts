@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
 
-const artifacts = path.resolve(process.env.JOURNEY11_ARTIFACT_DIR || "../../artifacts/journey11");
+const artifacts = path.resolve(process.env.JOURNEY12_ARTIFACT_DIR || process.env.JOURNEY11_ARTIFACT_DIR || "../../artifacts/journey12");
 
 export default defineConfig({
   testDir: "./specs",
@@ -18,12 +18,12 @@ export default defineConfig({
     ["html", { outputFolder: path.join(artifacts, "html"), open: "never" }],
   ],
   use: {
-    baseURL: process.env.JOURNEY11_BASE_URL || "http://127.0.0.1:4173",
-    headless: process.env.JOURNEY11_HEADED !== "true",
-    launchOptions: { slowMo: Number(process.env.JOURNEY11_SLOW_MO_MS || "0") },
+    baseURL: process.env.JOURNEY12_BASE_URL || process.env.JOURNEY11_BASE_URL || "http://127.0.0.1:4173",
+    headless: (process.env.JOURNEY12_HEADED || process.env.JOURNEY11_HEADED) !== "true",
+    launchOptions: { slowMo: Number(process.env.JOURNEY12_SLOW_MO_MS || process.env.JOURNEY11_SLOW_MO_MS || "0") },
     screenshot: "only-on-failure",
     trace: "on",
     video: "on",
   },
-  projects: [{ name: "journey11-chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [{ name: "journey12-chromium", use: { ...devices["Desktop Chrome"] } }],
 });

@@ -297,6 +297,65 @@
       ]
     }
   },
+  "SUB-78": {
+    "projectStatus": "Build",
+    "certificationRationale": "The terminal MVP leaf must prove useful bounded role entry points and the complete governed configuration-to-audit journey, including Spanish intake, safe changed/unknown routing, prospective successor activation, and immutable historical reconstruction.",
+    "includeJourneyInCleanRuntime": true,
+    "reviewSkills": [
+      "cv-review-adr-architecture",
+      "cv-review-requirements-traceability",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-implementation-tests",
+      "cv-review-journey-certification",
+      "cv-review-release-readiness"
+    ],
+    "riskAndGateLabels": [
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:ai-governance",
+      "gate:config-governance",
+      "gate:release-certification",
+      "risk:sensitive-data",
+      "risk:ai-authority",
+      "risk:human-authority",
+      "risk:auditability",
+      "risk:configuration-drift"
+    ],
+    "riskCoverage": {
+      "gate:architecture": [
+        "Role dashboards remain noncanonical Web projections over generated exact-version DTOs; no deployable, table, lifecycle owner, or command authority is added"
+      ],
+      "gate:security-privacy": [
+        "Canonical server sessions and assignments scope every read/action; role pages explain unavailable authority, Auditor sees submitted historical context only, and direct forbidden commands remain server-denied"
+      ],
+      "gate:ai-governance": [
+        "Pinned local OCR creates draft fields only; deterministic profile matching, validation, configuration governance, and separate human decisions remain authoritative"
+      ],
+      "gate:config-governance": [
+        "The browser tests, approves, and prospectively supersedes configuration/profile references while historical invoice and package references remain unchanged"
+      ],
+      "gate:release-certification": [
+        "Pinned static, two-pass hermetic Compose, clean headless and paced headed Journey 12, immutable AI review, hosted CI, and post-merge reruns retain machine-readable evidence"
+      ],
+      "risk:sensitive-data": [
+        "Only closed synthetic English/Spanish fixtures and reserved-domain personas enter retained local/CI evidence; no hosted model credential or real data is used"
+      ],
+      "risk:ai-authority": [
+        "The journey proves OCR output remains reviewable draft and that system/AI performs no activation, attestation, submission, return, or approval"
+      ],
+      "risk:human-authority": [
+        "Distinct normal sessions preserve Configuration Administrator, NGO Approver, and Government Reviewer authority boundaries with logout between personas"
+      ],
+      "risk:auditability": [
+        "Typed audit package projections expose exact configuration/profile references, manifests, lineage, actor events, and unchanged v1/distinct v2 package hashes"
+      ],
+      "risk:configuration-drift": [
+        "Active summaries show prospective exact profile references while invoice, government, and audit projections retain their original configuration/profile ids, versions, and hashes"
+      ]
+    }
+  },
   "SUB-80": {
     "projectStatus": "Design Review",
     "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",

@@ -392,3 +392,23 @@ re-resolved and authorized by their canonical server owner.
 The wide authenticated shell and no-horizontal-overflow browser assertion are
 presentation evidence only. They do not change the existing modular-monolith,
 data-flow, or authority boundary.
+
+## SUB-78 Terminal MVP Boundary Decision
+
+The four non-administrator landing pages are explanatory projections over the
+same canonical invoice and server authority used by Journey 11. They show
+useful next action, bounded authority, unavailable actions, contract scope, and
+exact current/historical version context; they do not hide an action as the
+only enforcement mechanism. The Government Reviewer remains scoped to
+submitted agency queue items, and the Auditor remains submitted-only and
+mutation-free.
+
+Exact active profile references are Configuration-owned. Exact invoice review
+references are read through Invoices/Workflow seams. Exact package profile
+references are reconstructed by Provenance from immutable validation input
+manifests. The declared read-model catalog remains the only cross-owner query
+surface, and no command consumes the role projection.
+
+No new ADR is required because ADR 0003 decision 7 explicitly assigns role
+landing pages to Web projections and decisions 4/5 already require exact
+historical references and the modular-monolith ownership split.

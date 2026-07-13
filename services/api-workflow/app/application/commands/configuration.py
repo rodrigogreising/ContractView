@@ -1105,6 +1105,7 @@ def active_summary(actor: Actor, contract_id: str) -> dict | None:
             id=row[0],
             version=row[1],
             activated_at=row[2].isoformat(),
+            document_profiles=row[3],
         ).model_dump(by_alias=True)
         if row
         else None

@@ -247,3 +247,26 @@ restricted to the exact prior approved version of the same profile key.
 - `docs/architecture/service-boundaries.md`
 - `docs/journeys/12-configurable-document-intake-mvp.md`
 - `docs/sdlc/requirements-traceability.md`
+
+## SUB-78 Implementation Note: Role Context And Terminal Certification
+
+SUB-78 completes decision 7 without a new ADR. Role landing pages remain Web-
+owned, noncanonical projections. They explain next action, bounded authority,
+unavailable actions, canonical contract scope, prospective active
+configuration/profile references, and—when assigned—historical invoice or
+submitted-package references. They never grant permission or create a second
+invoice/configuration model.
+
+The active-configuration contract evolves additively to expose exact profile
+references. Invoice, government-review, and audit projections carry the exact
+configuration/profile ids, versions, and hashes already retained by their
+owning evidence. The Auditor deliberately receives submitted historical
+context rather than configuration-draft access. All commands retain their
+existing server-side authorization and owner transactions.
+
+Journey 12 activates an English-profile/configuration successor only after
+fixture testing, assigned-human approval, and explicit prospective-impact
+confirmation. Subsequent role context shows the active successor while the
+two submitted packages still reconstruct against configuration/profile v1
+with their original distinct archive hashes. This is executable proof of the
+prospective-versus-historical split required by decisions 1, 4, 5, and 7.

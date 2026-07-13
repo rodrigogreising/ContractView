@@ -82,6 +82,12 @@ export function AuditTimeline({ timeline }: { timeline: AuditTimelineDto | null 
             <article key={item.packageId} className="audit-card">
               <strong>Invoice v{item.invoiceVersion} package</strong>
               <p><code>{item.packageId}</code></p>
+              {item.configurationVersion && <p>Configuration <code>{reference(item.configurationVersion)}</code></p>}
+              <ul className="context-references">
+                {(item.documentProfiles || []).map((profile) => (
+                  <li key={`${profile.id}:${profile.version}`}><code>{reference(profile)}</code>{profile.sha256 && <small>SHA-256 {profile.sha256}</small>}</li>
+                ))}
+              </ul>
               <p>Template <code>{item.templateId}@{item.templateVersion}</code></p>
               <dl className="hashes">
                 <dt>Validation input</dt><dd><code>{item.validationInputManifestHash}</code></dd>

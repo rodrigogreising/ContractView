@@ -430,3 +430,20 @@ The local profile and cluster TypeScript types describe server read models and
 do not create canonical domain vocabulary. Lifecycle states, exact version
 references, evaluation evidence, and command validity continue to be owned by
 the generated/shared contracts and server capabilities.
+
+## SUB-78 Role And Certification Projection Boundary
+
+SUB-78 adds no owner, table, deployable, network hop, or command collaboration.
+The generated active-configuration and audit-package DTOs evolve additively
+with exact profile/configuration references. Existing Invoice and Workflow
+queries return the same references from their authorized configuration version.
+These are read projections over persisted owner data; they are not command
+inputs and cannot replace canonical authorization.
+
+The shared role dashboard owns only explanatory presentation: next action,
+authority, unavailable actions, selected contract, current prospective intake
+context, and exact assigned-work context. Feature workspaces continue to own
+their existing actions. The Auditor remains read-only and receives historical
+submitted evidence rather than the active configuration endpoint. Forbidden
+cross-owner writes, client-derived scope, client lifecycle decisions, and
+stakeholder-specific invoice copies remain prohibited.

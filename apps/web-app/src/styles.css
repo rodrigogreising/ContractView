@@ -151,6 +151,81 @@ textarea {
   font-size: 2rem;
   margin-top: 0;
 }
+.role-dashboard {
+  border-top: 5px solid #294d37;
+}
+.role-dashboard > .eyebrow {
+  margin-bottom: 6px;
+}
+.role-next-action {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 18px;
+  margin: 20px 0;
+  padding: 18px;
+  border-radius: 12px;
+  background: #eaf1e9;
+}
+.role-next-action h3,
+.role-next-action p {
+  margin: 0;
+}
+.role-next-action p {
+  grid-column: 1;
+}
+.role-next-action a {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #294d37;
+  font-weight: 700;
+}
+.role-context-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.role-context-grid > section {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #d6d9d0;
+  border-radius: 12px;
+  background: #f8faf6;
+}
+.role-context-grid h3,
+.role-context-grid h4 {
+  margin-top: 0;
+}
+.context-facts {
+  display: grid;
+  gap: 8px;
+}
+.context-facts div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 10px;
+}
+.context-facts dd {
+  margin: 0;
+}
+.context-facts code,
+.context-references code,
+.runtime-reference {
+  overflow-wrap: anywhere;
+}
+.context-references {
+  padding-left: 20px;
+}
+.context-references small {
+  display: block;
+  color: #657267;
+  overflow-wrap: anywhere;
+}
+.safe-route {
+  color: #8a6508 !important;
+  font-weight: 700;
+}
 .audit-summary,
 .audit-grid {
   display: grid;

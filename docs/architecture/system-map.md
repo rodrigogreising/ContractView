@@ -139,3 +139,10 @@ Configuration-to-Extraction collaboration is a named immutable query port for
 the exact active configuration and profile versions. It grants no Configuration
 write authority. Extraction returns a versioned intake result DTO and persists
 only its owned OCR/fingerprint/cluster/match/draft records.
+
+SUB-78 completes the Web row through one shared role-dashboard projection and
+the existing four role workspaces. Configuration supplies the authorized
+prospective active summary; Invoices, Workflow, and Provenance supply exact
+historical work/package context through named query ports. React renders and
+links these contexts but performs no profile matching, lifecycle evaluation,
+tenant resolution, validation, or authority decision.

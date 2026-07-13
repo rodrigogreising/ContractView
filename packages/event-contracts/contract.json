@@ -1,6 +1,6 @@
 {
   "package": "event-contracts",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "dependsOn": {"domain-types": "^2.0.0", "configuration-contracts": "^2.0.0"},
   "vocabularies": {
     "eventTypes": {"python": "EventType", "typescript": "EventType", "constant": "EVENT_TYPES", "values": ["login_succeeded", "login_failed", "logout", "config_tested", "config_approved", "config_activated", "config_superseded", "config_retired", "config_rollback_prepared", "profile_drafted", "profile_tested", "profile_approved", "profile_activated", "profile_rollback_activated", "profile_superseded", "profile_retired", "cluster_confirmed", "artifact_uploaded", "document_routed", "extraction_drafted", "extraction_failed", "field_corrected", "field_reviewed", "validation_completed", "invoice_line_corrected", "finding_resolved", "attested", "package_generated", "submitted", "returned", "revision_created", "resubmitted", "approved"]}
@@ -79,6 +79,8 @@
       {"name": "templateId", "type": "string", "required": true},
       {"name": "templateVersion", "type": "integer", "required": true},
       {"name": "templateHash", "type": "string", "required": true, "pattern": "^[a-f0-9]{64}$"},
+      {"name": "configurationVersion", "type": "VersionReference", "required": false},
+      {"name": "documentProfiles", "type": "VersionReference[]", "required": false},
       {"name": "manifest", "type": "map<string,any>", "required": true},
       {"name": "buildInput", "type": "map<string,any>", "required": true}
     ]},
