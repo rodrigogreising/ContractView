@@ -6,8 +6,10 @@ active
 SUB-59 design amendment: the runtime is governed by the
 [enforceable modular monolith](modular-monolith.md) and
 `modular-monolith-policy.json`. SUB-61 implements the shared ontology and
-SUB-62 implements physical module/persistence enforcement. REC-12 must still
-recertify the complete recovery baseline.
+SUB-62 implements physical module/persistence enforcement. SUB-66 recertified
+the merged recovery baseline, and SUB-55 subsequently certified terminal
+Journey 11. This document now preserves that POC boundary while SUB-74 reviews
+the separately scoped successor MVP.
 
 ## Runtime Shape
 

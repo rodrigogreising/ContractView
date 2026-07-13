@@ -96,3 +96,29 @@ commits and trigger a new review.
 No human code-review gate is required. Approval requires executable evidence,
 hosted checks, and immutable AI review decisions before merge, followed by
 clean post-merge verification.
+
+## AI Review Pass 1
+
+The immutable diff from base `0d41b540c47f116f6b25d88aea39138a4ca2f043`
+to head `fa094103d42ba60407b67684c4c55ace66fedceb` received `Approved with
+required fixes`. Product intake was approved; the other applicable reviews
+required:
+
+- explicit boundary and release-evidence columns in the MVP trace;
+- positive machine properties/tests for submitted immutability, single
+  canonical stakeholder state, approved-only activation, zero unknown-layout
+  validation, source-location exactness, and runtime version references; and
+- removal of the stale pre-certification REC-12 statement from the POC boundary
+  evidence.
+
+The fixes are additional commits on PR #22. Checks and the evidence manifest
+must be regenerated for the new head before review pass 2.
+
+Fix verification recorded at `2026-07-13T13:30:14Z`:
+
+- focused positive design evidence: 6 passed;
+- formatting, Ruff, and mypy: passed;
+- complete static gate: 90 Python tests, 24 frontend tests, production build,
+  and every contract/persistence/boundary/policy check passed; and
+- updated policy/test SHA-256 values are retained in the regenerated PR
+  manifest.

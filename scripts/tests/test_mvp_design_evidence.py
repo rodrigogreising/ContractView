@@ -55,6 +55,12 @@ def test_scope_owners_lifecycle_and_ontology_are_explicit() -> None:
     )
     assert policy["profileContract"]["activationIsProspective"] is True
     assert policy["profileContract"]["historicalReferencesAreImmutable"] is True
+    assert policy["canonicalInvariants"] == {
+        "submittedDataImmutable": True,
+        "stakeholderSpecificCopiesAllowed": False,
+        "profileActivationRequiresApprovedState": True,
+        "unapprovedConfigurationRuntimeUseAllowed": False,
+    }
 
 
 def test_cluster_contract_is_deterministic_noncanonical_and_non_authoritative() -> None:
@@ -84,6 +90,7 @@ def test_supported_and_unknown_routing_have_positive_acceptance_contracts() -> N
         "unknownLayoutResult": "needs_profile_review",
         "changedLayoutResult": "needs_profile_review",
         "canonicalExpenseCreatedForUnknown": False,
+        "validationRunCreatedForUnknown": False,
         "humanReviewRequiredBeforeCanonicalUse": True,
     }
     profiles = {
@@ -100,6 +107,7 @@ def test_supported_and_unknown_routing_have_positive_acceptance_contracts() -> N
         "profile_successor_historical_replay",
     }
     assert evaluation["supportedFieldExactness"] == 1.0
+    assert evaluation["supportedSourceLocationExactness"] == 1.0
     assert evaluation["unknownSafeRoutingRate"] == 1.0
     assert evaluation["canonicalMutationOnUnknown"] == 0
     assert evaluation["identicalInputFingerprintEquality"] is True
@@ -117,6 +125,19 @@ def test_runtime_automation_and_human_authority_are_bounded() -> None:
     assert automation["aiAuthorityAllowed"] is False
     assert automation["deterministicProfileMatchingRequired"] is True
     assert automation["deterministicNormalizationRequired"] is True
+    assert policy["runtimeEvidence"] == {
+        "requiredVersionReferences": [
+            "artifact_hash",
+            "ocr_version",
+            "parser_version",
+            "fingerprint_specification_version",
+            "profile_id",
+            "profile_version",
+            "configuration_bundle_version",
+            "human_review_event_id",
+        ],
+        "snapshotReferencesAreImmutable": True,
+    }
     assert policy["authority"]["system"] == []
     assert policy["authority"]["ai"] == []
     assert set(policy["roleWorkspaceIntent"]) == {
@@ -154,8 +175,16 @@ def test_narrative_design_evidence_is_linked_and_traceable() -> None:
     assert "introduces no" in contents["implementation"]
 
     trace = (ROOT / "docs/sdlc/requirements-traceability.md").read_text(encoding="utf-8")
-    for index in range(1, 11):
-        assert f"MVP-REQ-{index:02d}" in trace
+    assert "| Boundary evidence |" in trace
+    assert "| Release evidence |" in trace
+    trace_rows = [line for line in trace.splitlines() if line.startswith("| `MVP-REQ-")]
+    assert len(trace_rows) == 10
+    for index, row in enumerate(trace_rows, start=1):
+        columns = [column.strip() for column in row.strip("|").split("|")]
+        assert len(columns) == 7
+        assert f"MVP-REQ-{index:02d}" in columns[0]
+        assert "docs/architecture/" in columns[3]
+        assert "scripts/tests/" in columns[5] or "docs/journeys/" in columns[5]
     for story in ("SUB-75", "SUB-76", "SUB-77", "SUB-78"):
         assert story in trace
 
