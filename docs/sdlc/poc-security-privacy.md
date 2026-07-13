@@ -493,3 +493,11 @@ assignment. Profile, evaluation, approval, lifecycle, fingerprint, match, and
 association records reject update/delete. Residual risks remain the local POC
 identity, malware-scanning, backup, legal-hold, SSO/MFA, and production
 hardening exclusions.
+
+Adversarial layout evidence retains valid labels and values but inserts
+undeclared non-empty rows; it is denied exact matching and creates no fields or
+canonical state. Profile creation also rejects negative-only, single-positive,
+cross-profile-predecessor, and undeclared-fingerprint inputs before governed
+mutation. Configuration testing resolves exact profile/evaluation/approval
+evidence, so guessed or hash-mismatched profile references cannot acquire a
+passing tested or approved configuration state.

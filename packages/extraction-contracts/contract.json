@@ -6,12 +6,6 @@
     "configuration-contracts": "^2.0.0"
   },
   "vocabularies": {
-    "documentRouteOutcomes": {
-      "python": "DocumentRouteOutcome",
-      "typescript": "DocumentRouteOutcome",
-      "constant": "DOCUMENT_ROUTE_OUTCOMES",
-      "values": ["recognized_profile_draft", "needs_profile_review", "extraction_failed"]
-    },
     "profileMatchKinds": {
       "python": "ProfileMatchKind",
       "typescript": "ProfileMatchKind",

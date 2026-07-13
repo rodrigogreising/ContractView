@@ -31,6 +31,7 @@ from app.domain.document_intake import (  # noqa: E402
     analyze_profile,
     content_hash,
     evaluate_profile,
+    profile_content_hash,
 )
 
 
@@ -184,7 +185,7 @@ def document_intake_catalog(scenario: dict, files: Path) -> dict:
     ]
     for fixture in source["fixtures"]:
         target = files / fixture["filename"]
-        if not target.exists():
+        if fixture["caseKind"] != "supported_layout" or not target.exists():
             text_pdf(target, fixture["ocrText"], "Synthetic document-intake fixture")
 
     profiles = []
@@ -197,6 +198,10 @@ def document_intake_catalog(scenario: dict, files: Path) -> dict:
             {
                 "contractId": scenario["contract"]["id"],
                 "fingerprintSpecification": source["fingerprintSpecification"],
+            }
+        )
+        definition.update(
+            {
                 "acceptedFingerprints": sorted(
                     {
                         analyze_profile(
@@ -229,13 +234,7 @@ def document_intake_catalog(scenario: dict, files: Path) -> dict:
                 "evaluationEvidence": None,
             }
         )
-        definition["contentHash"] = content_hash(
-            {
-                key: value
-                for key, value in definition.items()
-                if key not in {"lifecycle", "evaluationEvidence", "contentHash"}
-            }
-        )
+        definition["contentHash"] = profile_content_hash(definition)
         evaluation = evaluate_profile(
             definition,
             fixture_set_body["cases"],

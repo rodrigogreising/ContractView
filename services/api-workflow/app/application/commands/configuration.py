@@ -8,7 +8,11 @@ import re
 import uuid
 
 from .access_scope import configuration_scope
-from .document_profiles import InvalidDocumentProfile, activate_profile_references_tx
+from .document_profiles import (
+    InvalidDocumentProfile,
+    activate_profile_references_tx,
+    validate_profile_references_tx,
+)
 from ...authorization import Action, Actor, execute_authorized, require_permission
 from .provenance import append_event_tx
 from ...shared_contracts import (
@@ -393,6 +397,15 @@ def _create_tested_version(
 ) -> dict:
     snapshot = _configuration_payload(payload)
     validate_configuration(snapshot)
+    try:
+        validate_profile_references_tx(
+            connection,
+            contract_id,
+            snapshot["documentProfiles"],
+            activation_action="rollback" if action == "rollback" else "activate",
+        )
+    except InvalidDocumentProfile as error:
+        raise InvalidConfiguration(str(error)) from error
     payload_hash = _hash(snapshot)
     report = _test_report(snapshot)
     result_hash = _hash({"payloadHash": payload_hash, "report": report})
@@ -552,6 +565,17 @@ def approve_version(actor: Actor, version_id: str, rationale: str) -> dict:
             current = _details(connection, version_id)
             if current["state"] != "tested" or not current["testEvidenceId"]:
                 raise InvalidConfiguration("Only a tested version with immutable evidence may be approved")
+            try:
+                validate_profile_references_tx(
+                    connection,
+                    current["contractId"],
+                    current["configuration"]["documentProfiles"],
+                    activation_action=(
+                        "rollback" if current["rollbackTargetId"] else "activate"
+                    ),
+                )
+            except InvalidDocumentProfile as error:
+                raise InvalidConfiguration(str(error)) from error
             _require_current_successful_evidence(current, require_approval=False)
             approval_id = f"config-approval-{uuid.uuid4().hex}"
             approval_body = {

@@ -365,3 +365,10 @@ evaluation, and result hashing are pure deterministic domain functions. They
 cannot validate reimbursement compliance, mutate an invoice, assign a profile,
 or perform a human lifecycle action. Profile/version and runtime evidence is
 append-only; only the prospective active pointer is replaceable.
+
+The executable contract rejects an undeclared fingerprint specification,
+underrepresented fixture suite, false cross-profile predecessor, or unresolved
+configuration profile reference before mutation. The layout fingerprint uses
+value-free line shapes and normalized non-empty-line positions, and the runtime
+ledger comparison consumes the approved profile field mapping rather than
+hard-coded canonical names.

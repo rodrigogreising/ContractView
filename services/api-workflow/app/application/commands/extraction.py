@@ -13,7 +13,8 @@ from ...domain.document_intake import (
     cluster_fingerprint,
     content_hash,
     exact_profile_match,
-    normalize_token,
+    ledger_expense_key,
+    ledger_values_match,
 )
 from ...shared_contracts import DocumentIntakeResultDto
 from .ingestion import IngestionJob
@@ -112,11 +113,18 @@ def _record_failure(
         connection.commit()
 
 
-def _ledger_match(connection, contract_id: str, fields: dict[str, str]) -> tuple[str, str | None]:
-    reference = fields.get("sourceReference", "")
-    expense_key = reference.removeprefix("VENDOR-INVOICE-")
+def _ledger_match(
+    connection,
+    contract_id: str,
+    profile: dict[str, Any],
+    fields: dict[str, str],
+) -> tuple[str, str | None]:
+    expense_key = ledger_expense_key(profile, fields)
     if not expense_key:
-        return "not_evaluated", None
+        return (
+            "unmatched" if profile["ledgerMatchRule"]["required"] else "not_evaluated",
+            None,
+        )
     rows = connection.extraction.execute(
         Statement.EXTRACTION_READ_EXPENSE_ROWS_007,
         (contract_id, expense_key),
@@ -126,17 +134,18 @@ def _ledger_match(connection, contract_id: str, fields: dict[str, str]) -> tuple
     if len(rows) > 1:
         return "ambiguous", expense_key
     row = rows[0]
-    expected = {
-        "date": row[1],
-        "vendor": normalize_token(row[2]),
-        "amount": str(Decimal(row[3]).quantize(Decimal("0.01"))),
-    }
-    actual = {
-        "date": fields.get("date"),
-        "vendor": normalize_token(fields.get("vendor", "")),
-        "amount": fields.get("amount"),
-    }
-    return ("matched" if actual == expected else "unmatched"), expense_key
+    return (
+        "matched"
+        if ledger_values_match(
+            profile,
+            fields,
+            expense_date=row[1],
+            vendor=row[2],
+            amount=row[3],
+        )
+        else "unmatched",
+        expense_key,
+    )
 
 
 def extract_evidence(
@@ -247,12 +256,13 @@ def extract_evidence(
             ),
         )
         ledger_outcome, ledger_expense_key = (
-            _ledger_match(connection, job.contract_id, fields)
-            if matched
+            _ledger_match(connection, job.contract_id, profile, fields)
+            if profile is not None
             else ("not_evaluated", None)
         )
         semantic_result = {
             "artifactHash": artifact.sha256,
+            "rawOcrArtifactHash": raw_artifact.sha256,
             "ocrVersion": response.model,
             "parserVersion": PARSER_VERSION,
             "fingerprintSpecificationVersion": FINGERPRINT_SPECIFICATION_VERSION,
@@ -397,6 +407,12 @@ def extract_evidence(
                 "id": artifact.id,
                 "version": 1,
                 "sha256": artifact.sha256,
+            },
+            {
+                "kind": "artifact",
+                "id": raw_artifact.id,
+                "version": 1,
+                "sha256": raw_artifact.sha256,
             },
             {
                 "kind": "document_fingerprint",

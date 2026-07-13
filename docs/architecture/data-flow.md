@@ -277,8 +277,20 @@ and proposed fields; nonmatches append the same artifact/OCR/fingerprint/route
 evidence plus a noncanonical cluster projection but no fields or canonical
 expense.
 
+The fingerprint consumes the approved fixed specification: value-free line
+shape tokens, non-empty-line count, and whitespace-normalized anchor positions.
+The raw OCR line numbers remain source-location evidence but blank-line noise is
+not layout identity. Inserted, removed, or reordered non-empty rows therefore
+route to review even when all labels and values remain parseable. Ledger
+reconciliation reads the exact field names from the active profile contract.
+
 The validation-input manifest reads only immutable extraction references and
 records the exact configuration version, profile version/hash, fingerprint
 specification/result, OCR model, parser, and source artifacts. Re-execution
 with the same declared inputs reproduces normalized fields, fingerprint, match
 result, and downstream manifest identity.
+
+Before a configuration test record is created, Configuration resolves each
+profile id/version/hash and reproduces its profile hash, fixture hash,
+case-class metrics, evaluation result, and human approval. Reference syntax
+alone cannot create passing test evidence.

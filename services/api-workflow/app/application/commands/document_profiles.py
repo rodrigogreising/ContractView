@@ -11,11 +11,15 @@ from .access_scope import configuration_scope
 from .provenance import append_event_tx
 from ...authorization import Action, Actor, execute_authorized, require_permission
 from ...domain.document_intake import (
+    DocumentProfileError,
     EVALUATION_SUITE_VERSION,
     PARSER_VERSION,
     analyze_profile,
     content_hash,
     evaluate_profile,
+    profile_content_hash,
+    validate_fixture_suite,
+    validate_profile_definition,
 )
 from ...shared_contracts import (
     DocumentProfileVersionContract,
@@ -123,6 +127,97 @@ def _profile_detail_tx(connection: Any, profile_version_id: str) -> dict[str, An
     }
 
 
+def _validate_profile_evidence(details: dict[str, Any]) -> None:
+    profile = details["profile"]
+    fixture_set = details["fixtureSet"]
+    evidence = details["evaluationEvidence"]
+    approval = details["approval"]
+    validate_profile_definition(profile)
+    validate_fixture_suite(profile, fixture_set["cases"])
+    expected_profile_hash = profile_content_hash(profile)
+    expected_fixture_hash = content_hash(
+        {
+            "id": fixture_set["id"],
+            "version": fixture_set["version"],
+            "cases": fixture_set["cases"],
+        }
+    )
+    if (
+        expected_profile_hash != profile["contentHash"]
+        or expected_fixture_hash != fixture_set["contentHash"]
+        or profile["fixtureSet"]["sha256"] != expected_fixture_hash
+    ):
+        raise InvalidDocumentProfile("Profile or fixture content hash is not current")
+    if not evidence:
+        raise InvalidDocumentProfile("Successful immutable profile evaluation is required")
+    expected_evaluation = evaluate_profile(
+        profile,
+        fixture_set["cases"],
+        ocr_version=evidence["ocrVersion"],
+    )
+    for key in (
+        "suiteVersion",
+        "ocrVersion",
+        "parserVersion",
+        "results",
+        "supportedFieldExactness",
+        "sourceLocationExactness",
+        "unknownSafeRoutingRate",
+        "passed",
+        "resultHash",
+    ):
+        if evidence[key] != expected_evaluation[key]:
+            raise InvalidDocumentProfile("Profile evaluation evidence cannot be reproduced")
+    if not approval or approval["evaluationId"] != evidence["id"]:
+        raise InvalidDocumentProfile("Profile approval must bind the exact evaluation")
+    approval_body = {
+        "id": approval["id"],
+        "profileVersionId": profile["id"],
+        "evaluationId": evidence["id"],
+        "approvedBy": approval["approvedBy"],
+        "approvedRole": approval["approvedRole"],
+        "approvedOrganizationId": approval["approvedOrganizationId"],
+        "rationale": approval["rationale"],
+    }
+    if approval["approvalHash"] != content_hash(approval_body):
+        raise InvalidDocumentProfile("Profile approval hash is invalid")
+
+
+def validate_profile_references_tx(
+    connection: Any,
+    contract_id: str,
+    references: list[dict[str, Any]],
+    *,
+    activation_action: str = "activate",
+) -> list[dict[str, Any]]:
+    if activation_action not in {"activate", "rollback"}:
+        raise InvalidDocumentProfile("Unsupported profile activation action")
+    details_by_key: dict[str, dict[str, Any]] = {}
+    for reference in references:
+        details = _profile_detail_tx(connection, reference.get("id", ""))
+        profile = details["profile"]
+        if profile["contractId"] != contract_id:
+            raise InvalidDocumentProfile("Profile reference is outside the configuration contract")
+        if (
+            reference.get("kind") != "document_profile"
+            or reference.get("version") != profile["version"]
+            or reference.get("sha256") != profile["contentHash"]
+        ):
+            raise InvalidDocumentProfile(
+                "Configuration must reference the exact profile version and hash"
+            )
+        activatable_states = {"approved", "active"}
+        if activation_action == "rollback":
+            activatable_states.update({"superseded", "retired"})
+        if details["state"] not in activatable_states:
+            raise InvalidDocumentProfile("Every configuration profile must be approved")
+        _validate_profile_evidence(details)
+        if profile["profileKey"] in details_by_key:
+            raise InvalidDocumentProfile("Configuration profile keys must be unique")
+        details_by_key[profile["profileKey"]] = details
+    return list(details_by_key.values())
+
+
 def _append_lifecycle_tx(
     connection: Any,
     actor: Actor,
@@ -219,8 +314,11 @@ def create_profile_draft(
         profile_key = str(definition.get("profileKey", "")).strip()
         if not profile_key:
             raise InvalidDocumentProfile("profileKey is required")
-        if not fixtures:
-            raise InvalidDocumentProfile("A versioned fixture set is required")
+        try:
+            validate_profile_definition(definition)
+            validated_fixtures = validate_fixture_suite(definition, fixtures)
+        except DocumentProfileError as error:
+            raise InvalidDocumentProfile(str(error)) from error
         with database() as connection:
             version_row = connection.configuration.execute(
                 Statement.DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_VERSIONS_003,
@@ -232,6 +330,37 @@ def create_profile_draft(
             profile_id = f"profile-{profile_key}-v{version}-{uuid.uuid4().hex[:8]}"
             fixture_set_id = f"fixture-set-{profile_key}-v{version}-{uuid.uuid4().hex[:8]}"
             predecessor_id = definition.get("predecessorVersionId")
+            predecessor_reference = None
+            if version > 1 and not predecessor_id:
+                raise InvalidDocumentProfile(
+                    "A successor profile must reference its exact predecessor"
+                )
+            if predecessor_id:
+                predecessor = _profile_detail_tx(connection, predecessor_id)
+                predecessor_profile = predecessor["profile"]
+                if (
+                    predecessor_profile["contractId"] != contract_id
+                    or predecessor_profile["profileKey"] != profile_key
+                    or predecessor_profile["version"] != version - 1
+                ):
+                    raise InvalidDocumentProfile(
+                        "Profile predecessor must be the exact prior version of the same profile key"
+                    )
+                if predecessor["state"] not in {
+                    "approved",
+                    "active",
+                    "superseded",
+                    "retired",
+                }:
+                    raise InvalidDocumentProfile(
+                        "Profile predecessor must have completed human approval"
+                    )
+                predecessor_reference = {
+                    "kind": "document_profile",
+                    "id": predecessor_id,
+                    "version": predecessor_profile["version"],
+                    "sha256": predecessor_profile["contentHash"],
+                }
             draft = {
                 "id": profile_id,
                 "contractId": contract_id,
@@ -247,8 +376,8 @@ def create_profile_draft(
                 "acceptedFingerprints": sorted(
                     {
                         analyze_profile(definition, item["ocrText"], item["mediaType"]).fingerprint
-                        for item in fixtures
-                        if item.get("expectedOutcome") == "recognized_profile_draft"
+                        for item in validated_fixtures
+                        if item["caseKind"] == "supported_layout"
                     }
                 ),
                 "fixtureSet": {
@@ -257,25 +386,16 @@ def create_profile_draft(
                     "version": str(version),
                 },
                 "evaluationEvidence": None,
-                "predecessor": (
-                    {"kind": "document_profile", "id": predecessor_id, "version": version - 1}
-                    if predecessor_id else None
-                ),
+                "predecessor": predecessor_reference,
             }
             fixture_body = {
                 "id": fixture_set_id,
                 "version": str(version),
-                "cases": fixtures,
+                "cases": validated_fixtures,
             }
             fixture_hash = content_hash(fixture_body)
             draft["fixtureSet"]["sha256"] = fixture_hash
-            draft["contentHash"] = content_hash(
-                {
-                    key: value
-                    for key, value in draft.items()
-                    if key not in {"lifecycle", "evaluationEvidence", "contentHash"}
-                }
-            )
+            draft["contentHash"] = profile_content_hash(draft)
             profile = DocumentProfileVersionContract.model_validate(draft).model_dump(
                 by_alias=True, mode="json"
             )
@@ -304,7 +424,7 @@ def create_profile_draft(
                     profile_id,
                     contract_id,
                     str(version),
-                    json.dumps(fixtures),
+                    json.dumps(validated_fixtures),
                     fixture_hash,
                     actor.user_id,
                 ),
@@ -473,28 +593,14 @@ def activate_profile_references_tx(
     *,
     activation_action: str = "activate",
 ) -> None:
-    if activation_action not in {"activate", "rollback"}:
-        raise InvalidDocumentProfile("Unsupported profile activation action")
-    seen_keys: set[str] = set()
-    for reference in references:
-        details = _profile_detail_tx(connection, reference.get("id", ""))
+    validated = validate_profile_references_tx(
+        connection,
+        contract_id,
+        references,
+        activation_action=activation_action,
+    )
+    for details in validated:
         profile = details["profile"]
-        if profile["contractId"] != contract_id:
-            raise InvalidDocumentProfile("Profile reference is outside the configuration contract")
-        if (
-            reference.get("kind") != "document_profile"
-            or reference.get("version") != profile["version"]
-            or reference.get("sha256") != profile["contentHash"]
-        ):
-            raise InvalidDocumentProfile("Configuration must reference the exact profile version and hash")
-        activatable_states = {"approved", "active"}
-        if activation_action == "rollback":
-            activatable_states.update({"superseded", "retired"})
-        if details["state"] not in activatable_states or not details["approval"]:
-            raise InvalidDocumentProfile("Every active configuration profile must be approved")
-        if profile["profileKey"] in seen_keys:
-            raise InvalidDocumentProfile("Configuration profile keys must be unique")
-        seen_keys.add(profile["profileKey"])
         current = connection.configuration.execute(
             Statement.DOCUMENT_PROFILES_READ_DOCUMENT_PROFILE_ACTIVE_ASSIGNMENTS_009,
             (contract_id, profile["profileKey"]),

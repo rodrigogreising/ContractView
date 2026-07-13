@@ -1,6 +1,6 @@
 # Journey 12: Configurable Document-Intake MVP
 
-Status: Build (`SUB-74` merged; `SUB-75` implementation active)
+Status: Build (`SUB-74` and `SUB-75` merged; `SUB-76` in immutable review)
 
 Controlling epic: `SUB-73`
 
@@ -199,6 +199,9 @@ The executable backend now proves the Journey 12 profile and routing portion:
 
 - immutable English and Spanish profile definitions each have two supported
   deterministic fixtures plus shared changed/unknown negative fixtures;
+- fixture-kind validation rejects negative-only or single-supported evidence,
+  and exact profile/evaluation/approval references are resolved before a
+  configuration can record passing profile-reference test evidence;
 - pinned local `tesseract-5.5.0-eng+spa` and the versioned parser produce exact
   normalized fields and source lines for real English and Spanish PDFs;
 - identical declared inputs reproduce fingerprints, normalized drafts, match
@@ -206,6 +209,9 @@ The executable backend now proves the Journey 12 profile and routing portion:
 - changed and unknown layouts return `needs_profile_review`, retain artifact,
   raw OCR, fingerprint, match, and noncanonical cluster evidence, and create no
   fields, canonical expense, validation run, assignment, or activation;
+- the changed-layout case preserves valid labels and values while shifting
+  normalized non-empty-line positions, proving that parseability cannot bypass
+  conservative layout identity;
 - administrator confirmation creates a draft association only, while exact
   test evidence and human approval remain prerequisites for prospective profile
   activation; and

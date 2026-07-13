@@ -106,6 +106,12 @@ class ConfigurationLifecycle(StrEnum):
     RETIRED = "retired"
 
 
+class DocumentRouteOutcome(StrEnum):
+    RECOGNIZED_PROFILE_DRAFT = "recognized_profile_draft"
+    NEEDS_PROFILE_REVIEW = "needs_profile_review"
+    EXTRACTION_FAILED = "extraction_failed"
+
+
 ReasonCode = Annotated[str, StringConstraints(pattern=r'^(?:SERVICE_PERIOD|IN_SERVICE_PERIOD|REQUIRED_EVIDENCE|EVIDENCE_PRESENT|BUDGET_AVAILABLE|TOTAL_RECONCILIATION|TOTAL_RECONCILED|POSSIBLE_DUPLICATE|NO_POSSIBLE_DUPLICATE|EVIDENCE_CORRECTION|AMOUNT_CORRECTION|CLARIFICATION|APPROVED_AS_CORRECTED)(?::[A-Za-z0-9_.-]+)*$')]
 
 
@@ -167,10 +173,10 @@ class ComponentKind(StrEnum):
     DOCUMENT_PROFILE = "document_profile"
 
 
-class DocumentRouteOutcome(StrEnum):
-    RECOGNIZED_PROFILE_DRAFT = "recognized_profile_draft"
-    NEEDS_PROFILE_REVIEW = "needs_profile_review"
-    EXTRACTION_FAILED = "extraction_failed"
+class ProfileFixtureCaseKind(StrEnum):
+    SUPPORTED_LAYOUT = "supported_layout"
+    CHANGED_LAYOUT = "changed_layout"
+    UNKNOWN_LAYOUT = "unknown_layout"
 
 
 class ProfileMatchKind(StrEnum):
@@ -255,7 +261,7 @@ CONTRACT_REQUIRED_FIELDS = {
     'DocumentProfileFieldContract': frozenset(['name', 'field_type', 'required', 'source_labels', 'normalization']),
     'LedgerMatchRuleContract': frozenset(['source_reference_field', 'amount_field', 'date_field', 'vendor_field', 'required']),
     'FingerprintSpecificationContract': frozenset(['id', 'version', 'algorithm', 'signals']),
-    'ProfileFixtureCaseContract': frozenset(['id', 'filename', 'media_type', 'ocr_text', 'expected_outcome', 'expected_fields', 'expected_source_locations']),
+    'ProfileFixtureCaseContract': frozenset(['id', 'case_kind', 'filename', 'media_type', 'ocr_text', 'expected_outcome', 'expected_fields', 'expected_source_locations']),
     'ProfileFixtureSetContract': frozenset(['id', 'version', 'cases', 'content_hash']),
     'ProfileEvaluationResultContract': frozenset(['fixture_id', 'passed', 'outcome', 'fingerprint', 'normalized_fields_hash', 'source_locations_hash']),
     'ProfileEvaluationEvidenceContract': frozenset(['id', 'profile_version', 'fixture_set', 'suite_version', 'ocr_version', 'parser_version', 'results', 'supported_field_exactness', 'source_location_exactness', 'unknown_safe_routing_rate', 'passed', 'result_hash']),
@@ -539,10 +545,11 @@ class FingerprintSpecificationContract(ContractModel):
 
 class ProfileFixtureCaseContract(ContractModel):
     id: str
+    case_kind: ProfileFixtureCaseKind
     filename: str
     media_type: str
     ocr_text: str
-    expected_outcome: str
+    expected_outcome: DocumentRouteOutcome
     expected_fields: dict[str, str]
     expected_source_locations: dict[str, str]
 

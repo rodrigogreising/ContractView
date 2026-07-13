@@ -127,6 +127,9 @@ def test_document_intake_catalog_has_exact_profile_and_evaluation_evidence() -> 
     assert {item["profile"]["languageTag"] for item in catalog["profiles"]} == {"en", "es"}
     assert catalog["negativeFixtureIds"] == ["profile-changed-layout", "profile-unknown-layout"]
     for item in catalog["profiles"]:
+        kinds = [case["caseKind"] for case in item["fixtureSet"]["cases"]]
+        assert kinds.count("supported_layout") >= 2
+        assert "changed_layout" in kinds and "unknown_layout" in kinds
         evidence = item["evaluationEvidence"]
         assert evidence["passed"] is True
         assert evidence["supportedFieldExactness"] == 1.0

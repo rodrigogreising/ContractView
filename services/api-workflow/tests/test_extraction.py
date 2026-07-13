@@ -217,7 +217,7 @@ def test_provider_failure_is_explicit_and_has_no_fields():
 
 
 @pytest.mark.parametrize(("fixture_name", "text"), [
-    ("changed-layout.pdf", "SYNTHETIC CHANGED DOCUMENT\nVendor: Synthetic Workshop Goods A\nExpense reference: EXP-CHANGED-001\nInvoice date: 2026-06-25\nTotal amount: USD 325.00\nLayout revision: unexpected\n"),
+    ("changed-layout.pdf", "Synthetic Workshop Goods A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-CHANGED-0625\nUNDECLARED LAYOUT ROW 1\nUNDECLARED LAYOUT ROW 2\nUNDECLARED LAYOUT ROW 3\nDate: 2026-06-25\nVENDOR INVOICE\nDescription: Shifted deterministic layout\nAmount: $325.00\nPrinted subtotal: $325.00\nApproved claim total: $325.00\nAPPROVAL NOTE\nThe labels remain valid but their layout positions changed.\nExpense reference: EXP-CHANGED-001\n"),
     ("unknown-layout.pdf", "SYNTHETIC SUPPORTING DOCUMENT\nReference table for deterministic review routing.\nEntry A 2026-06-27 USD 111.00\n"),
 ])
 def test_changed_and_unknown_layouts_route_safely_without_canonical_mutation(fixture_name, text):

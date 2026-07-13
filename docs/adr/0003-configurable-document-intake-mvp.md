@@ -213,6 +213,14 @@ unknown, or incomplete input retains immutable artifact/OCR/fingerprint/match
 evidence and routes to `needs_profile_review` with no canonical expense,
 validation, assignment, or activation mutation.
 
+The executable fingerprint contract uses value-free line-shape tokens,
+whitespace-normalized non-empty-line geometry, and normalized anchor positions.
+This tolerates OCR blank-line noise but makes inserted, removed, or reordered
+layout rows a different profile identity. The closed fixture contract requires
+two supported cases plus typed changed and unknown cases; vacuous metrics cannot
+approve a profile. Profile-declared ledger field mappings are executed rather
+than replaced by canonical-name assumptions.
+
 Profile activation binds exact id/version/hash, successful immutable fixture
 evidence, and assigned-human approval to the active configuration transaction.
 Authority evidence independently proves canonical user organization and
@@ -225,6 +233,12 @@ is a new prospective activation, not history mutation. It must pass the normal
 tested/approved configuration rollback gate and append an explicit profile
 rollback-activation event; prior active, superseded, and retired events remain
 unchanged.
+
+Configuration testing resolves and reproduces the exact profile definition,
+fixture set, evaluation, and approval referenced by its payload. A syntactically
+valid but nonexistent, mismatched, unevaluated, or unapproved profile reference
+cannot create passing configuration test evidence. Successor profile lineage is
+restricted to the exact prior approved version of the same profile key.
 
 ## Related Evidence
 

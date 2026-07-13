@@ -4,7 +4,8 @@
   "dependsOn": {"domain-types": "^2.0.0", "rule-contracts": "^2.0.0"},
   "vocabularies": {
     "componentKinds": {"python": "ComponentKind", "typescript": "ComponentKind", "constant": "COMPONENT_KINDS", "values": ["schema", "mapping", "rule", "workflow", "view", "template", "document_profile"]},
-    "lifecycle": {"values": ["draft", "tested", "approved", "active", "superseded", "retired"]}
+    "lifecycle": {"values": ["draft", "tested", "approved", "active", "superseded", "retired"]},
+    "profileFixtureCaseKinds": {"python": "ProfileFixtureCaseKind", "typescript": "ProfileFixtureCaseKind", "constant": "PROFILE_FIXTURE_CASE_KINDS", "values": ["supported_layout", "changed_layout", "unknown_layout"]}
   },
   "contracts": {
     "WorkflowTransition": {"model": "WorkflowTransition", "fields": [
@@ -130,10 +131,11 @@
     ]},
     "ProfileFixtureCase": {"model": "ProfileFixtureCaseContract", "fields": [
       {"name": "id", "type": "string", "required": true},
+      {"name": "caseKind", "type": "ProfileFixtureCaseKind", "required": true},
       {"name": "filename", "type": "string", "required": true},
       {"name": "mediaType", "type": "string", "required": true},
       {"name": "ocrText", "type": "string", "required": true},
-      {"name": "expectedOutcome", "type": "string", "required": true},
+      {"name": "expectedOutcome", "type": "DocumentRouteOutcome", "required": true},
       {"name": "expectedFields", "type": "map<string,string>", "required": true},
       {"name": "expectedSourceLocations", "type": "map<string,string>", "required": true}
     ]},

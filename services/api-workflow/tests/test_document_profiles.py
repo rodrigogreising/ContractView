@@ -8,6 +8,7 @@ import pytest
 from app.authorization import Actor, ForbiddenError, Role
 from app.configuration import active_summary
 from app.configuration import (
+    InvalidConfiguration,
     approve_version,
     configuration_version_detail,
     get_draft_details,
@@ -91,6 +92,75 @@ def test_wrong_role_profile_create_is_denied_before_mutation():
             "Unauthorized profile creation",
         )
     assert profile_state_fingerprint() == before
+
+
+def test_profile_creation_rejects_underrepresented_fixtures_and_false_predecessors_without_mutation():
+    data = json.loads(CATALOG.read_text())
+    english = data["profiles"][0]
+    spanish = data["profiles"][1]
+    definition = deepcopy(english["profile"])
+    for field in (
+        "id", "contractId", "version", "lifecycle", "acceptedFingerprints",
+        "fixtureSet", "evaluationEvidence", "predecessor", "successor", "contentHash",
+    ):
+        definition.pop(field, None)
+    before = profile_state_fingerprint()
+    negative_only = [
+        case for case in english["fixtureSet"]["cases"]
+        if case["caseKind"] != "supported_layout"
+    ]
+    with pytest.raises(InvalidDocumentProfile, match="two supported layouts"):
+        create_profile_draft(
+            ADMIN, CONTRACT, definition, negative_only, "Reject vacuous fixture evidence"
+        )
+    assert profile_state_fingerprint() == before
+
+    definition["predecessorVersionId"] = spanish["profile"]["id"]
+    with pytest.raises(InvalidDocumentProfile, match="exact prior version"):
+        create_profile_draft(
+            ADMIN,
+            CONTRACT,
+            definition,
+            english["fixtureSet"]["cases"],
+            "Reject cross-profile predecessor lineage",
+        )
+    assert profile_state_fingerprint() == before
+
+
+def test_configuration_testing_rejects_noncanonical_profile_references_before_evidence():
+    draft = get_draft_details(ADMIN, CONTRACT)
+    original = deepcopy(draft["configuration"])
+    invalid = deepcopy(original)
+    invalid["documentProfiles"][0] = {
+        "kind": "document_profile",
+        "id": "profile-does-not-exist",
+        "version": 1,
+        "sha256": "0" * 64,
+    }
+    revised = update_draft(
+        ADMIN, CONTRACT, invalid, expected_revision=draft["revision"]
+    )
+    with database() as connection:
+        versions_before = connection.execute(
+            "select count(*) from configuration_versions"
+        ).fetchone()[0]
+    with pytest.raises(InvalidConfiguration, match="was not found"):
+        certify_configuration_draft(
+            ADMIN,
+            CONTRACT,
+            "Reject nonexistent exact profile reference",
+            expected_revision=revised["revision"],
+        )
+    with database() as connection:
+        assert connection.execute(
+            "select count(*) from configuration_versions"
+        ).fetchone()[0] == versions_before
+    update_draft(
+        ADMIN,
+        CONTRACT,
+        original,
+        expected_revision=get_draft_details(ADMIN, CONTRACT)["revision"],
+    )
 
 
 def test_successor_profile_requires_test_and_human_approval_before_prospective_activation():

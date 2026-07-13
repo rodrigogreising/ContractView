@@ -377,6 +377,13 @@ to confirm an assigned administrator's draft association. Neither collaboration
 permits a cross-owner write. Shared `extraction-contracts` describes the seam
 without becoming a runtime owner.
 
+Configuration also validates profile references inside its own transaction
+before writing configuration test evidence. That validation replays immutable
+Configuration-owned profile, fixture, evaluation, and approval records; it does
+not read Extraction tables or transfer profile lifecycle authority. Extraction
+executes the fixed fingerprint specification and profile-declared ledger field
+mapping returned by the existing immutable query port.
+
 ## Explainable Configuration Read Boundary (SUB-75)
 
 | Concern | Owner | Interface | Boundary control |

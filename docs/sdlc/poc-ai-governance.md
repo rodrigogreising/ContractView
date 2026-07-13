@@ -256,6 +256,13 @@ changed/unknown cases require 100% safe routing and zero canonical mutation.
 Identical declared inputs reproduce fingerprint, normalized draft, match, and
 result hashes.
 
+Evaluation cannot manufacture 100% results from empty denominators. The closed
+fixture-kind vocabulary requires at least two supported layouts plus explicit
+changed and unknown cases; supported field/source metrics and negative routing
+metrics use separate denominators. Fingerprint execution accepts only the
+approved fixed specification, while profile-declared normalization and ledger
+field mappings remain deterministic executable inputs rather than prose.
+
 Cluster projections remain noncanonical and cannot assign profiles. System and
 AI actors still have no create, test, approve, activate, supersede, retire,
 validate, attest, submit, return, or approve authority. Any hosted model,

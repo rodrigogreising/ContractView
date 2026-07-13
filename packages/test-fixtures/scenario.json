@@ -73,13 +73,13 @@
         "kind": "document_profile",
         "id": "profile-vendor-invoice-en-v1",
         "version": 1,
-        "sha256": "f2510558f48b1007c1263f463033cafd79775d4b01d0cf4c48efa4a189792381"
+        "sha256": "dde2f78bb390d7d7208d1bc75a033b05a1caa6c6f19ff58a41f1a71995287694"
       },
       {
         "kind": "document_profile",
         "id": "profile-vendor-invoice-es-v1",
         "version": 1,
-        "sha256": "1599b60431f3983ba23b462a416153fbde88607fdc53832b5adc5835b134187c"
+        "sha256": "76760da57985f26e6461b8c62ce86ce1998df556df68c697bace3fbf9cf829d7"
       }
     ]
   },
@@ -154,6 +154,7 @@
     "fixtures": [
       {
         "id": "profile-en-supported-1",
+        "caseKind": "supported_layout",
         "filename": "vendor-invoice-exp-002.pdf",
         "mediaType": "application/pdf",
         "ocrText": "Synthetic Facilities Vendor A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-FAC-0610\nDate: 2026-06-10\nVENDOR INVOICE\nDescription: June facility services\nAmount: $1,850.00\nPrinted subtotal: $1,850.00\nApproved claim total: $1,850.00\nAPPROVAL NOTE\nApproved in full for the synthetic June reimbursement package.\nExpense reference: VENDOR-INVOICE-EXP-002\n",
@@ -163,6 +164,7 @@
       },
       {
         "id": "profile-en-supported-2",
+        "caseKind": "supported_layout",
         "filename": "vendor-invoice-exp-003.pdf",
         "mediaType": "application/pdf",
         "ocrText": "Synthetic Program Supplies Vendor B\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-SUP-0618\nDate: 2026-06-18\nVENDOR INVOICE\nDescription: Workshop materials and learning kits\nAmount: $1,820.00\nPrinted subtotal: $1,820.00\nApproved adjustment: $-540.00\nApproved claim total: $1,280.00\nAPPROVAL NOTE\nClaim only the approved adjusted total; exclude the non-program materials adjustment.\nExpense reference: VENDOR-INVOICE-EXP-003\n",
@@ -172,6 +174,7 @@
       },
       {
         "id": "profile-es-supported-1",
+        "caseKind": "supported_layout",
         "filename": "synthetic-vendor-invoice-es-001.pdf",
         "mediaType": "application/pdf",
         "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Materiales Comunitarios A\nFecha de factura: 2026-06-20\nImporte total: USD 740.00\nReferencia de gasto: EXP-ES-001\nIdioma de origen: es\n",
@@ -181,6 +184,7 @@
       },
       {
         "id": "profile-es-supported-2",
+        "caseKind": "supported_layout",
         "filename": "synthetic-vendor-invoice-es-002.pdf",
         "mediaType": "application/pdf",
         "ocrText": "FACTURA SINTETICA DE PROVEEDOR\nDocumento de prueba sin organizacion, persona, cuenta o transaccion real.\nProveedor: Synthetic Suministros Educativos B\nFecha de factura: 2026-06-24\nImporte total: USD 915.50\nReferencia de gasto: EXP-ES-002\nIdioma de origen: es\n",
@@ -190,15 +194,17 @@
       },
       {
         "id": "profile-changed-layout",
+        "caseKind": "changed_layout",
         "filename": "synthetic-vendor-invoice-changed-layout.pdf",
         "mediaType": "application/pdf",
-        "ocrText": "SYNTHETIC CHANGED DOCUMENT\nVendor: Synthetic Workshop Goods A\nExpense reference: EXP-CHANGED-001\nInvoice date: 2026-06-25\nTotal amount: USD 325.00\nLayout revision: unexpected\n",
+        "ocrText": "Synthetic Workshop Goods A\nTest fixture only - no real organization, person, account, or transaction.\nInvoice: SYN-CHANGED-0625\nUNDECLARED LAYOUT ROW 1\nUNDECLARED LAYOUT ROW 2\nUNDECLARED LAYOUT ROW 3\nDate: 2026-06-25\nVENDOR INVOICE\nDescription: Shifted deterministic layout\nAmount: $325.00\nPrinted subtotal: $325.00\nApproved claim total: $325.00\nAPPROVAL NOTE\nThe labels remain valid but their layout positions changed.\nExpense reference: EXP-CHANGED-001\n",
         "expectedOutcome": "needs_profile_review",
         "expectedFields": {},
         "expectedSourceLocations": {}
       },
       {
         "id": "profile-unknown-layout",
+        "caseKind": "unknown_layout",
         "filename": "synthetic-unknown-supporting-document.pdf",
         "mediaType": "application/pdf",
         "ocrText": "SYNTHETIC SUPPORTING DOCUMENT\nReference table for deterministic review routing.\nEntry A 2026-06-27 USD 111.00\nNo declared vendor-invoice layout is present.\n",
