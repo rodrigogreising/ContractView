@@ -263,7 +263,7 @@ describe("authentication shell", () => {
     expect(html).toContain("Supporting evidence");
     expect(html).toContain("No unresolved assembly findings");
   });
-  it("renders bounded category, five-rule, labels, preview, save, and activation controls", () => {
+  it("renders a human-readable editor, governed history, diff, impact, and references without raw JSON", () => {
     const html = renderToString(
       <ConfigurationAdmin
         configuration={{
@@ -302,6 +302,7 @@ describe("authentication shell", () => {
         }}
         active={{ id: "config-v1", version: 1, activatedAt: "now" }}
         draftRevision={4}
+        initialSection="configuration"
         evidence={{
           detail: {
             id: "config-v2",
@@ -405,20 +406,20 @@ describe("authentication shell", () => {
         onRollback={() => {}}
       />,
     );
-    expect(html).toContain("Active version 1");
+    expect(html).toContain("active v1");
     expect(html).toContain("Personnel limit");
     expect(html).toContain("POSSIBLE_DUPLICATE");
     expect(html).toContain("Amount tolerance");
     expect(html).toContain("Package label");
-    expect(html).toContain("Preview configuration");
+    expect(html).not.toContain("Preview configuration");
     expect(html).toContain("Save validated draft");
     expect(html).toContain("Test draft and retain evidence");
     expect(html).toContain("Record human approval");
-    expect(html).toContain("Immutable lifecycle evidence");
+    expect(html).toContain("Lifecycle evidence");
     expect(html).toContain("Validated deterministic configuration");
     expect(html).toContain("Editable draft revision");
-    expect(html).toContain("stale writes are rejected");
-    expect(html).toContain("Derived version evidence");
+    expect(html).toContain("stale save and test requests are rejected");
+    expect(html).toContain("Read-only version detail, comparison, and impact");
     expect(html).toContain("/package/label changed from old to new");
     expect(html).toContain("future-intake-only");
     expect(html).toContain("invoice-v1");
@@ -467,6 +468,7 @@ describe("authentication shell", () => {
       renderToString(
         <ConfigurationAdmin
           configuration={configuration}
+          initialSection="configuration"
           versions={versions}
           active={active}
           message=""
@@ -498,14 +500,15 @@ describe("authentication shell", () => {
     });
 
     const activate = renderStates([version("v1", 1, "approved")], null);
-    expect(activate).toContain("Activate approved version");
-    expect(activate).not.toContain("Supersede active version");
+    expect(activate).toContain("Review activation impact");
+    expect(activate).not.toContain("Confirm and activate approved version");
 
     const supersede = renderStates(
       [version("v1", 1, "active", true), version("v2", 2, "approved")],
       { id: "v1", version: 1, activatedAt: "now" },
     );
-    expect(supersede).toContain("Supersede active version");
+    expect(supersede).toContain("Review activation impact");
+    expect(supersede).not.toContain("Confirm and supersede active version");
 
     const retiredControls = renderStates(
       [version("v1", 1, "superseded"), version("v2", 2, "active", true)],

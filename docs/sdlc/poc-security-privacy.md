@@ -501,3 +501,33 @@ cross-profile-predecessor, and undeclared-fingerprint inputs before governed
 mutation. Configuration testing resolves exact profile/evaluation/approval
 evidence, so guessed or hash-mismatched profile references cannot acquire a
 passing tested or approved configuration state.
+
+## SUB-77 Administrator Workspace Security And Privacy Decision
+
+SUB-77 adds a browser projection only and does not expand the approved local,
+closed-synthetic data class. Configuration, profile, fixture, evaluation,
+cluster, artifact, actor, and contract values come from normal
+session-authenticated server responses. Fixture transcripts are not rendered;
+only governed filenames, expected outcomes, exact metrics, ids, versions, and
+hashes are shown.
+
+The client never accepts caller-supplied organization, role, lifecycle state,
+approval, or activation evidence. Every query and command remains scoped by
+the canonical session, persisted contract ownership, and explicit
+Configuration Administrator assignment. Wrong-role, unassigned, cross-scope,
+stale, and invalid-transition requests remain server denials with the existing
+zero-mutation guarantees; hidden or disabled buttons are not treated as an
+authorization boundary.
+
+Profile-reference staging writes only the authorized editable configuration
+draft. Cluster confirmation writes only a draft association. Neither path can
+activate a profile, create a canonical invoice expense, validate, or perform a
+human-authority action. Explicit activation confirmation documents the
+operator's intended future-only scope but cannot override server evidence or
+historical-reference preservation.
+
+The authenticated shell exposes loading, empty, failure, and unauthorized
+states through accessible status/alert regions. The local retained browser
+evidence contains reserved-domain identities and synthetic fixture metadata
+only. The existing POC exclusions for production identity, retention,
+malware scanning, penetration testing, and real-data approval remain.

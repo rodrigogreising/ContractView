@@ -272,3 +272,25 @@ class requires a new governance decision and evaluation gate.
 Configuration rollback remains deterministic human-governed execution. It may
 reactivate an exact historical profile only through a newly tested and approved
 configuration version and an append-only `profile_rollback_activated` event.
+
+## SUB-77 Administrator Workspace AI And Configuration Decision
+
+SUB-77 adds no provider, model, prompt, parser, confidence threshold, hosted
+call, AI-generated configuration, or automatic profile assignment. The web
+workspace renders retained deterministic configuration/profile evidence and
+submits explicit human commands; it does not calculate fixture results,
+validation outcomes, approval evidence, lifecycle eligibility, or authority.
+
+The profile setup UI begins from an existing immutable fixture-backed profile
+contract and creates a draft only. Testing reuses the server's closed fixture
+evaluation. Approval remains an assigned Configuration Administrator action.
+Staging an exact approved profile reference changes only the editable
+configuration draft, which still requires save, deterministic test, human
+approval, and explicit prospective activation. A cluster suggestion can be
+confirmed only as a draft association and is visibly identified as non-active.
+
+The complete activation UI requires passing immutable test evidence, recorded
+human approval, nonblank rationale, calculated future-only impact, and an
+explicit historical-preservation confirmation. These browser controls are
+usability safeguards; server contracts independently recompute and enforce the
+same deterministic gates. System and AI actors retain empty authority sets.

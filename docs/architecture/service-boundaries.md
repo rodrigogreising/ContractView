@@ -408,3 +408,25 @@ Administrator. NGO and Government roles retain the existing scoped active
 summary; Auditor reconstruction remains the submitted, read-only Provenance
 projection. This is an intentional least-privilege split, not role-specific
 copies of configuration state.
+
+## SUB-77 Administrator Web Projection Boundary
+
+SUB-77 changes no capability owner or persistence collaboration. The Web
+projection consumes the existing generated configuration DTOs and typed
+profile/cluster read responses through `features/configuration/api.ts`.
+`App.tsx` owns session- and contract-scoped orchestration;
+`ConfigurationWorkspace` adapts the authenticated role workspace; and feature
+components render evidence and emit exact typed commands.
+
+Allowed browser responsibilities are navigation, form state, explicit impact
+confirmation, accessible loading/error/empty states, and derived presentation
+of the next action. Prohibited responsibilities are direct SQL, cross-owner
+joins, lifecycle eligibility, fixture evaluation, profile matching, validation,
+tenant scope, and human authority. Profile-reference staging remains an
+editable-draft command and cluster confirmation remains a draft-association
+command; neither is activation.
+
+The local profile and cluster TypeScript types describe server read models and
+do not create canonical domain vocabulary. Lifecycle states, exact version
+references, evaluation evidence, and command validity continue to be owned by
+the generated/shared contracts and server capabilities.

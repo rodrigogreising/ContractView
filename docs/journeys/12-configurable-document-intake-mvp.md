@@ -1,6 +1,6 @@
 # Journey 12: Configurable Document-Intake MVP
 
-Status: Build (`SUB-74` and `SUB-75` merged; `SUB-76` in immutable review)
+Status: Build (`SUB-74`, `SUB-75`, and `SUB-76` merged; `SUB-77` in progress)
 
 Controlling epic: `SUB-73`
 
@@ -223,3 +223,27 @@ The executable backend now proves the Journey 12 profile and routing portion:
 
 This checkpoint does not claim the complete administrator workspace or the
 five-role browser journey. Those remain SUB-77 and SUB-78.
+
+## SUB-77 Configuration Administrator Workspace Checkpoint
+
+The browser projection now exposes the governed behavior implemented by
+SUB-75/SUB-76 without creating a second source of truth:
+
+- overview, configuration lifecycle, and profiles/exceptions are distinct,
+  navigable work areas with current status, exact version context, impact, and
+  a derived next action;
+- configuration is edited through typed business fields rather than raw JSON,
+  while immutable history, detail, comparison, runtime references, test
+  evidence, approval, and provenance remain visible;
+- activation requires retained passing evidence, human approval, rationale,
+  calculated future-only impact, and explicit confirmation that historical
+  references remain unchanged;
+- profile setup, fixture metrics/results, approval, active-bundle history, and
+  exact-reference staging are visible through normal authenticated endpoints;
+- changed and unknown document layouts remain a safe exception queue, and
+  confirmation produces a draft association only; and
+- component tests, a clean browser checkpoint, and a desktop viewport
+  assertion cover normal, empty, error, unauthorized, and no-overflow states.
+
+This checkpoint does not certify all five role landing pages or the terminal
+Journey 12 release bundle. SUB-78 retains that scope.

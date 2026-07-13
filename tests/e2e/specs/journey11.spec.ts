@@ -53,16 +53,23 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
 
   await test.step("Configuration Administrator governs and activates configuration", async () => {
     await login(page, "administrator", testInfo);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
     expect(await page.evaluate(async () => (await fetch("/api/invoices/draft?contractId=contract-synthetic-agency-ngo-2026", { method: "POST" })).status)).toBe(403);
+    await page.getByRole("button", { name: "Configuration lifecycle" }).click();
     await page.getByRole("button", { name: "Save validated draft" }).click();
     await expect(page.getByText("Configuration draft saved and validated.")).toBeVisible();
     await page.getByLabel("Governance rationale").fill("Journey 11 deterministic configuration evidence");
     await page.getByRole("button", { name: "Test draft and retain evidence" }).click();
     await expect(page.getByRole("button", { name: "Record human approval" })).toBeVisible();
     await page.getByRole("button", { name: "Record human approval" }).click();
-    await expect(page.getByRole("button", { name: "Activate approved version" })).toBeVisible();
-    await page.getByRole("button", { name: "Activate approved version" }).click();
+    await expect(page.getByText("Explicit activation confirmation")).toBeVisible();
+    await page.getByLabel("I confirm this change applies to future intake only and preserves historical references.").check();
+    await page.getByRole("button", { name: "Confirm and activate approved version" }).click();
     await expect(page.locator("header.identity")).toContainText("Active config v1");
+    await page.getByRole("button", { name: "Profiles and exceptions" }).click();
+    await expect(page.getByRole("heading", { name: "Profile history and evaluation" })).toBeVisible();
+    await expect(page.getByText("Safe changed/unknown routing 100%").first()).toBeVisible();
+    await expect(page.getByText("No changed or unknown document layouts await setup.")).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath("configuration-activated.png"), fullPage: true });
     await logout(page);
   });
@@ -76,6 +83,8 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
       "vendor-invoice-exp-003.pdf",
       "vendor-invoice-exp-004.png",
       "vendor-invoice-exp-005.pdf",
+      "synthetic-vendor-invoice-changed-layout.pdf",
+      "synthetic-unknown-supporting-document.pdf",
     ]) {
       await page.getByLabel("Evidence file").setInputFiles(path.join(fixtures, filename));
       await page.getByRole("button", { name: "Upload and process" }).click();
@@ -197,6 +206,36 @@ test("Journey 11: configuration through immutable approval and audit reconstruct
     await expect(page.getByLabel("Auditor workspace").locator("form")).toHaveCount(0);
     expect(await page.evaluate(async () => (await fetch("/api/invoices/draft?contractId=contract-synthetic-agency-ngo-2026", { method: "POST" })).status)).toBe(403);
     await page.screenshot({ path: testInfo.outputPath("audit-reconstruction.png"), fullPage: true });
+    await logout(page);
+  });
+
+  await test.step("Configuration Administrator reviews a safe exception and creates only a draft association", async () => {
+    await login(page, "administrator", testInfo);
+    await page.getByRole("button", { name: "Profiles and exceptions" }).click();
+    await page.getByLabel("Profile governance rationale").fill("Create and evaluate the exact synthetic successor profile");
+    await page.getByRole("button", { name: "Create immutable profile draft" }).click();
+    await expect(page.getByText("Immutable profile draft created from governed fixture inputs.")).toBeVisible();
+    const successorProfile = page.locator("article.profile-card").filter({ hasText: "vendor_invoice_en v2" });
+    await expect(successorProfile).toBeVisible();
+    await successorProfile.getByRole("button", { name: "Test profile fixtures" }).click();
+    await expect(page.getByText("Immutable profile fixture evaluation recorded.")).toBeVisible();
+    await successorProfile.getByRole("button", { name: "Approve tested profile" }).click();
+    await expect(page.getByText("Human profile approval recorded.")).toBeVisible();
+    await successorProfile.getByRole("button", { name: "Use exact profile in configuration draft" }).click();
+    await expect(page.getByText("Exact vendor_invoice_en profile reference staged in the editable draft; save and test before activation.")).toBeVisible();
+    await page.getByRole("button", { name: "Configuration lifecycle" }).click();
+    await page.getByRole("button", { name: "Save validated draft" }).click();
+    await expect(page.getByText("Configuration draft saved and validated.")).toBeVisible();
+    await page.getByRole("button", { name: "Profiles and exceptions" }).click();
+    const exception = page.locator("article.cluster-card").filter({ hasText: "synthetic-unknown-supporting-document.pdf" });
+    await expect(exception).toBeVisible({ timeout: 120_000 });
+    await page.getByLabel("Profile governance rationale").fill("Retain the unknown synthetic layout for governed profile setup");
+    await exception.getByLabel("Draft profile key for synthetic-unknown-supporting-document.pdf").fill("vendor_invoice_candidate");
+    await exception.getByRole("button", { name: "Confirm suggestion as draft association" }).click();
+    await expect(page.getByText("Cluster suggestion confirmed as a draft association only; no profile was assigned or activated.")).toBeVisible();
+    await expect(exception).toContainText("confirmed draft");
+    await expect(exception).toContainText("It is not active configuration");
+    await page.screenshot({ path: testInfo.outputPath("configuration-exception-draft.png"), fullPage: true });
     await logout(page);
   });
 });

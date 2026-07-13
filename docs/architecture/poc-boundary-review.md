@@ -372,3 +372,23 @@ configuration profile reference before mutation. The layout fingerprint uses
 value-free line shapes and normalized non-empty-line positions, and the runtime
 ledger comparison consumes the approved profile field mapping rather than
 hard-coded canonical names.
+
+## SUB-77 Administrator Workspace Boundary Decision
+
+The complete Configuration Administrator workspace is a noncanonical Web
+projection over the SUB-75/SUB-76 server seams. It adds no table, repository,
+worker, event writer, lifecycle rule, OCR/model adapter, or authority owner.
+Transport remains isolated in the configuration feature API module, while the
+application shell clears and reloads every configuration/profile/cluster read
+model when the authenticated contract context changes.
+
+The workspace may explain current state, history, comparison, provenance,
+evaluation metrics, prospective impact, and next action. It may collect exact
+ids, draft revision, rationale, and explicit confirmation. It may not infer
+tenant scope, manufacture evidence, assign a profile, activate a cluster,
+validate an invoice, or perform a human-authority action. All commands are
+re-resolved and authorized by their canonical server owner.
+
+The wide authenticated shell and no-horizontal-overflow browser assertion are
+presentation evidence only. They do not change the existing modular-monolith,
+data-flow, or authority boundary.
