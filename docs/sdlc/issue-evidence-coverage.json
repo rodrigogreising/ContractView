@@ -139,6 +139,49 @@
       ]
     }
   },
+  "SUB-74": {
+    "projectStatus": "Design Review",
+    "certificationRationale": "The first MVP leaf must freeze a positive executable product/architecture contract for governed profiles, deterministic clusters, safe unknown routing, human authority, synthetic data, and retained evidence before runtime implementation starts.",
+    "includeJourneyInCleanRuntime": false,
+    "reviewSkills": [
+      "cv-review-product-intake",
+      "cv-review-requirements-traceability",
+      "cv-review-adr-architecture",
+      "cv-review-boundary-review",
+      "cv-review-security-privacy",
+      "cv-review-ai-governance",
+      "cv-review-journey-certification",
+      "cv-review-implementation-tests"
+    ],
+    "riskAndGateLabels": [
+      "gate:adr",
+      "gate:architecture",
+      "gate:security-privacy",
+      "gate:config-governance",
+      "risk:configuration-drift",
+      "risk:sensitive-data"
+    ],
+    "riskCoverage": {
+      "gate:adr": [
+        "ADR 0003 defines profile ontology composition, deterministic noncanonical clusters, safe routing, prospective version references, no runtime AI, and the unchanged modular-monolith deployment"
+      ],
+      "gate:architecture": [
+        "System, data-flow, domain, boundary, and machine-policy evidence assign each profile/runtime concern to one capability and defer executable-contract/persistence changes to SUB-75/SUB-76"
+      ],
+      "gate:security-privacy": [
+        "Positive closed synthetic catalogs, local-only artifact processing, canonical assignment scope, safe unknown routing, and zero-mutation denial criteria define the MVP threat boundary"
+      ],
+      "gate:config-governance": [
+        "Exact draft-tested-approved-active-superseded-retired lifecycle, immutable fixture evaluation, assigned-human approval, prospective bundle activation, and stable historical references are executable policy"
+      ],
+      "risk:configuration-drift": [
+        "Exact profile/configuration/OCR/parser/fingerprint/fixture versions and deterministic replay metrics prevent silent reinterpretation"
+      ],
+      "risk:sensitive-data": [
+        "The design admits only closed synthetic catalogs and deterministic generators and prohibits customer data, real identity, branding, hosted model calls, and external credentials"
+      ]
+    }
+  },
   "SUB-80": {
     "projectStatus": "Design Review",
     "certificationRationale": "The generalized delivery skill must preserve scoped Linear control, isolated PRs, executable evidence, immutable AI review, and merge verification without recovery or terminal-issue hard-codes.",

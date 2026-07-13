@@ -1,7 +1,7 @@
 # POC Boundary Review
 
-Status: Evidence Review; SUB-66 recovery and all SUB-55 prerequisites are
-merged and post-merge verified; terminal Journey 11 certification is active
+Status: Journey 11 POC baseline certified; SUB-74 successor MVP design review
+active
 
 SUB-59 design amendment: the runtime is governed by the
 [enforceable modular monolith](modular-monolith.md) and
@@ -309,3 +309,20 @@ personas, but server application policy and canonical assignments remain the
 only authority source. The complete run uses isolated Compose state and cannot
 import internals, mutate PostgreSQL/MinIO directly, switch roles, inject job
 results, or perform a human decision without the corresponding persona.
+
+## SUB-74 Configurable Document-Intake MVP Design Boundary
+
+SUB-74 adds design evidence only. ADR 0003 and
+`document-intake-mvp-policy.json` keep one modular monolith and assign
+Configuration ownership of immutable profile definitions/lifecycle,
+Extraction ownership of deterministic fingerprints and noncanonical cluster
+projections, Artifacts ownership of bytes/hashes, Invoices ownership of exact
+runtime snapshots, Provenance ownership of append-only references, and Web
+ownership of projections only.
+
+A cluster suggestion has no assignment or activation authority. Exact active
+profile matches create draft fields; changed or unknown layouts retain evidence
+and create no canonical expense. Local pinned OCR is permitted, while hosted
+models, runtime LLM extraction, AI-assisted profile drafting, and system/AI
+authority are prohibited. Runtime contracts and persistence remain gated on
+SUB-75/SUB-76 and may not be inferred from this design PR.

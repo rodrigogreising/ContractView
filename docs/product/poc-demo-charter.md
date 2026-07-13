@@ -125,3 +125,11 @@ POC completion requires the journey to pass from a clean Docker Compose environm
 - AI remains draft-producing; humans correct values and make authority decisions.
 - Submitted package versions are immutable and reconstructable.
 - The POC can be explained as a focused architecture demonstration without making customer or production-readiness claims.
+
+## Successor MVP
+
+This charter remains the certified historical POC baseline. The separately
+gated [Configurable Document-Intake MVP Charter](document-intake-mvp-charter.md)
+defines the successor increment controlled by `SUB-73` and its design gate
+`SUB-74`. MVP claims, fixtures, profile behavior, and Journey 12 evidence must
+not be inferred from this POC certification.

@@ -402,3 +402,33 @@ retention/backup/legal hold, SSO/MFA, malware scanning, real-data approval, or
 production penetration test. The public full-history/license/hosted-secret-
 scanning exceptions are unchanged. This certification cannot promote staging,
 production, or real data.
+
+## SUB-74 Configurable Document-Intake MVP Security And Privacy Decision
+
+SUB-74 expands design scope, not the approved data class. All profile fixtures,
+vendor aliases, users, organizations, contracts, and artifacts must come from
+closed synthetic catalogs and deterministic generators. Acceptance checks
+validate those positive catalogs and their generation/provenance contracts;
+they do not rely on a blacklist of brand names or sensitive terms.
+
+English and Spanish are source-document profile tags only. Source bytes remain
+inside the local synthetic runtime and are never sent to a hosted model. Pinned
+local OCR may read the bytes; exact artifact, OCR/parser, profile,
+configuration, source-location, and human-review references are retained.
+Changed or unknown layouts create `needs_profile_review` and no canonical
+expense, validation result, automatic profile assignment, or activation event.
+
+Every profile command/query resolves canonical contract/agency ownership and
+the administrator's explicit assignment. Indirect artifact, fixture,
+evaluation, cluster, predecessor, successor, or bundle references must resolve
+to the same authorized scope before mutation. Auditor access remains explicit,
+submitted-scope, and read-only. Denials for direct and indirect cross-tenant,
+stale, invalid-transition, and wrong-role requests must leave all owners'
+tables and object storage unchanged.
+
+The new profile/evaluation records use the existing local POC retention
+boundary: immutable evidence is retained for reconstruction, no real-data
+retention or deletion claim is made, and release remains blocked for hosted or
+production use. Residual risks are conservative false review routing for benign
+layout changes and the certified POC's local-only identity, malware-scanning,
+backup, legal-hold, penetration-test, SSO, and MFA exclusions.
